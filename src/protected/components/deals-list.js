@@ -448,7 +448,7 @@ class DealsList extends HTMLElement {
                         label: author.name,
                         key: author.id,
                         type: 'checkbox',
-                        value: savedQuery ? savedQuery.blacklistedAuthors.split(',').includes(author.id) : true
+                        value: savedQuery ? savedQuery.blacklistedAuthors.split(',').includes(author.id) : false
                 })))
             }
         ])
@@ -505,24 +505,22 @@ class DealsList extends HTMLElement {
         const FilterOptionsSidebar = document.querySelector('filter-options-sidebar')
         const SortingDropdown = document.querySelector('sorting-dropdown')
 
-        const parameters = new URLSearchParams()
-
-        parameters.set('limit', 30)
-
-        parameters.set('sort', SortingDropdown.selectedOption)
-
-        parameters.set('order', SortingDropdown.orderDirection)
-
-        for (const parameter of ['dealTypes', 'labels', 'neededSFHInfo', 'neededLandInfo', 'states', 'cities', 'blacklistedAuthors']) {
-            parameters.set(parameter, FilterOptionsSidebar.getGroupItems(parameter)
-            .filter(item => item.value === true)
-            .map(item => item.key)
-            .join(','))
+        const body = {
+            limit: 30,
+            sort: SortingDropdown.selectedOption,
+            order: SortingDropdown.orderDirection,
         }
 
-        if (FilterOptionsSidebar.getItemValue('postedAge', 'daysOld')) parameters.set('daysOld', FilterOptionsSidebar.getItemValue('postedAge', 'daysOld'))
+        for (const parameter of ['dealTypes', 'labels', 'neededSFHInfo', 'neededLandInfo', 'states', 'cities', 'blacklistedAuthors']) {
+            body[parameter] = FilterOptionsSidebar.getGroupItems(parameter)
+                .filter(item => item.value === true)
+                .map(item => item.key)
+                .join(',');
+        }
 
-        api.get(`/deals?${parameters.toString()}`).then(response => {
+        if (FilterOptionsSidebar.getItemValue('postedAge', 'daysOld')) body.daysOld = FilterOptionsSidebar.getItemValue('postedAge', 'daysOld')
+
+        api.post('/deals', body).then(response => {
             const deals = response.data
 
             console.log(deals)

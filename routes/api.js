@@ -127,13 +127,13 @@ router.get('/labelOptions', async (req, res) => {
     }
 })
 
-router.get('/deals', async (req, res) => {
+router.post('/deals', async (req, res) => {
     try {
-        if (!req.query.limit) return res.status(400).json({ error: "Missing 'limit' parameter." })
+        // console.log(req.body)
 
-        if (req.query.limit > 50) return res.status(400).json({ error: 'Limit must be less than 50.' })
+        if (!req.body.limit) return res.status(400).json({ error: "Missing 'limit' parameter." })
 
-        // console.log(req.query)
+        if (req.body.limit > 50) return res.status(400).json({ error: 'Limit must be less than 50.' })
 
         const pipe = [
             {
@@ -149,16 +149,16 @@ router.get('/deals', async (req, res) => {
             },
             {
                 $match: {
-                    ...(req.query['labels'] && { 'label': { $in: req.query['labels'] != '' ? req.query['labels'].split(',') : [] } }),
-                    ...(req.query['states'] && { 'address.state': { $in: req.query['states'] != '' ? req.query['states'].split(',') : [] } }),
-                    ...(req.query['cities'] && { 'address.city': { $in: req.query['cities'] != '' ? req.query['cities'].split(',') : [] } }),
-                    ...(req.query['blacklistedAuthors'] && { 'post.author.id': { $nin: req.query['blacklistedAuthors'].split(',') } }),
-                    ...(req.query['daysOld'] && { 'post.createdAt': { $gte: new Date(new Date().setDate(new Date().getDate() - req.query['daysOld'])) } }),
-                    ...(req.query['dealTypes'] && { $or: req.query['dealTypes'] != '' ? req.query['dealTypes'].split(',').map(dealType => ({
+                    ...(req.body['labels'] && { 'label': { $in: req.body['labels'] != '' ? req.body['labels'].split(',') : [] } }),
+                    ...(req.body['states'] && { 'address.state': { $in: req.body['states'] != '' ? req.body['states'].split(',') : [] } }),
+                    ...(req.body['cities'] && { 'address.city': { $in: req.body['cities'] != '' ? req.body['cities'].split(',') : [] } }),
+                    ...(req.body['blacklistedAuthors'] && { 'post.author.id': { $nin: req.body['blacklistedAuthors'].split(',') } }),
+                    ...(req.body['daysOld'] && { 'post.createdAt': { $gte: new Date(new Date().setDate(new Date().getDate() - req.body['daysOld'])) } }),
+                    ...(req.body['dealTypes'] && { $or: req.body['dealTypes'] != '' ? req.body['dealTypes'].split(',').map(dealType => ({
                         category: dealType,
-                        ...(req.query[dealType === 'SFH Deal' ? 'neededSFHInfo' : 'neededLandInfo'].split(',').filter(info => info != '').length > 0 && { $and: (() => {
+                        ...(req.body[dealType === 'SFH Deal' ? 'neededSFHInfo' : 'neededLandInfo'].split(',').filter(info => info != '').length > 0 && { $and: (() => {
                             if (dealType === 'SFH Deal') {
-                                return req.query['neededSFHInfo'].split(',').map(info => {
+                                return req.body['neededSFHInfo'].split(',').map(info => {
                                     switch (info) {
                                         case 'street':
                                             return { 'address.streetName': { $ne: null } }
@@ -175,7 +175,7 @@ router.get('/deals', async (req, res) => {
                                     }
                                 })
                             } else if (dealType === 'Land Deal') {
-                                return req.query['neededLandInfo'].split(',').map(info => {
+                                return req.body['neededLandInfo'].split(',').map(info => {
                                     switch (info) {
                                         case 'street':
                                             return { 'address.streetName': { $ne: null } }
@@ -196,23 +196,23 @@ router.get('/deals', async (req, res) => {
             },
             {
                 $sort: (() => {
-                    switch (req.query['sort']?.toLowerCase()) {
+                    switch (req.body['sort']?.toLowerCase()) {
                         case 'date':
-                            return { 'post.createdAt': req.query.order?.toLocaleLowerCase() === 'descending' ? -1 : 1 }
+                            return { 'post.createdAt': req.body.order?.toLocaleLowerCase() === 'descending' ? -1 : 1 }
 
                         case 'asking':
-                            return { 'price': req.query.order?.toLocaleLowerCase() === 'descending' ? -1 : 1 }
+                            return { 'price': req.body.order?.toLocaleLowerCase() === 'descending' ? -1 : 1 }
 
                         case 'arv':
-                            return { 'arv': req.query.order?.toLocaleLowerCase() === 'descending' ? -1 : 1 }
+                            return { 'arv': req.body.order?.toLocaleLowerCase() === 'descending' ? -1 : 1 }
 
                         case 'price/arv':
-                            return { 'priceToARV': req.query.order?.toLocaleLowerCase() === 'descending' ? -1 : 1 }
+                            return { 'priceToARV': req.body.order?.toLocaleLowerCase() === 'descending' ? -1 : 1 }
                     }
                 })()
             },
             {
-                $limit: parseInt(req.query['limit'])
+                $limit: parseInt(req.body['limit'])
             },
             {
                 $project: {
@@ -235,7 +235,7 @@ router.get('/deals', async (req, res) => {
 
         const deals = await Deal.aggregate(pipe)
 
-        await usersCollection.updateOne({ _id: new ObjectId(req.user._id) }, { $set: { dealsQuery: req.query } })
+        await usersCollection.updateOne({ _id: new ObjectId(req.user._id) }, { $set: { dealsQuery: req.body } })
 
         res.status(200).json(deals)
     } catch (error) {
