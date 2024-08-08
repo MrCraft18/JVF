@@ -200,7 +200,7 @@ class DealView extends HTMLElement {
     async connectedCallback() {
         const query = new URLSearchParams(window.location.search)
 
-        if (!query.get('id')) window.location.href = '/mobile/deals'
+        if (!query.get('id')) window.location.href = '/deals'
 
         const deal = await api.get(`/deal?id=${query.get('id')}`).then(response => response.data)
 

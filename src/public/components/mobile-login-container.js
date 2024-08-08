@@ -99,7 +99,7 @@ class MobileLoginContainer extends HTMLElement {
                 password: formData.get('password')
             })
             .then(() => {
-                window.location.href = '/mobile/deals'
+                window.location.href = '/deals'
             })
             .catch(error => {
                 console.error('Auth Login Request Error:', error)

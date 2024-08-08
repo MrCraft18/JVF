@@ -37,3 +37,7 @@ Add label colors to deals list.
 Change manifest.json route and fix middleware for default route.
 
 Make device detection frontend by assembling different components based on device size or user agent.
+
+Make deals list live update when new deals are found
+
+Error popups for api calls.

@@ -13,6 +13,7 @@ const app = express()
 import cookieParser from 'cookie-parser'
 import useragent from 'express-useragent'
 import authenticateAccessToken from './middleware/authenticateAccessToken.js'
+import authenticateRefreshToken from "./middleware/authenticateRefreshToken.js";
 app.use(express.json())
 app.use(cookieParser())
 app.use(useragent.express())
@@ -29,7 +30,7 @@ app.use('/api', authenticateAccessToken, apiRouter)
 
 //TEMP
 app.use(express.static(path.join(__dirname, 'src', 'public')))
-app.use(express.static(path.join(__dirname, 'src', 'protected')))
+app.use(authenticateRefreshToken, express.static(path.join(__dirname, 'src', 'protected')))
 //TEMP
 
 const port = process.env.PORT

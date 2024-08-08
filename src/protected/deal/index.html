@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+    <link rel="stylesheet" type="text/css" href="/styles.css">
+
+    <link rel="manifest" href="/manifest.json">
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="/axiosInstance.js"></script>
+</head>
+
+<body></body>
+
+<script>
+    function isMobileDevice() {
+        return window.matchMedia("(max-width: 767px)").matches;
+    }
+
+    if (isMobileDevice()) {
+        $('body').html(`
+            <title-bar></title-bar>
+            <deal-view></deal-view>
+            <nav-bar></nav-bar>
+        `)
+
+        const componentPaths = [
+            '/components/title-bar.js',
+            '/components/nav-bar.js',
+            '/components/deal-view.js'
+        ]
+
+        componentPaths.forEach(componentPath => {
+            const script = document.createElement('script')
+            script.src = componentPath
+            script.defer = true
+            script.type = 'module'
+            document.body.appendChild(script)
+        })
+    }
+</script>
+
+
+</html>
