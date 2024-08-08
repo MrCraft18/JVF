@@ -33,6 +33,10 @@ app.use(express.static(path.join(__dirname, 'src', 'public')))
 app.use(authenticateRefreshToken, express.static(path.join(__dirname, 'src', 'protected')))
 //TEMP
 
+app.get('/', (req, res) => {
+    res.redirect('/deals')
+})
+
 const port = process.env.PORT
 const server = app.listen(port, () => {
     console.log("Server Listening on: " + port)
