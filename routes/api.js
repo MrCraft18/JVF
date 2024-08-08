@@ -133,7 +133,7 @@ router.get('/deals', async (req, res) => {
 
         if (req.query.limit > 50) return res.status(400).json({ error: 'Limit must be less than 50.' })
 
-        console.log(req.query)
+        // console.log(req.query)
 
         const pipe = [
             {
