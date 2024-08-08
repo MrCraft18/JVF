@@ -444,7 +444,9 @@ class DealsList extends HTMLElement {
                 title: 'Blacklisted Authors',
                 group: 'blacklistedAuthors',
                 searchbar: true,
-                items: await api.get('/authorOptions').then(response => response.data.map(author => ({
+                items: await api.get('/authorOptions').then(response => response.data
+                    .sort((a, b) => a.name
+                    .localeCompare(b.name)).map(author => ({
                         label: author.name,
                         key: author.id,
                         type: 'checkbox',
