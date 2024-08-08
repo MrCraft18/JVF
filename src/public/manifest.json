@@ -1,0 +1,7 @@
+{
+	"name": "JVF",
+	"start_url": "/mobile/login",
+	"background_color": "#402e7a",
+	"display": "standalone",
+	"theme_color": "#4c3bcf"
+}

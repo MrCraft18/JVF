@@ -1,0 +1,39 @@
+TODO:
+
+DONE | Seperate Deals and Posts into different collections
+DONE | When post is a type of deal it should be checked if a existing deal document for its deal by comparing extracted info from post to info inside of the deals documents already exists then if not it will try to create a new one.
+DONE (I guess?) | Deal documents should contain the metadata for arv percentage, within city list (and maybe some kind of confidence value?)
+DONE | Add GPT checker to post to see if it has more than 1 parcel/deal (actually really just more than 1 DEAL) and ignore it if it does for now and Ill implement functionality for that in the future.
+DONE | Functionality to handle multiple parcels/deals in a post
+DONE | Subsidize chat gpt prompts for extracting data
+Check GPT extracted data for valid city and valid state. And maybe RegEx tests for ARV
+DONE | Set up delay for querying emails in post comments after time has passed so people have time to comment emails.
+DONE | Cron Job every day that gets post comments for posts that are 3 days old
+DONE | Need sorting value for deal created age (3 days, 1 week, 1 month, etc)
+DONE (They're called labels) | Add "Statuses" to deals. Like "Unchecked" "Starred or Important"
+DONE | Add block option to facebook authors
+DONE | Complete search functionality for accordions with searchbar
+DONE | Create custom events to trigger a new query for deals.
+DONE | Populate deals page options with user query history
+DONE | Update City options list when selected states change
+DONE (pretty much) | Redo deal list item styling
+DONE | Deal documents will have a boolean verified info status.
+DONE | Add info verify info button to deal page.
+DONE | Verify info will have popup modal with a edit button for each info field for user to edit.
+DONE | Add info verified status to deals list page for each deal.
+
+Add total document matches to deals list page.
+
+Make verify info functionality.
+
+Make change label functionality.
+
+Search deals by author and address
+
+Load more deals as user scrolls down.
+
+Add label colors to deals list.
+
+Change manifest.json route and fix middleware for default route.
+
+Make device detection frontend by assembling different components based on device size or user agent.
