@@ -28,14 +28,16 @@ app.use('/api', authenticateAccessToken, apiRouter)
 
 //Implement middleware to add root route for device "mobile" or "desktop"
 
-//TEMP
+app.get('*', (req, res, next) => {
+    if (req.headers['accept'].includes('text/html')) {
+        res.sendFile(path.join(__dirname, 'src', 'public', 'router.html'))
+    } else {
+        next()
+    }
+})
+
 app.use(express.static(path.join(__dirname, 'src', 'public')))
 app.use(authenticateRefreshToken, express.static(path.join(__dirname, 'src', 'protected')))
-//TEMP
-
-app.get('/', (req, res) => {
-    res.redirect('/deals')
-})
 
 const port = process.env.PORT
 const server = app.listen(port, () => {

@@ -14,7 +14,9 @@ export default (req, res, next) => {
     jwt.verify(authToken, process.env.ACCESS_TOKEN_SECRET, async (error, data) => {
         const storedParentToken = await refreshTokensCollection.findOne({ token: data.parentToken })
 
-        if (error || data.ip !== req.ip || !storedParentToken) {
+        if (error) return res.sendStatus(401)
+
+        if (data.ip !== req.ip || !storedParentToken) {
             return res.sendStatus(403)
         }
 

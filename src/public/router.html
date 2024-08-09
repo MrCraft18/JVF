@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="initial-scale=1, viewport-fit=cover, user-scalable=0"></meta>
+    <!-- <meta name="apple-mobile-web-app-capable" content="yes"></meta>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"></meta> -->
+
+    <link rel="stylesheet" type="text/css" href="/styles.css">
+
+    <link rel="manifest" href="/manifest.json">
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="/axiosInstance.js"></script>
+</head>
+
+<body></body>
+
+<script>
+    function device() {
+        return window.matchMedia("(max-width: 767px)").matches ? 'mobile' : 'desktop'
+    }
+
+    function urlRoute(event) {
+        event = event || window.event
+        event.preventDefault()
+        window.history.pushState({}, "", event.target.href)
+        urlLocationHandler()
+    }
+
+    async function urlLocationHandler() {
+        let location = window.location.pathname === '/' ? '/deal-list' : window.location.pathname
+
+        if (location.endsWith('/')) location = location.slice(0, -1)
+
+        await axios.get(`/pages${location}/${device()}.html`)
+        .then(response => {
+            const page = response.data
+
+            $('body').html(page)
+
+            $('body').children().each((index, element) => {
+                $('<script>', {
+                    src: `/components/${device()}/${element.tagName.toLowerCase()}.js`,
+                    type: 'module'
+                }).appendTo('head')
+            })
+        })
+        .catch(error => {
+            if (error.response.status === 401 || error.response.status === 403) window.location.pathname = '/login'
+
+            $('body').html(/*html*/`
+                <div style="height: 100%; width: 100%; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
+                    Page Not Found :<
+                </div>
+            `)
+        })
+    }
+
+    window.onpopstate = urlLocationHandler
+    window.route = urlRoute
+
+    urlLocationHandler()
+</script>
+
+
+</html>

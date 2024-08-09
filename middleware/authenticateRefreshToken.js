@@ -7,20 +7,22 @@ const refreshTokensCollection = databaseClient.db('JVF').collection('refreshToke
 const usersCollection = databaseClient.db('JVF').collection('users')
 
 export default async (req, res, next) => {
-    if (!req.cookies.refreshToken) return res.redirect('/login')
+    if (!req.cookies.refreshToken) return res.sendStatus(401)
 
     const storedRefreshToken = await refreshTokensCollection.findOne({ token: req.cookies.refreshToken })
 
-    if (!storedRefreshToken) return res.redirect('/login') //return res.clearCookie('refreshToken').redirect('/login')
+    if (!storedRefreshToken) return res.sendStatus(401)
 
     jwt.verify(req.cookies.refreshToken, process.env.REFRESH_TOKEN_SECRET, async (error, data) => {
-        if (error || data.ip !== req.ip) return res.redirect('/login') //return res.clearCookie('refreshToken').redirect('/login')
+        if (error) return res.sendStatus(401)
+
+        if (data.ip !== req.ip) return res.sendStatus(403)
 
         next()
 
         // console.log(req.url)
 
-        if (!req.path.endsWith('.js')) {
+        if (req.path.includes('/pages/')) {
             const user = await usersCollection.findOne({ _id: new ObjectId(data.id) }, { projection: { name: 1} })
 
             console.log(`${user.name.first} ${user.name.last} Successfully Reached ${req.url}`)

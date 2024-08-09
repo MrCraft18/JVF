@@ -41,3 +41,5 @@ Make device detection frontend by assembling different components based on devic
 Make deals list live update when new deals are found
 
 Error popups for api calls.
+
+When nav-bar and title-bar are used for navigation in the app use component swapping instead of actual browser navigation.

@@ -1,4 +1,4 @@
-class MobileLoginContainer extends HTMLElement {
+class LoginContainer extends HTMLElement {
     constructor() {
         super()
 
@@ -108,4 +108,4 @@ class MobileLoginContainer extends HTMLElement {
     }
 }
 
-customElements.define('mobile-login-container', MobileLoginContainer)
+customElements.define('login-container', LoginContainer)
