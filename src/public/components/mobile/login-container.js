@@ -99,7 +99,7 @@ class LoginContainer extends HTMLElement {
                 password: formData.get('password')
             })
             .then(() => {
-                window.location.href = '/deals'
+                window.location.href = '/deals-list'
             })
             .catch(error => {
                 console.error('Auth Login Request Error:', error)

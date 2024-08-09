@@ -13,6 +13,7 @@ class DealsList extends HTMLElement {
                 width: 100%;
                 display: flex;
                 flex-direction: column;
+                align-items: center;
                 max-height: calc(100vh - (8vh + 6vh));
                 z-index: 1;
             }
@@ -94,8 +95,9 @@ class DealsList extends HTMLElement {
             }
 
             #list-container {
-                width: 100%;
+                width: 99%;
                 overflow-y: scroll;
+                border-radius: 1vw;
             }
 
             .deal-list-item {
