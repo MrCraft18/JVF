@@ -13,7 +13,7 @@ class DealsList extends HTMLElement {
                 width: 100%;
                 display: flex;
                 flex-direction: column;
-                max-height: calc(100vh - (${$('title-bar').outerHeight()}px + ${$('nav-bar').outerHeight()}px));
+                max-height: calc(100vh - (8vh + 6vh));
                 z-index: 1;
             }
 
