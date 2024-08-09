@@ -67,6 +67,7 @@ class DealsList extends HTMLElement {
                 flex-direction: row;
                 justify-content: center;
                 align-items: center;
+                color: var(--primary-color);
             }
 
             #filter-button h4 {
@@ -77,6 +78,7 @@ class DealsList extends HTMLElement {
             #filter-button svg {
                 aspect-ratio: 1 / 1;
                 height: 60%;
+                fill: var(--primary-color);
             }
 
             .hover:hover:active {

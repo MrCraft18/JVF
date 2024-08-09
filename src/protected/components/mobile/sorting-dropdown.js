@@ -37,12 +37,14 @@ class SortingDropdown extends HTMLElement {
                 width: auto;
                 margin: 0px;
                 margin-left: 2vw;
-                text-align: center
+                text-align: center;
+                color: var(--primary-color);
             }
 
             .dropdown-button svg {
                 height: 55%;
                 aspect-ratio: 1 / 1;
+                fill: var(--primary-color);
             }
 
             .order-button {
@@ -59,6 +61,7 @@ class SortingDropdown extends HTMLElement {
             .order-button svg {
                 height: 50%;
                 aspect-ratio: 1 / 1;
+                fill: var(--primary-color);
                 transition: transform 0.3s ease-in-out;
             }
 
@@ -108,7 +111,7 @@ class SortingDropdown extends HTMLElement {
                 </div>
                 <div class="order-button">
                     <svg style="${this.orderDirection === 'descending' ? 'transform: rotate(180deg);' : ''}" fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="4.77 3.77 5.47 7.23">
-                        <path clip-rule="evenodd" d="m7.50001 3.79291 2.70709 2.7071-.70709.70711-1.5-1.5v5.29288h-1v-5.29288l-1.5 1.5-.70711-.70711z" fill="#000" fill-rule="evenodd"></path>
+                        <path clip-rule="evenodd" d="m7.50001 3.79291 2.70709 2.7071-.70709.70711-1.5-1.5v5.29288h-1v-5.29288l-1.5 1.5-.70711-.70711z"></path>
                     </svg>
                 </div>
             </div>

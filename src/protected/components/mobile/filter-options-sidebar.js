@@ -60,11 +60,16 @@ class FilterOptionsSidebar extends HTMLElement {
                 flex-direction: row;
                 align-items: center;
                 justify-content: space-between;
+                color: var(--primary-color);
             }
 
             .accordion-title:hover:active, .accordion-item:hover:active {
                 filter: brightness(95%);
                 cursor: pointer;
+            }
+
+            .accordion-title svg {
+                fill: var(--primary-color);
             }
 
             .accordion-title svg, .sub-accordion-title svg {

@@ -27,6 +27,7 @@ class VerifyInfo extends HTMLElement {
 
             .button h4 {
                 white-space: nowrap;
+                color: var(--primary-color);
             }
 
             .checkbox-container {
@@ -34,7 +35,7 @@ class VerifyInfo extends HTMLElement {
                 height: 1.6em;
                 width: 1.6em;
                 border-radius: 4px;
-                border: 2px solid black;
+                border: 2px solid var(--primary-color);
                 box-sizing: border-box;
                 overflow: hidden;
             }
