@@ -585,7 +585,7 @@ class DealsList extends HTMLElement {
             }
 
             listContainerDiv.find('.deal-list-item').on('click', event => {
-                window.location.href = `/deal?id=${event.currentTarget.id}`
+                window.location.href = `/deal/?id=${event.currentTarget.id}`
             })
         })
     }
