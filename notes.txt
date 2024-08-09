@@ -32,7 +32,7 @@ Search deals by author and address
 
 Load more deals as user scrolls down.
 
-Add label colors to deals list.
+Add color coding to labels.
 
 Change manifest.json route and fix middleware for default route.
 

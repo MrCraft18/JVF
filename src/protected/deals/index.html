@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="initial-scale=1, viewport-fit=cover, user-scalable=0"></meta>
-    <meta name="apple-mobile-web-app-capable" content="yes"></meta>
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"></meta>
+    <!-- <meta name="apple-mobile-web-app-capable" content="yes"></meta>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"></meta> -->
 
     <link rel="stylesheet" type="text/css" href="/styles.css">
 
@@ -40,7 +40,6 @@
         componentPaths.forEach(componentPath => {
             const script = document.createElement('script')
             script.src = componentPath
-            script.defer = true
             script.type = 'module'
             document.body.appendChild(script)
         })

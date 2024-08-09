@@ -43,8 +43,6 @@ router.post('/accessToken', async (req, res) => {
 
         const storedRefreshToken = await refreshTokensCollection.findOneAndDelete({ token: req.cookies.refreshToken })
 
-        console.log('Stored Token:', storedRefreshToken)
-
         if (!storedRefreshToken) return res.sendStatus(403) //res.clearCookie('refreshToken').sendStatus(403)
 
         jwt.verify(req.cookies.refreshToken, process.env.REFRESH_TOKEN_SECRET, async (error, data) => {
