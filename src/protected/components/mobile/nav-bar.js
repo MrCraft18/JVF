@@ -13,6 +13,7 @@ class NavBar extends HTMLElement {
                 justify-content: space-around;
                 align-items: center;
                 z-index: 1;
+                padding-bottom: calc(env(safe-area-inset-bottom) - 2vh);
             }
 
             .nav-button {
