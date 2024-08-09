@@ -13,7 +13,7 @@ class DealView extends HTMLElement {
                 width: 100%;
                 display: flex;
                 flex-direction: column;
-                max-height: calc(100vh - (${$('title-bar').outerHeight()}px + ${$('nav-bar').outerHeight()}px));
+                max-height: calc(100vh - (8vh + 6vh));
                 z-index: 1;
             }
 
@@ -38,7 +38,7 @@ class DealView extends HTMLElement {
                 flex-shrink: 0;
                 width: 100%;
                 height: 13%;
-                border-bottom: 2px solid var(--primary-color);;
+                border-bottom: 2px solid var(--color-4);
                 display: grid;
                 grid-template-rows: 1fr 1fr;
                 grid-template-columns: 4fr 3fr;
@@ -75,6 +75,7 @@ class DealView extends HTMLElement {
             .facebook-button a {
                 color: black;
                 text-decoration: none;
+                font-weight: 500;
             }
 
             .post-body {

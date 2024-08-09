@@ -42,7 +42,7 @@ class FilterOptionsSidebar extends HTMLElement {
 
             .sidebar-container {
                 z-index: 1000;
-                background-color: white;
+                background-color: var(--color-2);
                 position: fixed;
                 top: 0px;
                 left: -80vw;

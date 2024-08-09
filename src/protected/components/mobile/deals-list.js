@@ -104,14 +104,10 @@ class DealsList extends HTMLElement {
                 padding: 1vw;
                 font-size: 1.1rem;
                 box-sizing: border-box;
-                background-color: rgb(75, 112, 245);
+                background-color: var(--secondary-color);
                 display: grid;
                 grid-template-rows: 1fr 1fr 1fr 1fr;
                 grid-template-columns: 1fr 4.5fr 4.5fr;
-            }
-
-            .deal-list-item:not(:last-child) {
-                border-bottom: solid rgba(76, 59, 207, 0.5) 2px;
             }
 
             .deal-list-item > div {

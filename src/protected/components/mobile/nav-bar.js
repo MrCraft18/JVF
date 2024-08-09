@@ -12,17 +12,16 @@ class NavBar extends HTMLElement {
                 flex-direction: row;
                 justify-content: space-around;
                 align-items: center;
-                z-index: 0;
+                z-index: 1;
             }
 
             .nav-button {
-                background-color: var(--primary-color);
+                background-color: var(--highlight-color);
                 height: 75%;
                 aspect-ratio: 1 / 1;
                 display: flex;
                 justify-content: center;
                 align-items: center;
-                filter: brightness(80%);
                 border-radius: 10px;
             }
 

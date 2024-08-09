@@ -44,7 +44,8 @@
             $('body').children().each((index, element) => {
                 $('<script>', {
                     src: `/components/${device()}/${element.tagName.toLowerCase()}.js`,
-                    type: 'module'
+                    type: 'module',
+                    defer: true
                 }).appendTo('head')
             })
         })
