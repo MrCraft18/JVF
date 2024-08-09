@@ -50,13 +50,15 @@
             })
         })
         .catch(error => {
-            if (error.response.status === 401 || error.response.status === 403) window.location.pathname = '/login'
+            if (error.response) {
+                if (error.response.status === 401 || error.response.status === 403) window.location.pathname = '/login'
 
-            $('body').html(/*html*/`
-                <div style="height: 100%; width: 100%; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
-                    Page Not Found :<
-                </div>
-            `)
+                if (error.response.status === 404) $('body').html(/*html*/`
+                    <div style="height: 100%; width: 100%; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
+                        Page Not Found :<
+                    </div>
+                `)
+            }
         })
     }
 
