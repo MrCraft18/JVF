@@ -29,7 +29,7 @@ app.use('/api', authenticateAccessToken, apiRouter)
 //Implement middleware to add root route for device "mobile" or "desktop"
 
 app.get('*', (req, res, next) => {
-    if (req.headers['accept'].includes('text/html')) {
+    if (req.headers['accept']?.includes('text/html')) {
         res.sendFile(path.join(__dirname, 'src', 'public', 'router.html'))
     } else {
         next()
