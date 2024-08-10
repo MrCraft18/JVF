@@ -97,9 +97,9 @@ class DealsList extends HTMLElement {
             }
 
             #list-container {
-                width: 99%;
+                /* width: 99%; */
                 overflow-y: scroll;
-                border-radius: 1vw;
+                /* border-radius: 1vw; */
             }
 
             .deal-list-item {

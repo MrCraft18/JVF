@@ -41,7 +41,7 @@ class DealView extends HTMLElement {
                 border-bottom: 2px solid var(--color-4);
                 display: grid;
                 grid-template-rows: 1fr 1fr;
-                grid-template-columns: 4fr 3fr;
+                grid-template-columns: minmax(0, 4fr) minmax(0, 3fr);
             }
 
             .author-name, .timestamp {
@@ -55,6 +55,12 @@ class DealView extends HTMLElement {
                 font-size: 1.1rem;
                 font-weight: 500;
                 margin-top: 1vh;
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+                max-width: 100%;
+                min-width: 0px;
+                min-height: 0px;
             }
 
             .timestamp {
@@ -223,7 +229,7 @@ class DealView extends HTMLElement {
 
                     <div class="post-body">
                         <div class="text">
-                            <span>${deal.post.text.replaceAll('\n', '<br>')}</span>
+                            <span>${(`${deal.post.text || ''}${deal.post.attachedPost?.text ? `\n${deal.post.attachedPost.text}` : ''}`).replaceAll('\n', '<br>')}</span>
                         </div>
 
                         <!-- <div class="images">

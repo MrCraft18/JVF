@@ -18,13 +18,13 @@ const socket = io(`http://localhost:${process.env.PORT}`, {
 
 let withinOperatingTime = false
 
-cron.schedule('30 8 * * 1-7', () => {
+cron.schedule('30 8 * * *', () => {
     withinOperatingTime = true
     scrapePostsLoop()
 }, { timezone: 'America/Chicago' })
 
 
-cron.schedule('30 16 * * 1-7', () => {
+cron.schedule('30 16 * * *', () => {
     withinOperatingTime = false
 }, { timezone: 'America/Chicago' })
 
