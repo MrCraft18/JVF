@@ -58,9 +58,7 @@ class DealView extends HTMLElement {
                 overflow: hidden;
                 white-space: nowrap;
                 text-overflow: ellipsis;
-                max-width: 100%;
-                min-width: 0px;
-                min-height: 0px;
+                display: block;
             }
 
             .timestamp {
