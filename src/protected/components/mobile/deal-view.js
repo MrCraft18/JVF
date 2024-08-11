@@ -5,8 +5,14 @@ class DealView extends HTMLElement {
     constructor() {
         super()
 
+        this.attachShadow({ mode: 'open' })
+
+        this.$shadowRoot = $(this.shadowRoot)
+
+        document.addEventListener('all-components-loaded', this.onComponentsLoaded?.bind(this))
+
         const styles = /*css*/`
-            deal-view {
+            :host {
                 position: fixed;
                 top: ${$('title-bar').outerHeight()}px;
                 bottom: ${$('nav-bar').outerHeight()}px;
@@ -197,7 +203,7 @@ class DealView extends HTMLElement {
             }
         `
 
-        $('head').append(/*html*/`
+        this.$shadowRoot.append(/*html*/`
             <style>${styles}</style>
         `)
     }
@@ -213,7 +219,7 @@ class DealView extends HTMLElement {
 
         console.log(deal)
 
-        this.innerHTML = /*html*/`
+        this.$shadowRoot.append(/*html*/`
             <div class="post-container">
                 <div class="post">
                     <div class="post-header">
@@ -278,7 +284,7 @@ class DealView extends HTMLElement {
                     ></verify-info>
                 </div>
             </div>
-        `
+        `)
     }
 }
 

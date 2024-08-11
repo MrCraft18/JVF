@@ -5,8 +5,14 @@ class DealsList extends HTMLElement {
     constructor() {
         super()
 
+        this.attachShadow({ mode: 'open' })
+
+        this.$shadowRoot = $(this.shadowRoot)
+
+        document.addEventListener('all-components-loaded', this.onComponentsLoaded?.bind(this))
+
         const styles = /*css*/`
-            deals-list {
+            :host {
                 position: fixed;
                 top: ${$('title-bar').outerHeight()}px;
                 bottom: ${$('nav-bar').outerHeight()}px;
@@ -29,6 +35,16 @@ class DealsList extends HTMLElement {
                 align-items: center;
                 padding-top: 1vh;
                 padding-bottom: 1vh;
+            }
+
+            input {
+        	    padding: 0px;
+        	    margin: 0px;
+        	    border: 0px;
+            }
+
+            input:focus {
+            	outline: none;
             }
 
             #searchbar {
@@ -97,9 +113,7 @@ class DealsList extends HTMLElement {
             }
 
             #list-container {
-                /* width: 99%; */
                 overflow-y: scroll;
-                /* border-radius: 1vw; */
             }
 
             .deal-list-item {
@@ -169,7 +183,7 @@ class DealsList extends HTMLElement {
             }
 
             .deal-address {
-                font-size: 1.2rem;
+                font-size: 4.5vw;
                 display: flex;
                 align-items: center;
                 min-width: 0px;
@@ -231,46 +245,35 @@ class DealsList extends HTMLElement {
             }
 
             .deal-info-field {
-                font-size: 1rem;
+                font-size: 4vw;
                 font-weight: 400;
             }
 
             .deal-info-value {
-                font-size: 1.1rem;
+                font-size: 4.5vw;
                 font-weight: 500;
             }
         `
 
-        $('head').append(/*html*/`
+        this.$shadowRoot.append(/*html*/`
             <style>${styles}</style>
         `)
     }
 
-    async connectedCallback() {
+    async onComponentsLoaded() {
         //Get User query params and then set them in sorting-dropdown and filter-options-sidebar.
 
         const accessToken = await api.accessToken()
 
         const savedQuery = JSON.parse(atob(accessToken.split('.')[1])).user.dealsQuery
 
-        this.innerHTML = /*html*/`
+        this.$shadowRoot.append(/*html*/`
             <div id="top-bar">
                 <input id="searchbar" type="text" placeholder="Search">
                 <div id="options-container">
                     <div id="filter-button" class="hover">
                         <!-- Filter SVG -->
-                         <svg viewBox="4 4 40.02 40">
-                            <g id="Layer_2" data-name="Layer 2">
-                                <g id="invisible_box" data-name="invisible box">
-                                    <rect width="48" height="48" fill="none"/>
-                                </g>
-                                <g id="icons_Q2" data-name="icons Q2">
-                                    <path d="M41.8,8H21.7A6.2,6.2,0,0,0,16,4a6,6,0,0,0-5.6,4H6.2A2.1,2.1,0,0,0,4,10a2.1,2.1,0,0,0,2.2,2h4.2A6,6,0,0,0,16,16a6.2,6.2,0,0,0,5.7-4H41.8A2.1,2.1,0,0,0,44,10,2.1,2.1,0,0,0,41.8,8Z"/>
-                                    <path d="M41.8,22H37.7A6.2,6.2,0,0,0,32,18a6,6,0,0,0-5.6,4H6.2a2,2,0,1,0,0,4H26.4A6,6,0,0,0,32,30a6.2,6.2,0,0,0,5.7-4h4.1a2,2,0,1,0,0-4Z"/>
-                                    <path d="M41.8,36H24.7A6.2,6.2,0,0,0,19,32a6,6,0,0,0-5.6,4H6.2a2,2,0,1,0,0,4h7.2A6,6,0,0,0,19,44a6.2,6.2,0,0,0,5.7-4H41.8a2,2,0,1,0,0-4Z"/>
-                                </g>
-                            </g>
-                        </svg>
+                         <svg viewBox="4 4 40.02 40"><g id="Layer_2" data-name="Layer 2"><g id="invisible_box" data-name="invisible box"><rect width="48" height="48" fill="none"/></g><g id="icons_Q2" data-name="icons Q2"><path d="M41.8,8H21.7A6.2,6.2,0,0,0,16,4a6,6,0,0,0-5.6,4H6.2A2.1,2.1,0,0,0,4,10a2.1,2.1,0,0,0,2.2,2h4.2A6,6,0,0,0,16,16a6.2,6.2,0,0,0,5.7-4H41.8A2.1,2.1,0,0,0,44,10,2.1,2.1,0,0,0,41.8,8Z"/><path d="M41.8,22H37.7A6.2,6.2,0,0,0,32,18a6,6,0,0,0-5.6,4H6.2a2,2,0,1,0,0,4H26.4A6,6,0,0,0,32,30a6.2,6.2,0,0,0,5.7-4h4.1a2,2,0,1,0,0-4Z"/><path d="M41.8,36H24.7A6.2,6.2,0,0,0,19,32a6,6,0,0,0-5.6,4H6.2a2,2,0,1,0,0,4h7.2A6,6,0,0,0,19,44a6.2,6.2,0,0,0,5.7-4H41.8a2,2,0,1,0,0-4Z"/></g></g></svg>
 
                         <h4>Filter</h4>
                     </div>
@@ -285,13 +288,13 @@ class DealsList extends HTMLElement {
             </div>
 
             <div id="list-container"></div>
-        `
+        `)
 
-        $(this).append(/*html*/`
+        this.$shadowRoot.append(/*html*/`
             <filter-options-sidebar></filter-options-sidebar>
         `)
 
-        $('filter-options-sidebar')[0].createLayout([
+        this.$shadowRoot.find('filter-options-sidebar')[0].createLayout([
             {
                 title: 'Deal Types',
                 group: 'dealTypes',
@@ -455,18 +458,18 @@ class DealsList extends HTMLElement {
             }
         ])
 
-        $('#filter-button').on('click', () => {
-            $('filter-options-sidebar')[0].openSidebar()
+        this.$shadowRoot.find('#filter-button').on('click', () => {
+            this.$shadowRoot.find('filter-options-sidebar')[0].openSidebar()
         })
 
         let sidebarOptionChanged = false
 
-        $('filter-options-sidebar').on('sidebarClose', () => {
+        this.$shadowRoot.find('filter-options-sidebar').on('sidebarClose', () => {
             if (sidebarOptionChanged) this.queryDeals()
             sidebarOptionChanged = false
         })
 
-        $('filter-options-sidebar').on('valueChange', async event => {
+        this.$shadowRoot.find('filter-options-sidebar').on('valueChange', async event => {
             sidebarOptionChanged = true
 
             if (event.detail.group === 'states') {
@@ -488,29 +491,41 @@ class DealsList extends HTMLElement {
             }
         })
 
-        $('sorting-dropdown').on('orderToggle', () => {
+        this.$shadowRoot.find('sorting-dropdown').on('orderToggle', () => {
             this.queryDeals()
         })
 
-        $('sorting-dropdown').on('optionChange', () => {
+        this.$shadowRoot.find('sorting-dropdown').on('optionChange', () => {
             this.queryDeals()
+        })
+
+        let searchTimer
+        this.$shadowRoot.find('#searchbar').on('input', () => {
+            if (searchTimer) {
+                clearTimeout(searchTimer)
+            }
+
+            searchTimer = setTimeout(() => {
+                this.queryDeals()
+            }, 300)
         })
 
         this.queryDeals()
     }
 
     queryDeals() {
-        const listContainerDiv = $('#list-container')
+        const listContainerDiv = this.$shadowRoot.find('#list-container')
 
         listContainerDiv.html('')
 
-        const FilterOptionsSidebar = document.querySelector('filter-options-sidebar')
-        const SortingDropdown = document.querySelector('sorting-dropdown')
+        const FilterOptionsSidebar = this.$shadowRoot.find('filter-options-sidebar')[0]
+        const SortingDropdown = this.$shadowRoot.find('sorting-dropdown')[0]
 
         const body = {
             limit: 30,
             sort: SortingDropdown.selectedOption,
             order: SortingDropdown.orderDirection,
+            ...(this.$shadowRoot.find('#searchbar').val() && { text: this.$shadowRoot.find('#searchbar').val() })
         }
 
         for (const parameter of ['dealTypes', 'labels', 'neededSFHInfo', 'neededLandInfo', 'states', 'cities', 'blacklistedAuthors']) {

@@ -21,7 +21,7 @@ router.post('/createUser', async (req, res) => {
 
         if (!req.body.password) return res.status(400).send("Missing Password")
 
-        const existingUser = await usersCollection.findOne({'name.first': req.body.name.first, 'name.last': req.body.name.last})
+        const existingUser = await usersCollection.findOne({ 'name.first': req.body.name.first, 'name.last': req.body.name.last })
 
         if (existingUser) return res.status(409).send("User With Same Name Exists")
 
@@ -62,7 +62,7 @@ router.get('/user', async (req, res) => {
 
 router.get('/cityOptions', async (req, res) => {
     try {
-        const cities = await Deal.distinct('address.city', req.query.states ?  { 'address.state': { $in: req.query.states.split(',') } } : {}).then(results => results.filter(result => result != null))
+        const cities = await Deal.distinct('address.city', req.query.states ? { 'address.state': { $in: req.query.states.split(',') } } : {}).then(results => results.filter(result => result != null))
 
         res.status(200).json(cities)
     } catch (error) {
@@ -82,7 +82,7 @@ router.get('/stateOptions', async (req, res) => {
     }
 })
 
-router.get('/authorOptions', async (req ,res) => {
+router.get('/authorOptions', async (req, res) => {
     try {
         const authors = await Deal.aggregate([
             {
@@ -154,44 +154,52 @@ router.post('/deals', async (req, res) => {
                     ...(req.body['cities'] && { 'address.city': { $in: req.body['cities'] != '' ? req.body['cities'].split(',') : [] } }),
                     ...(req.body['blacklistedAuthors'] && { 'post.author.id': { $nin: req.body['blacklistedAuthors'].split(',') } }),
                     ...(req.body['daysOld'] && { 'post.createdAt': { $gte: new Date(new Date().setDate(new Date().getDate() - req.body['daysOld'])) } }),
-                    ...(req.body['dealTypes'] && { $or: req.body['dealTypes'] != '' ? req.body['dealTypes'].split(',').map(dealType => ({
-                        category: dealType,
-                        ...(req.body[dealType === 'SFH Deal' ? 'neededSFHInfo' : 'neededLandInfo'].split(',').filter(info => info != '').length > 0 && { $and: (() => {
-                            if (dealType === 'SFH Deal') {
-                                return req.body['neededSFHInfo'].split(',').map(info => {
-                                    switch (info) {
-                                        case 'street':
-                                            return { 'address.streetName': { $ne: null } }
-                                        case 'city':
-                                            return { 'address.city': { $ne: null } }
-                                        case 'state':
-                                            return { 'address.state': { $ne: null } }
-                                        case 'zip':
-                                            return { 'address.zip': { $ne: null } }
-                                        case 'price':
-                                            return { 'price': { $ne: null } }
-                                        case 'arv':
-                                            return { 'arv': { $ne: null } }
-                                    }
-                                })
-                            } else if (dealType === 'Land Deal') {
-                                return req.body['neededLandInfo'].split(',').map(info => {
-                                    switch (info) {
-                                        case 'street':
-                                            return { 'address.streetName': { $ne: null } }
-                                        case 'city':
-                                            return { 'address.city': { $ne: null } }
-                                        case 'state':
-                                            return { 'address.state': { $ne: null } }
-                                        case 'zip':
-                                            return { 'address.zip': { $ne: null } }
-                                        case 'price':
-                                            return { 'price': { $ne: null } }
-                                    }
-                                })
-                            }
-                        })() })
-                    })) : [] })
+                    ...((req.body['text'] || req.body['dealTypes']) && {
+                        $and: [
+                            ...(req.body['dealTypes'] ? [{
+                                $or: req.body['dealTypes'].split(',').map(dealType => ({
+                                    category: dealType,
+                                    ...(req.body[dealType === 'SFH Deal' ? 'neededSFHInfo' : 'neededLandInfo'].split(',').filter(info => info != '').length > 0 && {
+                                        $and: (() => {
+                                            if (dealType === 'SFH Deal') {
+                                                return req.body['neededSFHInfo'].split(',').map(info => {
+                                                    switch (info) {
+                                                        case 'street': return { 'address.streetName': { $ne: null } }
+                                                        case 'city': return { 'address.city': { $ne: null } }
+                                                        case 'state': return { 'address.state': { $ne: null } }
+                                                        case 'zip': return { 'address.zip': { $ne: null } }
+                                                        case 'price': return { 'price': { $ne: null } }
+                                                        case 'arv': return { 'arv': { $ne: null } }
+                                                    }
+                                                })
+                                            } else if (dealType === 'Land Deal') {
+                                                return req.body['neededLandInfo'].split(',').map(info => {
+                                                    switch (info) {
+                                                        case 'street': return { 'address.streetName': { $ne: null } }
+                                                        case 'city': return { 'address.city': { $ne: null } }
+                                                        case 'state': return { 'address.state': { $ne: null } }
+                                                        case 'zip': return { 'address.zip': { $ne: null } }
+                                                        case 'price': return { 'price': { $ne: null } }
+                                                    }
+                                                })
+                                            }
+                                        })()
+                                    })
+                                }))
+                            }] : []),
+
+                            ...(req.body['text'] ? [{
+                                $or: [
+                                    { 'post.author.name': { $regex: req.body['text'], $options: "i" } },
+                                    { 'address.streetName': { $regex: req.body['text'], $options: "i" } },
+                                    { 'address.streetNumber': { $regex: req.body['text'], $options: "i" } },
+                                    { 'address.city': { $regex: req.body['text'], $options: "i" } },
+                                    { 'address.state': { $regex: req.body['text'], $options: "i" } },
+                                    { 'address.zip': { $regex: req.body['text'], $options: "i" } },
+                                ]
+                            }] : [])
+                        ]
+                    }),
                 }
             },
             {
@@ -231,7 +239,7 @@ router.post('/deals', async (req, res) => {
             }
         ]
 
-        // console.dir(pipe, {depth: 10})
+        // console.dir(pipe, { depth: 10 })
 
         const deals = await Deal.aggregate(pipe)
 

@@ -11,10 +11,19 @@ export default async (req, res, next) => {
 
     const storedRefreshToken = await refreshTokensCollection.findOne({ token: req.cookies.refreshToken })
 
-    if (!storedRefreshToken) return res.sendStatus(401)
+    console.log(storedRefreshToken)
+
+    if (!storedRefreshToken) {
+        console.log('Refresh Token doesnt exist sent 401')
+
+        return res.sendStatus(401)
+    }
 
     jwt.verify(req.cookies.refreshToken, process.env.REFRESH_TOKEN_SECRET, async (error, data) => {
-        if (error) return res.sendStatus(401)
+        if (error) {
+            console.log(error)
+            return res.sendStatus(401)
+        }
 
         if (data.ip !== req.ip) return res.sendStatus(403)
 

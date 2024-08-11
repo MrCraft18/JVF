@@ -122,19 +122,8 @@ class SortingDropdown extends HTMLElement {
             </div>
         `)
 
-        const dropdownButtonTitle = this.$shadowRoot.find('.dropdown-button>h4')
-
-        const widths = this.getAttribute('options').split(' ').map(option => {
-            dropdownButtonTitle.text(option)
-            return dropdownButtonTitle.width()
-        })
-
-        dropdownButtonTitle.width(Math.max(...widths))
-
-        dropdownButtonTitle.text(this.selectedOption)
-
         this.$shadowRoot.find('.dropdown-button').on('click', () => {
-            this.$shadowRoot.find('.dropdown-options').slideToggle('fast')
+            this.toggleDropdown()
         })
 
         this.$shadowRoot.find('.dropdown-item').on('click', event => {
@@ -148,11 +137,11 @@ class SortingDropdown extends HTMLElement {
                 this.dispatchEvent(new Event('optionChange'))
             }
 
-            this.$shadowRoot.find('.dropdown-options').slideUp('fast')
+            this.closeDropdown()
         })
 
         this.$shadowRoot.find('.order-button').on('click', event => {
-            this.$shadowRoot.find('.dropdown-options').slideUp('fast')
+            this.closeDropdown()
 
             const orderButtonDiv = $(event.currentTarget)
 
@@ -169,11 +158,42 @@ class SortingDropdown extends HTMLElement {
             this.dispatchEvent(new Event('orderToggle'))
         })
 
-        $(document).on('click', event => {
-            if (!$(event.target).is(this)) {
-                this.$shadowRoot.find('.dropdown-options').slideUp('fast')
-            }
+
+    }
+
+    connectedCallback() {
+        this.setAttribute('tabindex', '0')
+
+        const dropdownButtonTitle = this.$shadowRoot.find('.dropdown-button>h4')
+
+        const widths = this.getAttribute('options').split(' ').map(option => {
+            dropdownButtonTitle.text(option)
+            return dropdownButtonTitle.width()
         })
+
+        dropdownButtonTitle.width(Math.max(...widths))
+
+        dropdownButtonTitle.text(this.selectedOption)
+
+
+        this.addEventListener('focusout', (event) => {
+            if (!this.contains(event.relatedTarget)) this.closeDropdown()
+        })
+    }
+
+    toggleDropdown() {
+        const dropdownOptions = this.$shadowRoot.find('.dropdown-options')
+
+        if (dropdownOptions.is(':visible')) {
+            dropdownOptions.slideUp('fast')
+        } else {
+            dropdownOptions.slideToggle('fast')
+            this.focus()
+        }
+    }
+
+    closeDropdown() {
+        this.$shadowRoot.find('.dropdown-options').slideUp('fast')
     }
 
     setOption(option) {

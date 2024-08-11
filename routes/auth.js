@@ -42,11 +42,12 @@ router.post('/accessToken', async (req, res) => {
         if (!req.cookies.refreshToken) return res.sendStatus(401)
 
         const storedRefreshToken = await refreshTokensCollection.findOneAndDelete({ token: req.cookies.refreshToken })
+        // const storedRefreshToken = await refreshTokensCollection.findOne({ token: req.cookies.refreshToken })
 
-        if (!storedRefreshToken) return res.sendStatus(403) //res.clearCookie('refreshToken').sendStatus(403)
+        if (!storedRefreshToken) return res.sendStatus(403)
 
         jwt.verify(req.cookies.refreshToken, process.env.REFRESH_TOKEN_SECRET, async (error, data) => {
-            if (error || data.ip !== req.ip) return res.sendStatus(403) //res.clearCookie('refreshToken').sendStatus(403)
+            if (error || data.ip !== req.ip) return res.sendStatus(403)
 
             const user = await usersCollection.findOne({ _id: new ObjectId(data.id) }, { projection: { password: 0 } })
 

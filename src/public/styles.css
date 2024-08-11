@@ -26,21 +26,3 @@ body {
 	background-color: var(--primary-color);
 	overflow: hidden;
 }
-
-input {
-	padding: 0px;
-	margin: 0px;
-	border: 0px;
-}
-
-input:focus {
-	outline: none;
-}
-
-h1,
-h2,
-h3,
-h4,
-h5 {
-	margin: 0px;
-}

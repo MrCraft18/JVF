@@ -26,20 +26,22 @@ Add total document matches to deals list page.
 
 Make verify info functionality.
 
-Make change label functionality.
-
 Search deals by author and address
 
 Load more deals as user scrolls down.
 
 Add color coding to labels.
 
-Change manifest.json route and fix middleware for default route.
-
-Make device detection frontend by assembling different components based on device size or user agent.
-
-Make deals list live update when new deals are found
+Make deals list live update when new deals are found | LOW PRIORITY
 
 Error popups for api calls.
 
 When nav-bar and title-bar are used for navigation in the app use component swapping instead of actual browser navigation.
+
+Convert /deals endpoint to accept blacklisted options for dynamically loaded options. And edit front-end accordingly
+
+Add color difference for SFH/Land Deals in deals-list
+
+Try speeding up deals-list loading by combining filter-options-sidebar requests into one request.
+
+Work on colors.

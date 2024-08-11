@@ -6,6 +6,8 @@ class LabelDropdown extends HTMLElement {
 
         this.$shadowRoot = $(this.shadowRoot)
 
+        document.addEventListener('all-components-loaded', this.onComponentsLoaded?.bind(this))
+
         const styles = /*css*/`
             :host {
                 position: relative;
@@ -87,19 +89,6 @@ class LabelDropdown extends HTMLElement {
             </div>
         `)
 
-        this.selectedOption = this.getAttribute('defaultOption')
-
-        const dropdownButtonTitle = this.$shadowRoot.find('.dropdown-button>h4')
-
-        const widths = this.getAttribute('options').split(' ').map(option => {
-            dropdownButtonTitle.text(option)
-            return dropdownButtonTitle.width()
-        })
-
-        dropdownButtonTitle.width(Math.max(...widths))
-
-        dropdownButtonTitle.text(this.selectedOption)
-
         this.$shadowRoot.find('.dropdown-button').on('click', () => {
             this.$shadowRoot.find('.dropdown-options').slideToggle('fast')
         })
@@ -120,11 +109,26 @@ class LabelDropdown extends HTMLElement {
 
             if (this.selectedOption != dropdownItemDiv.text()) this.selectedOption = dropdownItemDiv.text()
         })
+    }
 
-        $(document).on('click', event => {
-            if (!$(event.target).is(this)) {
-                this.$shadowRoot.find('.dropdown-options').slideUp('fast')
-            }
+    connectedCallback() {
+        this.setAttribute('tabindex', '0')
+
+        this.selectedOption = this.getAttribute('defaultOption')
+
+        const dropdownButtonTitle = this.$shadowRoot.find('.dropdown-button>h4')
+
+        const widths = this.getAttribute('options').split(' ').map(option => {
+            dropdownButtonTitle.text(option)
+            return dropdownButtonTitle.width()
+        })
+
+        dropdownButtonTitle.width(Math.max(...widths))
+
+        dropdownButtonTitle.text(this.selectedOption)
+
+        this.addEventListener('focusout', (event) => {
+            if (!this.contains(event.relatedTarget)) this.$shadowRoot.find('.dropdown-options').slideUp('fast')
         })
     }
 }

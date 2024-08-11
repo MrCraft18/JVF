@@ -19,14 +19,10 @@ app.use(cookieParser())
 app.use(useragent.express())
 
 //Import and use Routes
-// import rootRouter from './routes/root.js'
 import authRouter from './routes/auth.js'
 import apiRouter from './routes/api.js'
-// app.use('/', rootRouter)
 app.use('/auth', authRouter)
 app.use('/api', authenticateAccessToken, apiRouter)
-
-//Implement middleware to add root route for device "mobile" or "desktop"
 
 app.get('*', (req, res, next) => {
     if (req.headers['accept']?.includes('text/html')) {
