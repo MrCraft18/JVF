@@ -21,17 +21,26 @@ class DealView extends HTMLElement {
                 z-index: 1;
             }
 
+            /* .lol {
+                display: flex;
+                flex-direction: column;
+                flex-grow: 1;
+                overflow: hidden;
+            } */
+
             .post-container {
-                height: 70%;
+                /* height: 65%; */
+                flex-grow: 1;
                 padding: 1.5vw;
                 box-sizing: border-box;
+                overflow-y: auto;
             }
 
             .post {
                 height: 100%;
                 width: 100%;
                 border-radius: 8px;
-                background-color: var(--color-1);
+                background-color: var(--color-7);
                 filter: brightness(100%);
                 display: flex;
                 flex-direction: column;
@@ -40,8 +49,8 @@ class DealView extends HTMLElement {
             .post-header {
                 flex-shrink: 0;
                 width: 100%;
-                height: 13%;
-                border-bottom: 2px solid gray;
+                height: clamp(60px, 13%, 1000000000px);
+                border-bottom: 2px solid grey;
                 display: grid;
                 grid-template-rows: 1fr 1fr;
                 grid-template-columns: minmax(0, 4fr) minmax(0, 3fr);
@@ -115,7 +124,7 @@ class DealView extends HTMLElement {
                 padding-top: 0.8vh;
                 flex-shrink: 0;
                 width: 100%;
-                height: 30%;
+                height: clamp(230px, 30%, 100000px);
                 display: grid;
                 grid-template-rows: 2fr 2fr 2fr 2fr 4fr;
                 grid-template-columns: 2.7fr 2.7fr 1fr;
@@ -217,70 +226,72 @@ class DealView extends HTMLElement {
         console.log(deal)
 
         this.$shadowRoot.append(/*html*/`
-            <div class="post-container">
-                <div class="post">
-                    <div class="post-header">
-                        <span class="author-name">${deal.post.author.name}</span>
-                        <span class="timestamp">${new Date(deal.post.createdAt).toLocaleString('en-US', { timeZone: 'America/Chicago', year: '2-digit', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true, })}</span>
+            <!-- <div class="lol"> -->
+                <div class="post-container">
+                    <div class="post">
+                        <div class="post-header">
+                            <span class="author-name">${deal.post.author.name}</span>
+                            <span class="timestamp">${new Date(deal.post.createdAt).toLocaleString('en-US', { timeZone: 'America/Chicago', year: '2-digit', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true, })}</span>
 
-                        <div class="facebook-button">
-                            <a href="https://www.facebook.com/groups/${deal.post.group.id}/posts/${deal.post.id}" target="_blank">Facebook Link</a>
-                        </div>
-                    </div>
-
-                    <div class="post-body">
-                        <div class="text">
-                            <span>${(`${deal.post.text || ''}${deal.post.attachedPost?.text ? `\n${deal.post.attachedPost.text}` : ''}`).replaceAll('\n', '<br>')}</span>
+                            <div class="facebook-button">
+                                <a href="https://www.facebook.com/groups/${deal.post.group.id}/posts/${deal.post.id}" target="_blank">Facebook Link</a>
+                            </div>
                         </div>
 
-                        <!-- <div class="images">
-                            ${
-                                deal.post.images.map(imageURL => /*html*/`
-                                    <img src="${imageURL}">
-                                `).join('')
-                            }
+                        <div class="post-body">
+                            <div class="text">
+                                <span>${(`${deal.post.text || ''}${deal.post.attachedPost?.text ? `\n${deal.post.attachedPost.text}` : ''}`).replaceAll('\n', '<br>')}</span>
+                            </div>
 
-                            <img src="https://scontent-dfw5-1.xx.fbcdn.net/v/t39.30808-6/453884092_10160252875534053_4233656324536154436_n.jpg?stp=dst-jpg_s600x600&_nc_cat=103&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=cqH5gOOnKBYQ7kNvgFKgsk2&_nc_ht=scontent-dfw5-1.xx&cb_e2o_trans=t&oh=00_AYDlj-mS4rjzD3XCFg6FpXcPatD-9j8Lh-bY8GZ_eX2vug&oe=66B3AE95">
+                            <!-- <div class="images">
+                                ${
+                                    deal.post.images.map(imageURL => /*html*/`
+                                        <img src="${imageURL}">
+                                    `).join('')
+                                }
 
-                            <img src="https://scontent-dfw5-1.xx.fbcdn.net/v/t39.30808-6/453746918_10160252875504053_183775604910916250_n.jpg?stp=dst-jpg_s600x600&_nc_cat=101&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=mYmLeAOAnmUQ7kNvgHsjZGf&_nc_ht=scontent-dfw5-1.xx&cb_e2o_trans=t&oh=00_AYArPkdLTmY8x1Qpq_xlRq4Ip4v61_M_ppWJY6CFRgROcg&oe=66B3D418">
-                        </div> -->
+                                <img src="https://scontent-dfw5-1.xx.fbcdn.net/v/t39.30808-6/453884092_10160252875534053_4233656324536154436_n.jpg?stp=dst-jpg_s600x600&_nc_cat=103&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=cqH5gOOnKBYQ7kNvgFKgsk2&_nc_ht=scontent-dfw5-1.xx&cb_e2o_trans=t&oh=00_AYDlj-mS4rjzD3XCFg6FpXcPatD-9j8Lh-bY8GZ_eX2vug&oe=66B3AE95">
+
+                                <img src="https://scontent-dfw5-1.xx.fbcdn.net/v/t39.30808-6/453746918_10160252875504053_183775604910916250_n.jpg?stp=dst-jpg_s600x600&_nc_cat=101&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=mYmLeAOAnmUQ7kNvgHsjZGf&_nc_ht=scontent-dfw5-1.xx&cb_e2o_trans=t&oh=00_AYArPkdLTmY8x1Qpq_xlRq4Ip4v61_M_ppWJY6CFRgROcg&oe=66B3D418">
+                            </div> -->
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="info-grid">
-                <div class="address">
-                    <span>${deal.address.streetNumber ? `${deal.address.streetNumber} ` : ''}${deal.address.streetName ? `${deal.address.streetName}, ` : ''}${deal.address.city ? `${deal.address.city}, ` : ''}${deal.address.state ? `${deal.address.state} `: ''}${deal.address.zip || ''}</span>
-                </div>
+                <div class="info-grid">
+                    <div class="address">
+                        <span>${deal.address.streetNumber ? `${deal.address.streetNumber} ` : ''}${deal.address.streetName ? `${deal.address.streetName}, ` : ''}${deal.address.city ? `${deal.address.city}, ` : ''}${deal.address.state ? `${deal.address.state} `: ''}${deal.address.zip || ''}</span>
+                    </div>
 
-                <div class="price">
-                    <span>Asking:</span>
-                    <span>${deal.price ? `$${deal.price.toLocaleString('en-US')}` : 'Unknown'}</span>
-                </div>
+                    <div class="price">
+                        <span>Asking:</span>
+                        <span>${deal.price ? `$${deal.price.toLocaleString('en-US')}` : 'Unknown'}</span>
+                    </div>
 
-                <div class="arv">
-                    <span>Est. ARV:</span>
-                    <span>${deal.arv ? `$${deal.arv.toLocaleString('en-US')}` : 'Unknown'}</span>
-                </div>
+                    <div class="arv">
+                        <span>Est. ARV:</span>
+                        <span>${deal.arv ? `$${deal.arv.toLocaleString('en-US')}` : 'Unknown'}</span>
+                    </div>
 
-                <div class="price-to-arv">
-                    <span>${deal.priceToARV ? `${Math.round(deal.priceToARV * 100)}%` : '?'}</span>
-                </div>
+                    <div class="price-to-arv">
+                        <span>${deal.priceToARV ? `${Math.round(deal.priceToARV * 100)}%` : '?'}</span>
+                    </div>
 
-                <div class="deal-type">
-                    <span>${deal.category}</span>
-                </div>
+                    <div class="deal-type">
+                        <span>${deal.category}</span>
+                    </div>
 
-                <div class="buttons">
-                    <label-dropdown
-                        defaultOption="${deal.label}"
-                        options="Unchecked Checked"
-                    ></label-dropdown>
-                    <verify-info
-                        verified="${deal.verified}"
-                    ></verify-info>
+                    <div class="buttons">
+                        <label-dropdown
+                            defaultOption="${deal.label}"
+                            options="Unchecked Checked"
+                        ></label-dropdown>
+                        <verify-info
+                            verified="${deal.verified}"
+                        ></verify-info>
+                    </div>
                 </div>
-            </div>
+            <!-- </div> -->
         `)
     }
 }

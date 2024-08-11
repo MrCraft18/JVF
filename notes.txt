@@ -37,11 +37,11 @@ Error popups for api calls.
 
 When nav-bar and title-bar are used for navigation in the app use component swapping instead of actual browser navigation.
 
-Convert /deals endpoint to accept blacklisted options for dynamically loaded options. And edit front-end accordingly
+DONE | Convert /deals endpoint to accept blacklisted options for dynamically loaded options. And edit front-end accordingly
 
 Add color difference for SFH/Land Deals in deals-list
 
-Try speeding up deals-list loading by combining filter-options-sidebar requests into one request.
+DONE | Try speeding up deals-list loading by combining filter-options-sidebar requests into one request.
 
 Work on colors.
 
