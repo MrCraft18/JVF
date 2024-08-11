@@ -3,6 +3,7 @@ import { Server as IoServer } from 'socket.io'
 import { fileURLToPath } from 'url'
 import path from 'path'
 import { configDotenv } from 'dotenv'; configDotenv()
+import fs from 'fs/promises'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -11,12 +12,11 @@ const app = express()
 
 //Import and use Middleware
 import cookieParser from 'cookie-parser'
-import useragent from 'express-useragent'
-import authenticateAccessToken from './middleware/authenticateAccessToken.js'
-import authenticateRefreshToken from "./middleware/authenticateRefreshToken.js";
 app.use(express.json())
 app.use(cookieParser())
-app.use(useragent.express())
+
+import authenticateAccessToken from './middleware/authenticateAccessToken.js'
+import authenticateRefreshToken from "./middleware/authenticateRefreshToken.js";
 
 //Import and use Routes
 import authRouter from './routes/auth.js'
@@ -33,6 +33,13 @@ app.get('*', (req, res, next) => {
 })
 
 app.use(express.static(path.join(__dirname, 'src', 'public')))
+
+app.use((req, res, next) => {
+    fs.access(path.join(__dirname, 'src', 'protected', req.path))
+    .then(() => next())
+    .catch(() => res.sendStatus(404))
+})
+
 app.use(authenticateRefreshToken, express.static(path.join(__dirname, 'src', 'protected')))
 
 const port = process.env.PORT
