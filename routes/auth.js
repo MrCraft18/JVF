@@ -42,7 +42,6 @@ router.post('/accessToken', async (req, res) => {
         if (!req.cookies.refreshToken) return res.sendStatus(401)
 
         const storedRefreshToken = await refreshTokensCollection.findOneAndDelete({ token: req.cookies.refreshToken })
-        // const storedRefreshToken = await refreshTokensCollection.findOne({ token: req.cookies.refreshToken })
 
         if (!storedRefreshToken) return res.sendStatus(403)
 
@@ -67,7 +66,6 @@ router.post('/accessToken', async (req, res) => {
 
 router.post('/logout', async (req, res) => {
     try {
-        console.log(req.cookies.refreshToken)
         await refreshTokensCollection.deleteOne({ token: req.cookies.refreshToken })
         res.clearCookie('refreshToken')
         res.sendStatus(204)
