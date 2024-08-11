@@ -11,11 +11,8 @@ export default async (req, res, next) => {
 
     const storedRefreshToken = await refreshTokensCollection.findOne({ token: req.cookies.refreshToken })
 
-    console.log(storedRefreshToken)
-
     if (!storedRefreshToken) {
         console.log('Refresh Token doesnt exist sent 401')
-
         return res.sendStatus(401)
     }
 
