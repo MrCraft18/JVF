@@ -8,6 +8,8 @@ const databaseClient = new MongoClient(process.env.MONGODB_URI)
 const usersCollection = databaseClient.db('JVF').collection('users')
 const refreshTokensCollection = databaseClient.db('JVF').collection('refreshTokens')
 
+import authenticateRefreshToken from '../middleware/authenticateRefreshToken.js'
+
 const router = express.Router()
 
 router.post('/login', async (req, res) => {
@@ -37,27 +39,18 @@ router.post('/login', async (req, res) => {
     }
 })
 
-router.post('/accessToken', async (req, res) => {
+router.post('/accessToken', authenticateRefreshToken, async (req, res) => {
     try {
-        if (!req.cookies.refreshToken) return res.sendStatus(401)
+        const user = await usersCollection.findOne({ _id: new ObjectId(req.userID) }, { projection: { password: 0 } })
 
-        const storedRefreshToken = await refreshTokensCollection.findOneAndDelete({ token: req.cookies.refreshToken })
+        const newRefreshToken = jwt.sign({ id: req.userID, ip: req.ip }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '3d' })
+        const accessToken = jwt.sign({ user, ip: req.ip, parentToken: newRefreshToken }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '5m' })
 
-        if (!storedRefreshToken) return res.sendStatus(403)
+        await refreshTokensCollection.deleteOne({ token: req.cookies.refreshToken })
+        await refreshTokensCollection.insertOne({ token: newRefreshToken, createdAt: new Date() })
 
-        jwt.verify(req.cookies.refreshToken, process.env.REFRESH_TOKEN_SECRET, async (error, data) => {
-            if (error || data.ip !== req.ip) return res.sendStatus(403)
-
-            const user = await usersCollection.findOne({ _id: new ObjectId(data.id) }, { projection: { password: 0 } })
-
-            const newRefreshToken = jwt.sign({ id: data.id, ip: req.ip }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '3d' })
-            const accessToken = jwt.sign({ user, ip: req.ip, parentToken: newRefreshToken }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '5m' })
-
-            await refreshTokensCollection.insertOne({ token: newRefreshToken, createdAt: new Date() })
-
-            res.cookie('refreshToken', newRefreshToken, { httpOnly: true, sameSite: 'strict', maxAge: 1000 * 60 * 60 * 24 * 3 })
-            res.json({ accessToken })
-        })
+        res.cookie('refreshToken', newRefreshToken, { httpOnly: true, sameSite: 'strict', maxAge: 1000 * 60 * 60 * 24 * 3 })
+        res.json({ accessToken })
     } catch (error) {
         console.error(error)
         res.sendStatus(500)

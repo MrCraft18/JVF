@@ -45,14 +45,12 @@
                         src: `/components/${device()}/${element.tagName.toLowerCase()}.js`,
                         type: 'module',
                         onload: resolve,
-                        onerror: reject
+                        onerror: reject,
+                        defer: true
                     }).appendTo('head')
                 })
             }))
-            .then(() => {
-                $('body').html(page)
-                console.log('Added Components to Body')
-            })
+            .then(() => $('body').html(page))
             .catch(error => console.error("Error loading script:", error))
         })
         .catch(error => {
