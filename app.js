@@ -18,6 +18,11 @@ app.use(express.json())
 app.use(cookieParser())
 app.use(useragent.express())
 
+// app.use((req, res, next) => {
+//     console.log(req.url)
+//     next()
+// })
+
 //Import and use Routes
 import authRouter from './routes/auth.js'
 import apiRouter from './routes/api.js'

@@ -26,12 +26,12 @@ export default async (req, res, next) => {
 
         next()
 
-        // console.log(req.url)
+        console.log(req.url)
 
-        if (req.path.includes('/pages/')) {
-            const user = await usersCollection.findOne({ _id: new ObjectId(data.id) }, { projection: { name: 1} })
+        // if (req.path.includes('/pages/')) {
+        //     const user = await usersCollection.findOne({ _id: new ObjectId(data.id) }, { projection: { name: 1} })
 
-            console.log(`${user.name.first} ${user.name.last} Successfully Reached ${req.url}`)
-        }
+        //     console.log(`${user.name.first} ${user.name.last} Successfully Reached ${req.url}`)
+        // }
     })
 }

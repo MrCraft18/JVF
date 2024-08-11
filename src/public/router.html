@@ -40,8 +40,6 @@
             const page = response.data.replaceAll('\n', '')
 
             Promise.all($(page).map((index, element) => {
-                // console.log(element)
-
                 return new Promise((resolve, reject) => {
                     $('<script>', {
                         src: `/components/${device()}/${element.tagName.toLowerCase()}.js`,
@@ -51,7 +49,10 @@
                     }).appendTo('head')
                 })
             }))
-            .then(() => $('body').html(page))
+            .then(() => {
+                $('body').html(page)
+                console.log('Added Components to Body')
+            })
             .catch(error => console.error("Error loading script:", error))
         })
         .catch(error => {

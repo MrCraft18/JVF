@@ -261,6 +261,8 @@ class DealsList extends HTMLElement {
     async connectedCallback() {
         //Get User query params and then set them in sorting-dropdown and filter-options-sidebar.
 
+        console.log('Begin executing connected callback')
+
         const accessToken = await api.accessToken()
 
         const savedQuery = JSON.parse(atob(accessToken.split('.')[1])).user.dealsQuery
