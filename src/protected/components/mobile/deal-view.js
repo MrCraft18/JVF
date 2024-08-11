@@ -17,12 +17,11 @@ class DealView extends HTMLElement {
                 width: 100%;
                 display: flex;
                 flex-direction: column;
-                max-height: calc(100vh - (8vh + 6vh));
+                max-height: calc(100vh - (8vh + 4vh));
                 z-index: 1;
             }
 
             .post-container {
-                background-color: var(--primary-color);
                 height: 70%;
                 padding: 1.5vw;
                 box-sizing: border-box;
@@ -32,7 +31,7 @@ class DealView extends HTMLElement {
                 height: 100%;
                 width: 100%;
                 border-radius: 8px;
-                background-color: var(--secondary-color);
+                background-color: var(--color-1);
                 filter: brightness(100%);
                 display: flex;
                 flex-direction: column;
@@ -42,7 +41,7 @@ class DealView extends HTMLElement {
                 flex-shrink: 0;
                 width: 100%;
                 height: 13%;
-                border-bottom: 2px solid var(--color-4);
+                border-bottom: 2px solid gray;
                 display: grid;
                 grid-template-rows: 1fr 1fr;
                 grid-template-columns: minmax(0, 4fr) minmax(0, 3fr);

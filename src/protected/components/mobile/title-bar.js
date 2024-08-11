@@ -10,7 +10,7 @@ class TitleBar extends HTMLElement {
             :host {
                 position: fixed;
                 top: 0px;
-	            height: 6vh;
+	            height: 4vh;
 	            width: 100%;
                 display: flex;
                 flex-direction: row;
@@ -18,6 +18,7 @@ class TitleBar extends HTMLElement {
                 justify-content: center;
                 padding-left: 3.5vw;
                 padding-right: 3.5vw;
+                padding-bottom: 0.5vh;
                 box-sizing: border-box;
                 background-color: var(--primary-color);
             }
@@ -41,12 +42,12 @@ class TitleBar extends HTMLElement {
                 display: flex;
                 flex-direction: row;
                 justify-content: flex-end;
-                height: 50%;
+                height: 80%;
                 aspect-ratio 1 / 1;
-                cursor: pointer;
             }
 
             #settings svg {
+                cursor: pointer;
                 height: 100%;
                 aspect-ratio: 1 / 1;
             }

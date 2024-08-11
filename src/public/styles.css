@@ -1,16 +1,12 @@
-/* :root {
-	--background-color: rgb(64, 46, 122);
-	--primary-color: rgb(76, 59, 207);
-	--secondary-color: rgb(75, 112, 245);
-	--highlight-color: rgb(61, 194, 236);
-} */
-
 :root {
-	--color-1: #8b8c89;
-	--color-2: #a3cef1;
+	--color-1: #b4b6b1;
+	--color-2: #addaff;
 	--color-3: #6096ba;
 	--color-4: #274c77;
 	--color-5: #e7ecef;
+	--color-6: #a3f1ea;
+
+	--color-4-darker: #1c3b5f;
 
 	--background-color: var(--color-5);
 	--primary-color: var(--color-5);

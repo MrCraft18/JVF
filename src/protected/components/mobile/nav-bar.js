@@ -22,7 +22,8 @@ class NavBar extends HTMLElement {
             }
 
             .nav-button {
-                background-color: var(--highlight-color);
+                background-color: var(--color-5);
+                filter: brightness(88%);
                 height: 75%;
                 aspect-ratio: 1 / 1;
                 display: flex;

@@ -71,56 +71,39 @@ router.get('/cityOptions', async (req, res) => {
     }
 })
 
-router.get('/stateOptions', async (req, res) => {
+router.get('/queryOptions', async (req, res) => {
     try {
-        const states = await Deal.distinct('address.state').then(results => results.filter(result => result != null))
-
-        res.status(200).json(states)
-    } catch (error) {
-        console.error(error)
-        res.sendStatus(500)
-    }
-})
-
-router.get('/authorOptions', async (req, res) => {
-    try {
-        const authors = await Deal.aggregate([
-            {
-                $lookup: {
-                    from: 'posts',
-                    localField: 'associatedPost',
-                    foreignField: '_id',
-                    as: 'postDetails'
+        const options = {
+            labels: await Deal.distinct('label').then(results => results.filter(result => result != null)),
+            states: await Deal.distinct('address.state').then(results => results.filter(result => result != null)),
+            cities: await Deal.distinct('address.city', req.query.blacklistedStates ? { 'address.state': { $nin: req.query.blacklistedStates.split(',') } } : {}).then(results => results.filter(result => result != null)),
+            authors: await Deal.aggregate([
+                {
+                    $lookup: {
+                        from: 'posts',
+                        localField: 'associatedPost',
+                        foreignField: '_id',
+                        as: 'postDetails'
+                    }
+                },
+                {
+                    $unwind: '$postDetails'
+                },
+                {
+                    $group: {
+                        _id: '$postDetails.author'
+                    }
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        author: '$_id'
+                    }
                 }
-            },
-            {
-                $unwind: '$postDetails'
-            },
-            {
-                $group: {
-                    _id: '$postDetails.author'
-                }
-            },
-            {
-                $project: {
-                    _id: 0,
-                    author: '$_id'
-                }
-            }
-        ]).then(docs => docs.map(doc => doc.author))
+            ]).then(docs => docs.map(doc => doc.author))
+        }
 
-        res.status(200).json(authors)
-    } catch (error) {
-        console.error(error)
-        res.sendStatus(500)
-    }
-})
-
-router.get('/labelOptions', async (req, res) => {
-    try {
-        const labels = await Deal.distinct('label').then(results => results.filter(result => result != null))
-
-        res.status(200).json(labels)
+        res.status(200).json(options)
     } catch (error) {
         console.error(error)
         res.sendStatus(500)
@@ -149,20 +132,20 @@ router.post('/deals', async (req, res) => {
             },
             {
                 $match: {
-                    ...(req.body['labels'] && { 'label': { $in: req.body['labels'] != '' ? req.body['labels'].split(',') : [] } }),
-                    ...(req.body['states'] && { 'address.state': { $in: req.body['states'] != '' ? req.body['states'].split(',') : [] } }),
-                    ...(req.body['cities'] && { 'address.city': { $in: req.body['cities'] != '' ? req.body['cities'].split(',') : [] } }),
-                    ...(req.body['blacklistedAuthors'] && { 'post.author.id': { $nin: req.body['blacklistedAuthors'].split(',') } }),
+                    ...(req.body['blacklistedLabels'].length && { 'label': { $nin: req.body['blacklistedLabels'] } }),
+                    ...(req.body['blacklistedStates'].length && { 'address.state': { $nin: req.body['blacklistedStates'] } }),
+                    ...(req.body['blacklistedCities'].length && { 'address.city': { $nin: req.body['blacklistedCities'] } }),
+                    ...(req.body['blacklistedAuthors'].length && { 'post.author.id': { $nin: req.body['blacklistedAuthors'] } }),
                     ...(req.body['daysOld'] && { 'post.createdAt': { $gte: new Date(new Date().setDate(new Date().getDate() - req.body['daysOld'])) } }),
                     ...((req.body['text'] || req.body['dealTypes']) && {
                         $and: [
                             ...(req.body['dealTypes'] ? [{
-                                $or: req.body['dealTypes'].split(',').map(dealType => ({
+                                $or: req.body['dealTypes'].map(dealType => ({
                                     category: dealType,
-                                    ...(req.body[dealType === 'SFH Deal' ? 'neededSFHInfo' : 'neededLandInfo'].split(',').filter(info => info != '').length > 0 && {
+                                    ...(req.body[dealType === 'SFH Deal' ? 'neededSFHInfo' : 'neededLandInfo'].length && {
                                         $and: (() => {
                                             if (dealType === 'SFH Deal') {
-                                                return req.body['neededSFHInfo'].split(',').map(info => {
+                                                return req.body['neededSFHInfo'].map(info => {
                                                     switch (info) {
                                                         case 'street': return { 'address.streetName': { $ne: null } }
                                                         case 'city': return { 'address.city': { $ne: null } }
@@ -173,7 +156,7 @@ router.post('/deals', async (req, res) => {
                                                     }
                                                 })
                                             } else if (dealType === 'Land Deal') {
-                                                return req.body['neededLandInfo'].split(',').map(info => {
+                                                return req.body['neededLandInfo'].map(info => {
                                                     switch (info) {
                                                         case 'street': return { 'address.streetName': { $ne: null } }
                                                         case 'city': return { 'address.city': { $ne: null } }

@@ -49,7 +49,7 @@ class SortingDropdown extends HTMLElement {
 
             .order-button {
                 background-color: inherit;
-                border-left: 1.5px solid black;
+                border-left: 1.5px solid var(--color-4-darker);
                 height: 100%;
                 padding-left: 2vw;
                 padding-right: 3vw;

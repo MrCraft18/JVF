@@ -28,11 +28,11 @@ class FilterOptionsSidebar extends HTMLElement {
             }
 
             .background {
-                position: fixed;
+                position: absolute;
                 top: 0px;
                 left: 0px;
-                height: 100vh;
-                width: 100vw;
+                height: 100%;
+                width: 100%;
                 z-index: 999;
                 background-color: rgba(0, 0, 0, 0.5);
                 opacity: 0;
@@ -42,11 +42,11 @@ class FilterOptionsSidebar extends HTMLElement {
 
             .sidebar-container {
                 z-index: 1000;
-                background-color: var(--color-2);
-                position: fixed;
+                background-color: var(--color-5);
+                position: absolute;
                 top: 0px;
                 left: -80vw;
-                height: 100vh;
+                height: 100%;
                 width: 80vw;
                 transition: left 0.3s ease-in-out;
                 overflow-y: scroll;

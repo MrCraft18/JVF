@@ -21,12 +21,11 @@ DONE | Deal documents will have a boolean verified info status.
 DONE | Add info verify info button to deal page.
 DONE | Verify info will have popup modal with a edit button for each info field for user to edit.
 DONE | Add info verified status to deals list page for each deal.
+DONE | Search deals by author and address
 
 Add total document matches to deals list page.
 
 Make verify info functionality.
-
-Search deals by author and address
 
 Load more deals as user scrolls down.
 
@@ -45,3 +44,5 @@ Add color difference for SFH/Land Deals in deals-list
 Try speeding up deals-list loading by combining filter-options-sidebar requests into one request.
 
 Work on colors.
+
+Fix deal-view on small screen.
