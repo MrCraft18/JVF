@@ -6,8 +6,6 @@ class FilterOptionsSidebar extends HTMLElement {
 
         this.$shadowRoot = $(this.shadowRoot)
 
-        document.addEventListener('all-components-loaded', this.onComponentsLoaded?.bind(this))
-
         const styles = /*css*/`
             input {
 	            padding: 0px;

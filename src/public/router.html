@@ -37,29 +37,21 @@
 
         await axios.get(`/pages${location}/${device()}.html`)
         .then(response => {
-            const page = response.data
-            $('body').html(page)
+            const page = response.data.replaceAll('\n', '')
 
-            const scriptPromises = []
+            Promise.all($(page).map((index, element) => {
+                // console.log(element)
 
-            $('body').children().each((index, element) => {
-                const scriptPromise = new Promise((resolve, reject) => {
-                    const script = document.createElement('script')
-                    script.src = `/components/${device()}/${element.tagName.toLowerCase()}.js`
-                    script.type = 'module'
-                    script.onload = resolve
-                    script.onerror = reject
-                    document.head.appendChild(script)
+                return new Promise((resolve, reject) => {
+                    $('<script>', {
+                        src: `/components/${device()}/${element.tagName.toLowerCase()}.js`,
+                        type: 'module',
+                        onload: resolve,
+                        onerror: reject
+                    }).appendTo('head')
                 })
-
-                scriptPromises.push(scriptPromise)
-            })
-
-            Promise.all(scriptPromises)
-            .then(() => {
-                console.log('Beofre')
-                document.dispatchEvent(new CustomEvent('all-components-loaded'))
-            })
+            }))
+            .then(() => $('body').html(page))
             .catch(error => console.error("Error loading script:", error))
         })
         .catch(error => {

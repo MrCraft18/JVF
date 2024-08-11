@@ -6,8 +6,6 @@ class NavBar extends HTMLElement {
 
         this.$shadowRoot = $(this.shadowRoot)
 
-        document.addEventListener('all-components-loaded', this.onComponentsLoaded?.bind(this))
-
         const styles = /*css*/`
             :host {
                 background-color: var(--primary-color);

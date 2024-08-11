@@ -9,8 +9,6 @@ class DealsList extends HTMLElement {
 
         this.$shadowRoot = $(this.shadowRoot)
 
-        document.addEventListener('all-components-loaded', this.onComponentsLoaded?.bind(this))
-
         const styles = /*css*/`
             :host {
                 position: fixed;
@@ -260,7 +258,7 @@ class DealsList extends HTMLElement {
         `)
     }
 
-    async onComponentsLoaded() {
+    async connectedCallback() {
         //Get User query params and then set them in sorting-dropdown and filter-options-sidebar.
 
         const accessToken = await api.accessToken()
