@@ -310,13 +310,13 @@ class DealsList extends HTMLElement {
             <div id="list-container"></div>
         `)
 
-        this.fetchAndInsertDeals(savedQuery)
+        if (savedQuery) this.fetchAndInsertDeals(savedQuery)
 
         this.$shadowRoot.append(/*html*/`
             <filter-options-sidebar></filter-options-sidebar>
         `)
 
-        const options = await api.get(`/queryOptions${savedQuery.blacklistedStates ? `?blacklistedStates=${savedQuery.blacklistedStates}` : ''}`).then(response => response.data)
+        const options = await api.get(`/queryOptions${savedQuery?.blacklistedStates ? `?blacklistedStates=${savedQuery.blacklistedStates}` : ''}`).then(response => response.data)
 
         this.$shadowRoot.find('filter-options-sidebar')[0].createLayout([
             {
@@ -327,13 +327,13 @@ class DealsList extends HTMLElement {
                         label: 'SFH Deal',
                         key: 'SFH Deal',
                         type: 'checkbox',
-                        value: savedQuery ? savedQuery.dealTypes.includes('SFH Deal') : true
+                        value: savedQuery?.dealTypes ? savedQuery.dealTypes.includes('SFH Deal') : true
                     },
                     {
                         label: 'Land Deal',
                         key: 'Land Deal',
                         type: 'checkbox',
-                        value: savedQuery ? savedQuery.dealTypes.includes('Land Deal') : true
+                        value: savedQuery?.dealTypes ? savedQuery.dealTypes.includes('Land Deal') : true
                     },
                 ]
             },
@@ -344,7 +344,7 @@ class DealsList extends HTMLElement {
                     label: label,
                     key: label,
                     type: 'checkbox',
-                    value: savedQuery ? !savedQuery.blacklistedLabels.includes(label) : true
+                    value: savedQuery?.blacklistedLabels ? !savedQuery.blacklistedLabels.includes(label) : true
                 }))
             },
             {
@@ -360,37 +360,37 @@ class DealsList extends HTMLElement {
                                 label: 'Street',
                                 key: 'street',
                                 type: 'checkbox',
-                                value: savedQuery ? savedQuery.neededSFHInfo.includes('street') : false
+                                value: savedQuery?.neededSFHInfo ? savedQuery.neededSFHInfo.includes('street') : false
                             },
                             {
                                 label: 'City',
                                 key: 'city',
                                 type: 'checkbox',
-                                value: savedQuery ? savedQuery.neededSFHInfo.includes('city') : false
+                                value: savedQuery?.neededSFHInfo ? savedQuery.neededSFHInfo.includes('city') : false
                             },
                             {
                                 label: 'State',
                                 key: 'state',
                                 type: 'checkbox',
-                                value: savedQuery ? savedQuery.neededSFHInfo.includes('state') : false
+                                value: savedQuery?.neededSFHInfo ? savedQuery.neededSFHInfo.includes('state') : false
                             },
                             {
                                 label: 'Zip',
                                 key: 'zip',
                                 type: 'checkbox',
-                                value: savedQuery ? savedQuery.neededSFHInfo.includes('zip') : false
+                                value: savedQuery?.neededSFHInfo ? savedQuery.neededSFHInfo.includes('zip') : false
                             },
                             {
                                 label: 'Price',
                                 key: 'price',
                                 type: 'checkbox',
-                                value: savedQuery ? savedQuery.neededSFHInfo.includes('price') : false
+                                value: savedQuery?.neededSFHInfo ? savedQuery.neededSFHInfo.includes('price') : false
                             },
                             {
                                 label: 'ARV',
                                 key: 'arv',
                                 type: 'checkbox',
-                                value: savedQuery ? savedQuery.neededSFHInfo.includes('arv') : false
+                                value: savedQuery?.neededSFHInfo ? savedQuery.neededSFHInfo.includes('arv') : false
                             }
                         ]
                     },
@@ -403,31 +403,31 @@ class DealsList extends HTMLElement {
                                 label: 'Street',
                                 key: 'street',
                                 type: 'checkbox',
-                                value: savedQuery ? savedQuery.neededLandInfo.includes('street') : false
+                                value: savedQuery?.neededLandInfo ? savedQuery.neededLandInfo.includes('street') : false
                             },
                             {
                                 label: 'City',
                                 key: 'city',
                                 type: 'checkbox',
-                                value: savedQuery ? savedQuery.neededLandInfo.includes('city') : false
+                                value: savedQuery?.neededLandInfo ? savedQuery.neededLandInfo.includes('city') : false
                             },
                             {
                                 label: 'State',
                                 key: 'state',
                                 type: 'checkbox',
-                                value: savedQuery ? savedQuery.neededLandInfo.includes('state') : false
+                                value: savedQuery?.neededLandInfo ? savedQuery.neededLandInfo.includes('state') : false
                             },
                             {
                                 label: 'Zip',
                                 key: 'zip',
                                 type: 'checkbox',
-                                value: savedQuery ? savedQuery.neededLandInfo.includes('zip') : false
+                                value: savedQuery?.neededLandInfo ? savedQuery.neededLandInfo.includes('zip') : false
                             },
                             {
                                 label: 'Price',
                                 key: 'price',
                                 type: 'checkbox',
-                                value: savedQuery ? savedQuery.neededLandInfo.includes('price') : false
+                                value: savedQuery?.neededLandInfo ? savedQuery.neededLandInfo.includes('price') : false
                             }
                         ]
                     }
@@ -441,7 +441,7 @@ class DealsList extends HTMLElement {
                     label: state,
                     key: state,
                     type: 'checkbox',
-                    value: savedQuery ? !savedQuery.blacklistedStates.includes(state) : true
+                    value: savedQuery?.blacklistedStates ? !savedQuery.blacklistedStates.includes(state) : true
                 }))
             },
             {
@@ -452,7 +452,7 @@ class DealsList extends HTMLElement {
                     label: city,
                     key: city,
                     type: 'checkbox',
-                    value: savedQuery ? !savedQuery.blacklistedCities.includes(city) : true
+                    value: savedQuery?.blacklistedCities ? !savedQuery.blacklistedCities.includes(city) : true
                 }))
             },
             {
@@ -463,7 +463,7 @@ class DealsList extends HTMLElement {
                         label: 'Newer Than Days',
                         key: 'daysOld',
                         type: 'number',
-                        value: savedQuery ? savedQuery.daysOld : ''
+                        value: savedQuery?.daysOld || ''
                     }
                 ]
             },
@@ -478,10 +478,12 @@ class DealsList extends HTMLElement {
                         label: author.name,
                         key: author.id,
                         type: 'checkbox',
-                        value: savedQuery ? !savedQuery.blacklistedAuthors.includes(author.id) : true
+                        value: savedQuery?.blacklistedAuthors ? !savedQuery.blacklistedAuthors.includes(author.id) : true
                 }))
             }
         ])
+
+        if (!savedQuery) this.fetchAndInsertDeals(this.getQueryParameters())
 
         this.$shadowRoot.find('#filter-button').on('click', () => {
             this.$shadowRoot.find('filter-options-sidebar')[0].openSidebar()
