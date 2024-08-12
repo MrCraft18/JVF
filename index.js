@@ -33,12 +33,10 @@ const currentTime = new Date().toLocaleTimeString('en-US', {
     timeZone: 'America/Chicago',
     hour: '2-digit',
     minute: '2-digit',
-    hour12: false,
-    weekday: 'short'
+    hour12: false
 })
 
-const weekday = currentTime.split(' ')[0]
-const [hour, minute] = currentTime.split(' ')[1].split(':').map(Number)
+const [hour, minute] = currentTime.split(':').map(Number)
 
 if ((hour > 8 || (hour === 8 && minute >= 30)) && (hour < 16 || (hour === 16 && minute <= 30))) {
     withinOperatingTime = true
