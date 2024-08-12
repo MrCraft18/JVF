@@ -24,13 +24,15 @@
     }
 
     // function urlRoute(event) {
+    //     console.log('URL route called')
+
     //     event = event || window.event
     //     event.preventDefault()
     //     window.history.pushState({}, "", event.target.href)
     //     urlLocationHandler()
     // }
 
-    // async function urlLocationHandler() {
+    async function urlLocationHandler() {
         const location = window.location.pathname === '/' ? '/deals-list' : window.location.pathname
 
         await axios.get(`/pages${location}/${device()}.html`)
@@ -39,6 +41,8 @@
 
             Promise.all($(page).map((index, element) => {
                 return new Promise((resolve, reject) => {
+                    console.log('ayo script check')
+
                     $('<script>', {
                         src: `/components/${device()}/${element.tagName.toLowerCase()}.js`,
                         type: 'module',
@@ -62,12 +66,12 @@
                 `)
             }
         })
-    // }
+    }
 
-    // window.onpopstate = urlLocationHandler
+    window.onpopstate = urlLocationHandler
     // window.route = urlRoute
 
-    // urlLocationHandler()
+    urlLocationHandler()
 </script>
 
 

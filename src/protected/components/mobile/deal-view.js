@@ -169,6 +169,7 @@ class DealView extends HTMLElement {
             .address > span {
                 font-size: 1.1rem;
                 font-weight: 600;
+                white-space: nowrap;
             }
 
             .price-to-arv > span {
