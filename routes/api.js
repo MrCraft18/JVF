@@ -137,10 +137,10 @@ router.post('/deals', async (req, res) => {
                     ...(req.body['blacklistedCities'].length && { 'address.city': { $nin: req.body['blacklistedCities'] } }),
                     ...(req.body['blacklistedAuthors'].length && { 'post.author.id': { $nin: req.body['blacklistedAuthors'] } }),
                     ...(req.body['daysOld'] && { 'post.createdAt': { $gte: new Date(new Date().setDate(new Date().getDate() - req.body['daysOld'])) } }),
-                    ...((req.body['text'] || req.body['dealTypes'].length) && {
+                    ...((req.body['text'] || req.body['dealTypes']) && {
                         $and: [
                             ...(req.body['dealTypes'] ? [{
-                                $or: req.body['dealTypes'].map(dealType => ({
+                                $or: req.body['dealTypes'].length ? req.body['dealTypes'].map(dealType => ({
                                     category: dealType,
                                     ...(req.body[dealType === 'SFH Deal' ? 'neededSFHInfo' : 'neededLandInfo'].length && {
                                         $and: (() => {
@@ -168,7 +168,7 @@ router.post('/deals', async (req, res) => {
                                             }
                                         })()
                                     })
-                                }))
+                                })) : [ { category: { $in: req.body['dealTypes'] } } ]
                             }] : []),
 
                             ...(req.body['text'] ? [{
