@@ -58,6 +58,7 @@ class LoginContainer extends HTMLElement {
                 padding: 12px 10vw;
                 border-radius: 8px;
                 background-color: var(--highlight-color);
+                color: white;
                 font-size: 1.3rem;
                 font-weight: 700;
                 border: 0px;
@@ -66,6 +67,15 @@ class LoginContainer extends HTMLElement {
             #login-button:hover:active {
                 filter: brightness(85%);
                 cursor: pointer;
+            }
+
+            #login-form > span {
+                color: red;
+                font-size: 6vw;
+                height: 6vw;
+                width: 100%;
+                text-align: center;
+                font-weight: 500;
             }
         `
 
@@ -76,6 +86,8 @@ class LoginContainer extends HTMLElement {
         this.$shadowRoot.append(/*html*/`
             <form id="login-form" class="container">
                 <h1>Joint Venture Finder</h1>
+
+                <span></span>
 
                 <div>
                     <input id="first-name" type="text" placeholder="First Name" name="firstName" required>
@@ -103,6 +115,16 @@ class LoginContainer extends HTMLElement {
             })
             .catch(error => {
                 console.error('Auth Login Request Error:', error)
+
+                if (error.response) {
+                    if (error.response.data) return this.$shadowRoot.find('#login-form > span').text(error.response.data)
+
+                    if (error.response.status) return this.$shadowRoot.find('#login-form > span').text(`Error: HTTP Code ${error.response.status}`)
+                }
+
+                if (error.code) return this.$shadowRoot.find('#login-form > span').text(`Error: Axios Code ${error.code}`)
+
+                this.$shadowRoot.find('#login-form > span').text('Unknown Login Error')
             })
         })
     }
