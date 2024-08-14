@@ -52,7 +52,7 @@ class DealsList extends HTMLElement {
                 font-size: 100%;
                 padding: 0.5vw 3vw;
                 color: white;
-                background-color: #4f4f4f;
+                background-color: var(--dark-color-8);
             }
 
             #searchbar:focus {

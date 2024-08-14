@@ -33,7 +33,7 @@ class DealView extends HTMLElement {
                 height: 100%;
                 width: 100%;
                 border-radius: 8px;
-                background-color: #1a1a1a;
+                background-color: var(--dark-color-9);
                 filter: brightness(100%);
                 display: flex;
                 flex-direction: column;
@@ -154,7 +154,7 @@ class DealView extends HTMLElement {
                 justify-content: center;
                 align-items: center;
                 margin: auto 2vw;
-                background-color: #1a1a1a;
+                background-color: var(--dark-color-9);
                 filter: brightness(85%);
                 border-radius: 7px;
                 color: var(--dark-color-2);
