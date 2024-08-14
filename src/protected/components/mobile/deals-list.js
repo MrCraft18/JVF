@@ -164,10 +164,12 @@ class DealsList extends HTMLElement {
 
             .sfh-icon {
                 fill: var(--dark-color-3);
+                border: 2px solid var(--dark-color-3);
             }
 
             .land-icon {
                 fill: var(--dark-color-4);
+                border: 2px solid var(--dark-color-4);
             }
 
             .checkbox-container {
@@ -684,7 +686,9 @@ class DealsList extends HTMLElement {
                         ${deal.category === 'SFH Deal' ? /*html*/`
                             <div class="deal-ratio">
                                 <span class="deal-info-field">Price/ARV: </span>
-                                <span class="deal-info-value ${deal.priceToARV.toFixed(2) > .65 ? 'red' : deal.priceToARV.toFixed(2) > .45 ? 'yellow' : 'green'}">${deal.priceToARV ? `${Math.round(deal.priceToARV * 100)}%` : 'Unknown'}</span>
+                                <span class="deal-info-value ${deal.priceToARV ? (deal.priceToARV.toFixed(2) > 0.65 ? 'red' : deal.priceToARV.toFixed(2) > 0.45 ? 'yellow' : 'green') : ''}">
+                                    ${deal.priceToARV ? `${Math.round(deal.priceToARV * 100)}%` : 'Unknown'}
+                                </span>
                             </div>
 
                             <div class="deal-arv">

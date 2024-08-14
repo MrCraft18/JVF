@@ -141,6 +141,7 @@ router.post('/deals', async (req, res) => {
             },
             {
                 $match: {
+                    ...(req.body['sort'] !== 'Date' && { [req.body['sort'] === 'Asking' ? 'price' : req.body['sort'] === 'ARV' ? 'arv' : 'priceToARV']: { $ne: null } }),
                     ...(req.body['blacklistedLabels'].length && { 'label': { $nin: req.body['blacklistedLabels'] } }),
                     ...(req.body['blacklistedStates'].length && { 'address.state': { $nin: req.body['blacklistedStates'] } }),
                     ...(req.body['blacklistedCities'].length && { 'address.city': { $nin: req.body['blacklistedCities'] } }),
