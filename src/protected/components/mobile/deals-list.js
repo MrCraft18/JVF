@@ -82,7 +82,7 @@ class DealsList extends HTMLElement {
                 flex-direction: row;
                 justify-content: center;
                 align-items: center;
-                color: var(--primary-color);
+                color: white;
             }
 
             #filter-button h4 {
@@ -176,7 +176,7 @@ class DealsList extends HTMLElement {
                 width: 85%;
                 aspect-ratio: 1 / 1;
                 border-radius: 6px;
-                border: 2px solid var(--dark-color-2);
+                border: 2px solid var(--dark-color-8);
                 box-sizing: border-box;
                 overflow: hidden;
                 background-color: inherit;
@@ -185,13 +185,14 @@ class DealsList extends HTMLElement {
             .check {
                 height: 100%;
                 width: 100%;
-                filter: brightness(90%);
+                background-color: var(--dark-color-9);
                 display: flex;
                 justify-content: center;
                 align-items: center;
             }
 
             .check svg {
+                fill: var(--dark-color-2);
                 height: 70%;
                 width: 70%;
             }

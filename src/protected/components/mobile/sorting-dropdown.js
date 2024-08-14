@@ -38,13 +38,13 @@ class SortingDropdown extends HTMLElement {
                 margin: 0px;
                 margin-left: 2vw;
                 text-align: center;
-                color: var(--primary-color);
+                color: white;
             }
 
             .dropdown-button svg {
                 height: 55%;
                 aspect-ratio: 1 / 1;
-                fill: var(--primary-color);
+                fill: white;
             }
 
             .order-button {
@@ -61,7 +61,7 @@ class SortingDropdown extends HTMLElement {
             .order-button svg {
                 height: 50%;
                 aspect-ratio: 1 / 1;
-                fill: var(--primary-color);
+                fill: white;
                 transition: transform 0.3s ease-in-out;
             }
 

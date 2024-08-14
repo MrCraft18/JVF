@@ -50,8 +50,8 @@ class VerifyInfo extends HTMLElement {
             }
 
             .check svg {
-                height: 75%;
-                width: 75%;
+                height: 80%;
+                width: 80%;
             }
 
             .modal-container {

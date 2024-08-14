@@ -258,6 +258,7 @@ router.post('/deals', async (req, res) => {
         // console.dir(pipe, { depth: 10 })
 
         delete req.body.next
+        delete req.body.text
 
         const [deals] = await Promise.all([
             await Deal.aggregate(pipe),

@@ -42,7 +42,7 @@ class FilterOptionsSidebar extends HTMLElement {
 
             .sidebar-container {
                 z-index: 1000;
-                background-color: var(--color-5);
+                background-color: var(--dark-color-1);
                 position: absolute;
                 top: 0px;
                 left: -80vw;
@@ -53,14 +53,14 @@ class FilterOptionsSidebar extends HTMLElement {
             }
 
             .accordion-title {
-                background-color: var(--highlight-color);
+                background-color: var(--color-4);
                 padding: 0px 5vw;
                 height: 7vh;
                 display: flex;
                 flex-direction: row;
                 align-items: center;
                 justify-content: space-between;
-                color: var(--primary-color);
+                color: white;
             }
 
             .accordion-title:hover:active, .accordion-item:hover:active {
@@ -68,8 +68,8 @@ class FilterOptionsSidebar extends HTMLElement {
                 cursor: pointer;
             }
 
-            .accordion-title svg {
-                fill: var(--primary-color);
+            .sidebar-container svg {
+                fill: white;
             }
 
             .accordion-title svg, .sub-accordion-title svg {
@@ -79,7 +79,8 @@ class FilterOptionsSidebar extends HTMLElement {
             }
 
             .accordion-content {
-                background-color: white;
+                background-color: var(--dark-color-1);
+                color: var(--dark-color-2);
                 display: grid;
                 grid-template-rows: 0fr;
                 transition: grid-template-rows 0.3s ease-in-out;
@@ -99,21 +100,19 @@ class FilterOptionsSidebar extends HTMLElement {
                 justify-content: space-between;
                 padding: 0px 8vw;
                 font-size: 1.2rem;
-                border-bottom: 1px solid rgb(200, 200, 200);
             }
 
             .accordion-item:not(:last-child) {
-                border-bottom: 1px solid rgb(200, 200, 200);
+                border-bottom: 1px solid var(--dark-color-9);
             }
 
             .sub-accordion-title {
                 justify-content: space-between;
-                background-color: rgb(225, 225, 225);
+                background-color: var(--dark-color-9);
             }
 
             .search {
                 justify-content: center;
-                background-color: rgb(225, 225, 225);
             }
 
             .search input {
@@ -121,7 +120,9 @@ class FilterOptionsSidebar extends HTMLElement {
                 width: 70%;
                 border-radius: 8px;
                 padding-left: 9px;
-                font-size: 1rem
+                font-size: 1rem;
+                background-color: var(--dark-color-8);
+                color: white;
             }
 
             .content-search-container {
@@ -137,6 +138,8 @@ class FilterOptionsSidebar extends HTMLElement {
                 font-weight: 500;
                 border-radius: 8px;
                 border: 2px solid rgb(150, 150, 150);
+                background-color: var(--dark-color-8);
+                color: var(--dark-color-2);
             }
         `
 
