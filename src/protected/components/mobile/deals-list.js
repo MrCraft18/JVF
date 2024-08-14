@@ -680,20 +680,20 @@ class DealsList extends HTMLElement {
 
                         <div class="deal-asking">
                             <span class="deal-info-field">Asking: </span>
-                            <span class="deal-info-value">${deal.price ? (deal.price >= 1000000 ? `$${(deal.price / 1000000).toFixed(3)}M` : `$${deal.price.toLocaleString('en-US')}`) : 'Unknown'}</span>
+                            <span class="deal-info-value">${deal.price ? (deal.price >= 1000000 ? `$${(deal.price / 1000000).toFixed(3)}M` : `$${deal.price.toLocaleString('en-US')}`) : '?'}</span>
                         </div>
 
                         ${deal.category === 'SFH Deal' ? /*html*/`
                             <div class="deal-ratio">
                                 <span class="deal-info-field">Price/ARV: </span>
                                 <span class="deal-info-value ${deal.priceToARV ? (deal.priceToARV.toFixed(2) > 0.65 ? 'red' : deal.priceToARV.toFixed(2) > 0.45 ? 'yellow' : 'green') : ''}">
-                                    ${deal.priceToARV ? `${Math.round(deal.priceToARV * 100)}%` : 'Unknown'}
+                                    ${deal.priceToARV ? `${Math.round(deal.priceToARV * 100)}%` : '?'}
                                 </span>
                             </div>
 
                             <div class="deal-arv">
                                 <span class="deal-info-field">Est. ARV: </span>
-                                <span class="deal-info-value">${deal.arv ? (deal.arv >= 1000000 ? `$${(deal.arv / 1000000).toFixed(3)}M` : `$${deal.arv.toLocaleString('en-US')}`) : 'Unknown'}</span>
+                                <span class="deal-info-value">${deal.arv ? (deal.arv >= 1000000 ? `$${(deal.arv / 1000000).toFixed(3)}M` : `$${deal.arv.toLocaleString('en-US')}`) : '?'}</span>
                             </div>
                         ` : ''}
 
