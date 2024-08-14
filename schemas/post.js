@@ -193,7 +193,7 @@ postSchema.methods.getDeal = async function() {
         },
         price: extractedInfo.price,
         arv: predictionResult.category != 'Land Deal' ? extractedInfo.arv : undefined,
-        priceToARV: extractedInfo.price && extractedInfo.arv ? extractedInfo.price / extractedInfo.arv : undefined,
+        priceToARV: extractedInfo.price && extractedInfo.arv && predictionResult.category != 'Land Deal' ? extractedInfo.price / extractedInfo.arv : undefined,
         associatedPost: this._id
     })
 

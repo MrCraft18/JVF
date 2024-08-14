@@ -39,11 +39,20 @@ When nav-bar and title-bar are used for navigation in the app use component swap
 
 DONE | Convert /deals endpoint to accept blacklisted options for dynamically loaded options. And edit front-end accordingly
 
-Add color difference for SFH/Land Deals in deals-list
-
 DONE | Try speeding up deals-list loading by combining filter-options-sidebar requests into one request.
 
 Work on colors.
+    Background to black/grey: #212121
+    Text and icon whiteish: #d7d7d7
+    SFH icon: #1b4576
+    Land Icon: #224c34
+    Unchecked Label: #1c3b5f
+    Checked: #224c34
+
+Arv percentage colors:
+    under 45% green
+    45-65% yellow
+    above 65% red
 
 DONE | Fix deal-view on small screen.
 

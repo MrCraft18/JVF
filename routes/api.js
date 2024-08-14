@@ -121,8 +121,6 @@ router.get('/queryOptions', async (req, res) => {
 
 router.post('/deals', async (req, res) => {
     try {
-        // console.log(req.body)
-
         if (!req.body.limit) return res.status(400).json({ error: "Missing 'limit' parameter." })
 
         if (req.body.limit > 50) return res.status(400).json({ error: 'Limit must be less than 50.' })
@@ -237,7 +235,7 @@ router.post('/deals', async (req, res) => {
                 })()
             },
             {
-                $limit: parseInt(req.body['limit'])
+                $limit: parseInt(req.body['limit']) + 1
             },
             {
                 $project: {
@@ -265,18 +263,24 @@ router.post('/deals', async (req, res) => {
             await usersCollection.updateOne({ _id: new ObjectId(req.user._id) }, { $set: { dealsQuery: req.body } })
         ])
 
-        const lastDeal = deals.at(-1)
+        const next = (() => {
+            if (deals.length !== parseInt(req.body['limit']) + 1) return null
 
-        const lastDealSortValue = (() => {
-            switch (req.body['sort'].toLowerCase()) {
-                case 'date': return lastDeal?.post?.createdAt
-                case 'asking': return lastDeal?.price
-                case 'arv': return lastDeal?.arv
-                case 'price/arv': return lastDeal?.priceToARV
-            }
+            deals.pop()
+
+            const lastDeal = deals.at(-1)
+
+            const lastDealSortValue = (() => {
+                switch (req.body['sort'].toLowerCase()) {
+                    case 'date': return lastDeal?.post?.createdAt
+                    case 'asking': return lastDeal?.price
+                    case 'arv': return lastDeal?.arv
+                    case 'price/arv': return lastDeal?.priceToARV
+                }
+            })()
+
+            return `${lastDealSortValue}_${lastDeal._id}`
         })()
-
-        const next = lastDeal ? `${lastDealSortValue}_${lastDeal._id}` : null
 
         res.status(200).json({deals, next})
     } catch (error) {

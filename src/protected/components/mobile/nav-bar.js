@@ -10,7 +10,7 @@ class NavBar extends HTMLElement {
 
         const styles = /*css*/`
             :host {
-                background-color: var(--primary-color);
+                background-color: var(--dark-color-1);
                 position: fixed;
                 bottom: 0px;
                 height: 8vh;
@@ -24,7 +24,7 @@ class NavBar extends HTMLElement {
             }
 
             .nav-button {
-                background-color: var(--color-5);
+                background-color: var(--dark-color-1);
                 filter: brightness(88%);
                 height: 75%;
                 aspect-ratio: 1 / 1;
@@ -38,7 +38,7 @@ class NavBar extends HTMLElement {
                 height: 80%;
                 width: 80%;
                 opacity: 1.0;
-                fill: black;
+                fill: white;
             }
         `
 

@@ -20,7 +20,8 @@ class TitleBar extends HTMLElement {
                 padding-right: 3.5vw;
                 padding-bottom: 0.5vh;
                 box-sizing: border-box;
-                background-color: var(--primary-color);
+                background-color: var(--dark-color-1);
+                color: var(--dark-color-2);
             }
 
             :host > * {
@@ -50,6 +51,7 @@ class TitleBar extends HTMLElement {
                 cursor: pointer;
                 height: 100%;
                 aspect-ratio: 1 / 1;
+                fill: var(--dark-color-2);
             }
         `
 

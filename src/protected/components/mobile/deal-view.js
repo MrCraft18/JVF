@@ -33,17 +33,18 @@ class DealView extends HTMLElement {
                 height: 100%;
                 width: 100%;
                 border-radius: 8px;
-                background-color: var(--color-7);
+                background-color: #1a1a1a;
                 filter: brightness(100%);
                 display: flex;
                 flex-direction: column;
+                color: var(--dark-color-2);
             }
 
             .post-header {
                 flex-shrink: 0;
                 width: 100%;
                 height: clamp(60px, 13%, 1000000000px);
-                border-bottom: 2px solid grey;
+                border-bottom: 2px solid var(--dark-color-1);
                 display: grid;
                 grid-template-rows: 1fr 1fr;
                 grid-template-columns: minmax(0, 4fr) minmax(0, 3fr);
@@ -75,14 +76,13 @@ class DealView extends HTMLElement {
                 grid-area: 1 / 2 / 3 / 3;
                 align-self: center;
                 justify-self: center;
-                background-color: rgb(8, 102, 255);
+                background-color: var(--color-4);
                 padding: 1.2vh;
                 border-radius: 8px;
-                border: 1px solid rgb(5, 67, 168);
             }
 
             .facebook-button a {
-                color: black;
+                color: var(--dark-color-2);
                 text-decoration: none;
                 font-weight: 500;
             }
@@ -121,7 +121,7 @@ class DealView extends HTMLElement {
                 display: grid;
                 grid-template-rows: 2fr 2fr 2fr 2fr 4fr;
                 grid-template-columns: 2.7fr 2.7fr 1fr;
-                background-color: var(--primary-color);
+                background-color: var(--dark-color-1);
             }
 
             .address {
@@ -154,9 +154,10 @@ class DealView extends HTMLElement {
                 justify-content: center;
                 align-items: center;
                 margin: auto 2vw;
-                background-color: var(--primary-color);
+                background-color: #1a1a1a;
                 filter: brightness(85%);
                 border-radius: 7px;
+                color: var(--dark-color-2);
             }
 
             .address > span {
