@@ -104,8 +104,6 @@ async function scrapePostsLoop() {
             console.log(error)
         } finally {
             if (checkQueue.length === 0) checkQueue = shuffleArray([...groups])
-
-            await new Promise(resolve => setTimeout(resolve, 5000))
         }
     }
 

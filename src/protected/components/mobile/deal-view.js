@@ -21,13 +21,6 @@ class DealView extends HTMLElement {
                 z-index: 1;
             }
 
-            /* .lol {
-                display: flex;
-                flex-direction: column;
-                flex-grow: 1;
-                overflow: hidden;
-            } */
-
             .post-container {
                 /* height: 65%; */
                 flex-grow: 1;

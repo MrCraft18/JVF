@@ -27,7 +27,7 @@ Add total document matches to deals list page.
 
 Make verify info functionality.
 
-Load more deals as user scrolls down.
+DONE | Load more deals as user scrolls down.
 
 Add color coding to labels.
 
@@ -48,3 +48,9 @@ Work on colors.
 DONE | Fix deal-view on small screen.
 
 Fix user query not being properly saved/managed probably due to the SPA component swapping functionality
+
+FOCUS ON BRANCHING INTO ORLANDO
+
+Emails need to be associated with cities from the deal they were posted with. And if they dont have a deal then they are associated with the state group.
+
+Add Florida Groups to group lists. Organge County, Orlando.
