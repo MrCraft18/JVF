@@ -45,4 +45,6 @@ DONE | Try speeding up deals-list loading by combining filter-options-sidebar re
 
 Work on colors.
 
-Fix deal-view on small screen.
+DONE | Fix deal-view on small screen.
+
+Fix user query not being properly saved/managed probably due to the SPA component swapping functionality

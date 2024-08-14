@@ -283,9 +283,9 @@ class DealsList extends HTMLElement {
     async connectedCallback() {
         //Get User query params and then set them in sorting-dropdown and filter-options-sidebar.
 
-        const accessToken = await api.accessToken()
+        const savedQuery = await api.get('/user').then(response => response.data.dealsQuery)
 
-        const savedQuery = JSON.parse(atob(accessToken.split('.')[1])).user.dealsQuery
+        console.log(savedQuery)
 
         this.$shadowRoot.append(/*html*/`
             <div id="top-bar">
@@ -310,7 +310,10 @@ class DealsList extends HTMLElement {
             <div id="list-container"></div>
         `)
 
-        if (savedQuery) this.fetchAndInsertDeals(savedQuery)
+        if (savedQuery) {
+            console.log('Saved Query does exist')
+            this.fetchAndInsertDeals(savedQuery)
+        }
 
         this.$shadowRoot.append(/*html*/`
             <filter-options-sidebar></filter-options-sidebar>
@@ -483,7 +486,10 @@ class DealsList extends HTMLElement {
             }
         ])
 
-        if (!savedQuery) this.fetchAndInsertDeals(this.getQueryParameters())
+        if (!savedQuery) {
+            console.log('Saved Query DID NOT exist')
+            this.fetchAndInsertDeals(this.getQueryParameters())
+        }
 
         this.$shadowRoot.find('#filter-button').on('click', () => {
             this.$shadowRoot.find('filter-options-sidebar')[0].openSidebar()
@@ -542,6 +548,19 @@ class DealsList extends HTMLElement {
                 this.fetchAndInsertDeals(this.getQueryParameters())
             }, 300)
         })
+
+        this.$shadowRoot.find('#list-container').on('scroll', event => {
+            const listContainerDiv = event.currentTarget
+
+            const scrollPos = listContainerDiv.scrollTop + listContainerDiv.clientHeight
+            const threshold = 2000
+
+            //And not already loading new deals
+            if (listContainerDiv.scrollHeight - scrollPos <= threshold && !this.loadingDeals) {
+                console.log('Hello!')
+                this.fetchAndInsertDeals(this.getQueryParameters())
+            }
+        })
     }
 
     getQueryParameters() {
@@ -583,7 +602,13 @@ class DealsList extends HTMLElement {
     }
 
     async fetchAndInsertDeals(body) {
-        const deals = await api.post('/deals', body).then(response => response.data)
+        this.loadingDeals = true
+
+        if (this.next) body.next = this.next
+
+        const { deals, next } = await api.post('/deals', body).then(response => response.data)
+
+        this.next = next
 
         console.log(deals)
 
@@ -671,6 +696,8 @@ class DealsList extends HTMLElement {
                 </div>
             `)
         }
+
+        this.loadingDeals = false
     }
 }
 

@@ -40,6 +40,8 @@ router.post('/createUser', async (req, res) => {
 
 router.get('/allUsers', async (req, res) => {
     try {
+        if (req.user.role != 'admin') return res.sendStatus(401)
+
         const users = await usersCollection.find({}, { projection: { password: 0 } }).toArray()
 
         res.status(200).json(users)
@@ -51,7 +53,7 @@ router.get('/allUsers', async (req, res) => {
 
 router.get('/user', async (req, res) => {
     try {
-        const user = await usersCollection.findOne({ _id: new ObjectId(req.query.id) }, { projection: { password: 0 } })
+        const user = await usersCollection.findOne({ _id: new ObjectId(req.user._id) }, { projection: { password: 0 } })
 
         res.status(200).json(user)
     } catch (error) {
@@ -73,25 +75,25 @@ router.get('/cityOptions', async (req, res) => {
 
 router.get('/queryOptions', async (req, res) => {
     try {
-        const options = {
-            labels: await Deal.distinct('label').then(results => results.filter(result => result != null)),
-            states: await Deal.distinct('address.state').then(results => results.filter(result => result != null)),
-            cities: await Deal.distinct('address.city', req.query.blacklistedStates ? { 'address.state': { $nin: req.query.blacklistedStates.split(',') } } : {}).then(results => results.filter(result => result != null)),
-            authors: await Deal.aggregate([
+        const [labels, states, cities, authors] = await Promise.all([
+            await Deal.distinct('label').then(results => results.filter(result => result != null)),
+            await Deal.distinct('address.state').then(results => results.filter(result => result != null)),
+            await Deal.distinct('address.city', req.query.blacklistedStates ? { 'address.state': { $nin: req.query.blacklistedStates.split(',') } } : {}).then(results => results.filter(result => result != null)),
+            await Deal.aggregate([
                 {
                     $lookup: {
                         from: 'posts',
                         localField: 'associatedPost',
                         foreignField: '_id',
-                        as: 'postDetails'
+                        as: 'post'
                     }
                 },
                 {
-                    $unwind: '$postDetails'
+                    $unwind: '$post'
                 },
                 {
                     $group: {
-                        _id: '$postDetails.author'
+                        _id: '$post.author'
                     }
                 },
                 {
@@ -101,6 +103,13 @@ router.get('/queryOptions', async (req, res) => {
                     }
                 }
             ]).then(docs => docs.map(doc => doc.author))
+        ])
+
+        const options = {
+            labels,
+            states,
+            cities,
+            authors,
         }
 
         res.status(200).json(options)
@@ -117,6 +126,8 @@ router.post('/deals', async (req, res) => {
         if (!req.body.limit) return res.status(400).json({ error: "Missing 'limit' parameter." })
 
         if (req.body.limit > 50) return res.status(400).json({ error: 'Limit must be less than 50.' })
+
+        if (!req.body['sort']) return res.status(400).json({ error: "Missing 'sort' parameter." })
 
         const pipe = [
             {
@@ -183,22 +194,45 @@ router.post('/deals', async (req, res) => {
                             }] : [])
                         ]
                     }),
+
+                    ...(req.body['next'] && { $or: (() => {
+                        const sortingDirection = req.body.order?.toLocaleLowerCase() === 'descending' ? '$lt' : '$gt'
+
+                        const sortingField = (() => {
+                            switch (req.body['sort'].toLowerCase()) {
+                                case 'date': return 'post.createdAt'
+                                case 'asking': return 'price'
+                                case 'arv': return 'arv'
+                                case 'price/arv': return 'priceToARV'
+                            }
+                        })()
+
+                        let [nextSortedValue, nextID] = req.body['next'].split('_')
+
+                        if (req.body['sort'].toLowerCase() === 'date') nextSortedValue = new Date(nextSortedValue)
+                        if (req.body['sort'].toLowerCase() === 'price') nextSortedValue = parseInt(nextSortedValue)
+                        if (req.body['sort'].toLowerCase() === 'arv') nextSortedValue = parseInt(nextSortedValue)
+                        if (req.body['sort'].toLowerCase() === 'price/arv') nextSortedValue = parseFloat(nextSortedValue)
+
+                        return [
+                            { [sortingField]: { [sortingDirection]: nextSortedValue } },
+                            {
+                                [sortingField]: { [sortingDirection]: nextSortedValue },
+                                _id: { [sortingDirection]: new ObjectId(nextID) }
+                            }
+                        ]
+                    })() })
                 }
             },
             {
                 $sort: (() => {
-                    switch (req.body['sort']?.toLowerCase()) {
-                        case 'date':
-                            return { 'post.createdAt': req.body.order?.toLocaleLowerCase() === 'descending' ? -1 : 1 }
+                    const sortOrder = req.body.order?.toLocaleLowerCase() === 'descending' ? -1 : 1
 
-                        case 'asking':
-                            return { 'price': req.body.order?.toLocaleLowerCase() === 'descending' ? -1 : 1 }
-
-                        case 'arv':
-                            return { 'arv': req.body.order?.toLocaleLowerCase() === 'descending' ? -1 : 1 }
-
-                        case 'price/arv':
-                            return { 'priceToARV': req.body.order?.toLocaleLowerCase() === 'descending' ? -1 : 1 }
+                    switch (req.body['sort'].toLowerCase()) {
+                        case 'date': return { 'post.createdAt': sortOrder, _id: sortOrder }
+                        case 'asking': return { 'price': sortOrder, _id: sortOrder }
+                        case 'arv': return { 'arv': sortOrder, _id: sortOrder }
+                        case 'price/arv': return { 'priceToARV': sortOrder, _id: sortOrder }
                     }
                 })()
             },
@@ -224,11 +258,27 @@ router.post('/deals', async (req, res) => {
 
         // console.dir(pipe, { depth: 10 })
 
-        const deals = await Deal.aggregate(pipe)
+        delete req.body.next
 
-        await usersCollection.updateOne({ _id: new ObjectId(req.user._id) }, { $set: { dealsQuery: req.body } })
+        const [deals] = await Promise.all([
+            await Deal.aggregate(pipe),
+            await usersCollection.updateOne({ _id: new ObjectId(req.user._id) }, { $set: { dealsQuery: req.body } })
+        ])
 
-        res.status(200).json(deals)
+        const lastDeal = deals.at(-1)
+
+        const lastDealSortValue = (() => {
+            switch (req.body['sort'].toLowerCase()) {
+                case 'date': return lastDeal?.post?.createdAt
+                case 'asking': return lastDeal?.price
+                case 'arv': return lastDeal?.arv
+                case 'price/arv': return lastDeal?.priceToARV
+            }
+        })()
+
+        const next = lastDeal ? `${lastDealSortValue}_${lastDeal._id}` : null
+
+        res.status(200).json({deals, next})
     } catch (error) {
         console.error(error)
         res.sendStatus(500)

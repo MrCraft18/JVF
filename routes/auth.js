@@ -41,7 +41,9 @@ router.post('/login', async (req, res) => {
 
 router.post('/accessToken', authenticateRefreshToken, async (req, res) => {
     try {
-        const user = await usersCollection.findOne({ _id: new ObjectId(req.userID) }, { projection: { password: 0 } })
+        const user = await usersCollection.findOne({ _id: new ObjectId(req.userID) }, { projection: { name: 1, role: 1 } })
+
+        console.log(user)
 
         const newRefreshToken = jwt.sign({ id: req.userID, ip: req.ip }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '3d' })
         const accessToken = jwt.sign({ user, ip: req.ip, parentToken: newRefreshToken }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '5m' })
