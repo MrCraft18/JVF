@@ -499,6 +499,7 @@ class DealsList extends HTMLElement {
 
         this.$shadowRoot.find('filter-options-sidebar').on('sidebarClose', () => {
             if (sidebarOptionChanged) {
+                this.next = null
                 this.$shadowRoot.find('#list-container').html('')
                 this.fetchAndInsertDeals(this.getQueryParameters())
             }
@@ -528,11 +529,13 @@ class DealsList extends HTMLElement {
         })
 
         this.$shadowRoot.find('sorting-dropdown').on('orderToggle', () => {
+            this.next = null
             this.$shadowRoot.find('#list-container').html('')
             this.fetchAndInsertDeals(this.getQueryParameters())
         })
 
         this.$shadowRoot.find('sorting-dropdown').on('optionChange', () => {
+            this.next = null
             this.$shadowRoot.find('#list-container').html('')
             this.fetchAndInsertDeals(this.getQueryParameters())
         })
@@ -544,6 +547,7 @@ class DealsList extends HTMLElement {
             }
 
             searchTimer = setTimeout(() => {
+                this.next = null
                 this.$shadowRoot.find('#list-container').html('')
                 this.fetchAndInsertDeals(this.getQueryParameters())
             }, 300)
@@ -557,7 +561,6 @@ class DealsList extends HTMLElement {
 
             //And not already loading new deals
             if (listContainerDiv.scrollHeight - scrollPos <= threshold && !this.loadingDeals) {
-                console.log('Hello!')
                 this.fetchAndInsertDeals(this.getQueryParameters())
             }
         })
