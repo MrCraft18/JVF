@@ -58,6 +58,8 @@ DONE | Fix deal-view on small screen.
 
 Fix user query not being properly saved/managed probably due to the SPA component swapping functionality
 
+Back button in deal-view that saves your scroll position in your previous deals-list session
+
 FOCUS ON BRANCHING INTO ORLANDO
 
 Emails need to be associated with cities from the deal they were posted with. And if they dont have a deal then they are associated with the state group.

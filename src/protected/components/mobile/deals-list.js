@@ -129,6 +129,7 @@ class DealsList extends HTMLElement {
             }
 
             .deal-list-item > div {
+                box-sizing: border-box;
                 overflow: hidden;
             }
 
