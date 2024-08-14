@@ -641,8 +641,6 @@ class DealsList extends HTMLElement {
 
         const { deals, next } = await api.post('/deals', body).then(response => response.data)
 
-        console.log(next)
-
         this.next = next
 
         console.log(deals)

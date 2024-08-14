@@ -6,21 +6,26 @@ const databaseClient = new MongoClient(process.env.MONGODB_URI)
 const refreshTokensCollection = databaseClient.db('JVF').collection('refreshTokens')
 
 export default (req, res, next) => {
-    const authHeader = req.headers['authorization']
-    const authToken = authHeader && authHeader.split(' ')[1]
+    try {
+        const authHeader = req.headers['authorization']
+        const authToken = authHeader && authHeader.split(' ')[1]
 
-    if (!authToken) return res.sendStatus(401)
+        if (!authToken) return res.sendStatus(401)
 
-    jwt.verify(authToken, process.env.ACCESS_TOKEN_SECRET, async (error, data) => {
-        const storedParentToken = await refreshTokensCollection.findOne({ token: data.parentToken })
+        jwt.verify(authToken, process.env.ACCESS_TOKEN_SECRET, async (error, data) => {
+            const storedParentToken = await refreshTokensCollection.findOne({ token: data.parentToken })
 
-        if (error) return res.sendStatus(401)
+            if (error) return res.sendStatus(401)
 
-        if (data.ip !== req.ip || !storedParentToken) {
-            return res.sendStatus(403)
-        }
+            if (data.ip !== req.ip || !storedParentToken) {
+                return res.sendStatus(403)
+            }
 
-        req.user = data.user
-        next()
-    })
+            req.user = data.user
+            next()
+        })
+    } catch (error) {
+        console.error(error)
+        res.sendStatus(500)
+    }
 }

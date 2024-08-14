@@ -6,7 +6,7 @@ DONE (I guess?) | Deal documents should contain the metadata for arv percentage,
 DONE | Add GPT checker to post to see if it has more than 1 parcel/deal (actually really just more than 1 DEAL) and ignore it if it does for now and Ill implement functionality for that in the future.
 DONE | Functionality to handle multiple parcels/deals in a post
 DONE | Subsidize chat gpt prompts for extracting data
-Check GPT extracted data for valid city and valid state. And maybe RegEx tests for ARV
+Check GPT extracted data for valid city and valid state.
 DONE | Set up delay for querying emails in post comments after time has passed so people have time to comment emails.
 DONE | Cron Job every day that gets post comments for posts that are 3 days old
 DONE | Need sorting value for deal created age (3 days, 1 week, 1 month, etc)
@@ -22,46 +22,28 @@ DONE | Add info verify info button to deal page.
 DONE | Verify info will have popup modal with a edit button for each info field for user to edit.
 DONE | Add info verified status to deals list page for each deal.
 DONE | Search deals by author and address
+DONE | Fix deal-view on small screen.
+DONE | Fix user query not being properly saved/managed probably due to the SPA component swapping functionality
+DONE | Load more deals as user scrolls down.
+DONE | Convert /deals endpoint to accept blacklisted options for dynamically loaded options. And edit front-end accordingly
+DONE | Try speeding up deals-list loading by combining filter-options-sidebar requests into one request.
+DONE | Add color coding to labels.
+DONE | Work on colors.
+
+LOW PRIORITY | Make deals list live update when new deals are found | Load images in deal-view
 
 Add total document matches to deals list page.
 
 Make verify info functionality.
 
-DONE | Load more deals as user scrolls down.
-
-Add color coding to labels.
-
-Make deals list live update when new deals are found | LOW PRIORITY
-
 Error popups for api calls.
 
-When nav-bar and title-bar are used for navigation in the app use component swapping instead of actual browser navigation.
+Better App Navigation:
+    Back button in deal-view that saves your scroll position in your previous deals-list session
+    When nav-bar and title-bar are used for navigation in the app use component swapping instead of actual browser navigation.
 
-DONE | Convert /deals endpoint to accept blacklisted options for dynamically loaded options. And edit front-end accordingly
 
-DONE | Try speeding up deals-list loading by combining filter-options-sidebar requests into one request.
-
-Work on colors.
-    Background to black/grey: #212121
-    Text and icon whiteish: #d7d7d7
-    SFH icon: #1b4576
-    Land Icon: #224c34
-    Unchecked Label: #1c3b5f
-    Checked: #224c34
-
-Arv percentage colors:
-    under 45% green
-    45-65% yellow
-    above 65% red
-
-DONE | Fix deal-view on small screen.
-
-Fix user query not being properly saved/managed probably due to the SPA component swapping functionality
-
-Back button in deal-view that saves your scroll position in your previous deals-list session
 
 FOCUS ON BRANCHING INTO ORLANDO
-
-Emails need to be associated with cities from the deal they were posted with. And if they dont have a deal then they are associated with the state group.
-
-Add Florida Groups to group lists. Organge County, Orlando.
+    Emails need to be associated with cities from the deal they were posted with. And if they dont have a deal then they are associated with the state group.
+    Add Florida Groups to group lists. Organge County, Orlando.

@@ -7,33 +7,38 @@ const refreshTokensCollection = databaseClient.db('JVF').collection('refreshToke
 const usersCollection = databaseClient.db('JVF').collection('users')
 
 export default async (req, res, next) => {
-	// console.log(req.url)
+    try {
+        // console.log(req.url)
 
-    if (!req.cookies.refreshToken) return res.sendStatus(401)
+        if (!req.cookies.refreshToken) return res.sendStatus(401)
 
-    const storedRefreshToken = await refreshTokensCollection.findOne({ token: req.cookies.refreshToken })
+        const storedRefreshToken = await refreshTokensCollection.findOne({ token: req.cookies.refreshToken })
 
-    if (!storedRefreshToken) {
-        console.log('Refresh Token doesnt exist sent 401')
-        return res.sendStatus(401)
-    }
-
-    jwt.verify(req.cookies.refreshToken, process.env.REFRESH_TOKEN_SECRET, async (error, data) => {
-        if (error) {
-            console.log(error)
+        if (!storedRefreshToken) {
+            console.log('Refresh Token doesnt exist sent 401')
             return res.sendStatus(401)
         }
 
-        if (data.ip !== req.ip) return res.sendStatus(403)
+        jwt.verify(req.cookies.refreshToken, process.env.REFRESH_TOKEN_SECRET, async (error, data) => {
+            if (error) {
+                console.log(error)
+                return res.sendStatus(401)
+            }
 
-        req.userID = data.id
+            if (data.ip !== req.ip) return res.sendStatus(403)
 
-        next()
+            req.userID = data.id
 
-        // if (req.path.includes('/pages/')) {
-            // const user = await usersCollection.findOne({ _id: new ObjectId(data.id) }, { projection: { name: 1} })
-//
-            // console.log(`${user.name.first} ${user.name.last} Successfully Reached ${req.url}`)
-        // }
-    })
+            next()
+
+            // if (req.path.includes('/pages/')) {
+            //     const user = await usersCollection.findOne({ _id: new ObjectId(data.id) }, { projection: { name: 1} })
+
+            //     console.log(`${user.name.first} ${user.name.last} Successfully Reached ${req.url}`)
+            // }
+        })
+    } catch (error) {
+        console.error(error)
+        res.sendStatus(500)
+    }
 }
