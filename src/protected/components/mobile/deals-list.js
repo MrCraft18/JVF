@@ -65,7 +65,7 @@ class DealsList extends HTMLElement {
                 display: flex;
                 flex-direction: row;
                 justify-content: space-around;
-                --option-button-background-color: var(--highlight-color);
+                --option-button-background-color: var(--color-4);
                 --option-button-border-radius: 8px;
                 --option-button-height: 100%;
                 --option-button-padding: 3vw;

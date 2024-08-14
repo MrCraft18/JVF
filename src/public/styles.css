@@ -19,13 +19,6 @@
 	--dark-color-6: #E5B114;
 	--dark-color-8: #4f4f4f;
 	--dark-color-9: #1a1a1a;
-
-
-
-	--background-color: var(--color-5);
-	--primary-color: var(--color-5);
-	--secondary-color: var(--color-3);
-	--highlight-color: var(--color-4);
 }
 
 html,

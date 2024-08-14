@@ -30,7 +30,7 @@ DONE | Try speeding up deals-list loading by combining filter-options-sidebar re
 DONE | Add color coding to labels.
 DONE | Work on colors.
 
-LOW PRIORITY | Make deals list live update when new deals are found | Load images in deal-view
+LOW PRIORITY | Make deals list live update when new deals are found | Load images in deal-view (GridFS)
 
 Add total document matches to deals list page.
 

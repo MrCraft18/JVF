@@ -14,7 +14,7 @@ class LabelDropdown extends HTMLElement {
             }
 
             .dropdown-button {
-                background-color: var(--highlight-color);
+                background-color: var(--color-4);
                 display: flex;
                 flex-direction: row;
                 align-items: center;
@@ -26,14 +26,14 @@ class LabelDropdown extends HTMLElement {
             .dropdown-button h4 {
                 text-align: center;
                 margin: 0px;
-                color: var(--primary-color);
+                color: white;
             }
 
             .dropdown-button svg {
                 margin-left: 2vw;
                 height: 1em;
                 aspect-ratio: 1 / 1;
-                fill: var(--primary-color);
+                fill: white;
             }
 
             .dropdown-options {

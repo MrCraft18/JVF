@@ -16,7 +16,7 @@ class VerifyInfo extends HTMLElement {
             }
 
             .button {
-                background-color: var(--highlight-color);
+                background-color: var(--color-4);
                 height: 100%;
                 display: flex;
                 flex-direction: row;
@@ -27,7 +27,7 @@ class VerifyInfo extends HTMLElement {
 
             .button h4 {
                 white-space: nowrap;
-                color: var(--primary-color);
+                color: white;
             }
 
             .checkbox-container {
@@ -35,7 +35,7 @@ class VerifyInfo extends HTMLElement {
                 height: 1.6em;
                 width: 1.6em;
                 border-radius: 4px;
-                border: 2px solid var(--primary-color);
+                border: 2px solid white;
                 box-sizing: border-box;
                 overflow: hidden;
             }
@@ -43,7 +43,7 @@ class VerifyInfo extends HTMLElement {
             .check {
                 height: 100%;
                 width: 100%;
-                background-color: var(--primary-color);
+                background-color: white;
                 display: flex;
                 justify-content: center;
                 align-items: center;
@@ -69,7 +69,7 @@ class VerifyInfo extends HTMLElement {
             }
 
             .modal {
-                background-color: white;
+                background-color: var(--dark-color-1);
                 height: 60vh;
                 width: 70vw;
                 border-radius: 8px;
@@ -92,6 +92,7 @@ class VerifyInfo extends HTMLElement {
             .field-name {
                 align-self: center;
                 font-size: 1.1rem;
+                color: var(--dark-color-2)
             }
 
             .field-value {
@@ -101,6 +102,9 @@ class VerifyInfo extends HTMLElement {
                 height: 60%;
                 box-sizing: border-box;
                 font-size: 1rem;
+                background-color: var(--dark-color-8);
+                color: white;
+                border: none;
             }
 
             .dropdown-container {
@@ -118,7 +122,7 @@ class VerifyInfo extends HTMLElement {
                 display: flex;
                 flex-direction: row;
                 align-items: center;
-                background-color: var(--highlight-color);
+                background-color: var(--color-4);
                 border-radius: 6px;
                 padding: 0px 3vw;
                 box-sizing: border-box;
@@ -127,12 +131,14 @@ class VerifyInfo extends HTMLElement {
             .dropdown-button h4 {
                 flex-grow: 1;
                 text-align: center;
-                font-size: 1rem
+                font-size: 1rem;
+                color: white;
             }
 
             .dropdown-button svg {
                 height: 40%;
                 aspect-ratio: 1 / 1;
+                fill: white;
             }
 
             .dropdown-options {
@@ -153,7 +159,8 @@ class VerifyInfo extends HTMLElement {
             }
 
             .submit-button {
-                background-color: var(--highlight-color);
+                background-color: var(--color-4);
+                color: white;
                 padding: 1.5vh;
                 border-radius: 8px;
                 font-weight: 600;
