@@ -19,9 +19,10 @@ class LoginContainer extends HTMLElement {
             }
 
             h1 {
+                text-align: center;
                 margin: 0px;
                 color: white;
-                background-color: var(--secondary-color);
+                background-color: var(--color-4);
                 padding: 5px 10px;
                 border-radius: 10px;
             }
@@ -39,6 +40,8 @@ class LoginContainer extends HTMLElement {
             }
 
             input {
+                color: white;
+                background-color: var(--dark-color-8);
                 box-sizing: border-box;
                 padding: 0px;
                 border: 4px solid var(--highlight-color);
@@ -57,7 +60,7 @@ class LoginContainer extends HTMLElement {
             #login-button {
                 padding: 12px 10vw;
                 border-radius: 8px;
-                background-color: var(--highlight-color);
+                background-color: var(--color-4);
                 color: white;
                 font-size: 1.3rem;
                 font-weight: 700;
@@ -85,7 +88,7 @@ class LoginContainer extends HTMLElement {
 
         this.$shadowRoot.append(/*html*/`
             <form id="login-form" class="container">
-                <h1>Joint Venture Finder</h1>
+                <h1>Joint Venture Finder<br>(JVF) = Jeff</h1>
 
                 <span></span>
 

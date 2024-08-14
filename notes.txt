@@ -42,7 +42,7 @@ Better App Navigation:
     Back button in deal-view that saves your scroll position in your previous deals-list session
     When nav-bar and title-bar are used for navigation in the app use component swapping instead of actual browser navigation.
 
-
+Mess with component loading in router.html
 
 FOCUS ON BRANCHING INTO ORLANDO
     Emails need to be associated with cities from the deal they were posted with. And if they dont have a deal then they are associated with the state group.
