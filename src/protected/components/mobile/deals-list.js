@@ -160,13 +160,16 @@ class DealsList extends HTMLElement {
                 grid-area: 1 / 1 / 5 / 2;
             }
 
-            .icons-container > svg {
-                width: 85%;
+            .icons-container > svg, .checkbox-container {
+                height: 30%;
                 aspect-ratio: 1 / 1;
-                box-sizing: border-box;
-                padding: 4px;
                 border-radius: 6px;
+                box-sizing: border-box;
                 background-color: inherit;
+            }
+
+            .icons-container > svg {
+                padding: 4px;
             }
 
             .sfh-icon {
@@ -180,13 +183,8 @@ class DealsList extends HTMLElement {
             }
 
             .checkbox-container {
-                width: 85%;
-                aspect-ratio: 1 / 1;
-                border-radius: 6px;
                 border: 2px solid var(--dark-color-8);
-                box-sizing: border-box;
                 overflow: hidden;
-                background-color: inherit;
             }
 
             .check {
