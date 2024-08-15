@@ -29,10 +29,9 @@ DONE | Convert /deals endpoint to accept blacklisted options for dynamically loa
 DONE | Try speeding up deals-list loading by combining filter-options-sidebar requests into one request.
 DONE | Add color coding to labels.
 DONE | Work on colors.
+DONE | Add total document matches to deals list page.
 
 LOW PRIORITY | Make deals list live update when new deals are found | Load images in deal-view (GridFS)
-
-Add total document matches to deals list page.
 
 Make verify info functionality.
 

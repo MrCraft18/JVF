@@ -18,7 +18,13 @@ router.post('/login', async (req, res) => {
 
         if (!req.body.password) return res.status(400).send("Missing Password")
 
-        const foundUser = await usersCollection.findOne({ 'name.first': req.body.name.first, 'name.last': req.body.name.last }, { projection: { password: 1 } })
+        const foundUser = await usersCollection.findOne(
+            {
+              'name.first': { $regex: new RegExp(`^${req.body.name.first}$`, 'i') },
+              'name.last': { $regex: new RegExp(`^${req.body.name.last}$`, 'i') }
+            },
+            { projection: { password: 1 } }
+        )
 
         if (!foundUser) return res.status(404).send("User Does Not Exist")
 
