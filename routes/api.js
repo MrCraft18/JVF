@@ -225,7 +225,7 @@ router.post('/dealCounts', async (req, res) => {
         pipe.push({ $count: 'totalCount' })
 
         const [queryCount, totalCount] = await Promise.all([
-            Deal.aggregate(pipe).then(docs => docs[0].totalCount),
+            Deal.aggregate(pipe).then(docs => docs.length ? docs[0].totalCount : 0),
             Deal.countDocuments({})
         ])
 
