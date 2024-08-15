@@ -4,7 +4,6 @@ import cron from 'node-cron'
 import io from 'socket.io-client'
 import { MongoClient, ObjectId } from 'mongodb'
 import { configDotenv } from 'dotenv'; configDotenv()
-import './app.js'
 
 const databaseClient = new MongoClient(process.env.MONGODB_URI)
 const groupsCollection = databaseClient.db('JVF').collection('groups')
