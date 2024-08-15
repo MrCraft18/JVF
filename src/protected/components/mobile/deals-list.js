@@ -26,13 +26,13 @@ class DealsList extends HTMLElement {
             #top-bar {
                 background-color: var(--dark-color-1);
                 width: 100%;
-                height: 10.5vh;
-                display: flex;
-                flex-direction: column;
-                justify-content: space-around;
+                height: 13vh;
+                display: grid;
+                grid-template-rows: 2fr 2fr 1fr;
+                grid-template-columns: 1fr;
                 flex-shrink: 0;
                 align-items: center;
-                padding-bottom: 0.2vh;
+                justify-items: center;
             }
 
             input {
@@ -46,6 +46,7 @@ class DealsList extends HTMLElement {
             }
 
             #searchbar {
+                align-self: center;
                 width: 85%;
                 height: 4vh;
                 border-radius: 8px;
@@ -109,6 +110,12 @@ class DealsList extends HTMLElement {
                 --dropdown-options-border-radius: 10px;
                 --dropdown-options-margin-top: 0.8vh;
                 --dropdown-item-font-size: 0.9rem;
+            }
+
+            #deal-count {
+                color: var(--dark-color-2);
+                font-size: 1.2rem;
+                font-weight: 500;
             }
 
             #list-container {
@@ -197,43 +204,34 @@ class DealsList extends HTMLElement {
                 width: 70%;
             }
 
+            .deal-address, .deal-author, .deal-asking, .deal-arv, .deal-ratio, .deal-date, .deal-label {
+                display: flex;
+                min-width: 0px;
+                align-items: center;
+            }
+
             .deal-address {
                 font-size: 4.5vw;
-                display: flex;
-                align-items: center;
-                min-width: 0px;
                 font-weight: 800;
                 grid-area: 1 / 2 / 2 / 4;
             }
 
             .deal-author {
-                display: flex;
-                align-items: center;
-                min-width: 0px;
                 grid-area: 2 / 2 / 3 / 3;
             }
 
             .deal-asking {
-                display: flex;
                 justify-content: space-between;
-                align-items: center;
-                min-width: 0px;
                 grid-area: 2 / 3 / 3 / 4;
             }
 
             .deal-arv {
-                display: flex;
                 justify-content: space-between;
-                align-items: center;
-                min-width: 0px;
                 grid-area: 3 / 3 / 4 / 4;
             }
 
             .deal-ratio {
-                display: flex;
                 justify-content: space-between;
-                align-items: center;
-                min-width: 0px;
                 grid-area: 3 / 2 / 4 / 3;
             }
 
@@ -250,18 +248,12 @@ class DealsList extends HTMLElement {
             }
 
             .deal-date {
-                display: flex;
                 justify-content: center;
-                align-items: center;
-                min-width: 0px;
                 grid-area: 4 / 3 / 5 / 4;
             }
 
             .deal-label {
-                display: flex;
                 justify-content: center;
-                align-items: center;
-                min-width: 0px;
                 grid-area: 4 / 2 / 5 / 3;
             }
 
@@ -320,6 +312,7 @@ class DealsList extends HTMLElement {
         this.$shadowRoot.append(/*html*/`
             <div id="top-bar">
                 <input id="searchbar" type="text" placeholder="Search">
+
                 <div id="options-container">
                     <div id="filter-button" class="hover">
                         <!-- Filter SVG -->
@@ -335,6 +328,8 @@ class DealsList extends HTMLElement {
                         defaultOrder="${savedQuery?.order || 'descending'}"
                     ></sorting-dropdown>
                 </div>
+
+                <span id="deal-count">...</span>
             </div>
 
             <div id="list-container"></div>
@@ -521,6 +516,8 @@ class DealsList extends HTMLElement {
             this.fetchAndInsertDeals(this.getQueryParameters())
         }
 
+        this.insertDealCounts(this.getQueryParameters())
+
         this.$shadowRoot.find('#filter-button').on('click', () => {
             this.$shadowRoot.find('filter-options-sidebar')[0].openSidebar()
         })
@@ -529,9 +526,7 @@ class DealsList extends HTMLElement {
 
         this.$shadowRoot.find('filter-options-sidebar').on('sidebarClose', () => {
             if (sidebarOptionChanged) {
-                this.next = null
-                this.$shadowRoot.find('#list-container').html('')
-                this.fetchAndInsertDeals(this.getQueryParameters())
+                this.refreshDealsList()
             }
             sidebarOptionChanged = false
         })
@@ -559,15 +554,11 @@ class DealsList extends HTMLElement {
         })
 
         this.$shadowRoot.find('sorting-dropdown').on('orderToggle', () => {
-            this.next = null
-            this.$shadowRoot.find('#list-container').html('')
-            this.fetchAndInsertDeals(this.getQueryParameters())
+            this.refreshDealsList()
         })
 
         this.$shadowRoot.find('sorting-dropdown').on('optionChange', () => {
-            this.next = null
-            this.$shadowRoot.find('#list-container').html('')
-            this.fetchAndInsertDeals(this.getQueryParameters())
+            this.refreshDealsList()
         })
 
         let searchTimer
@@ -577,9 +568,7 @@ class DealsList extends HTMLElement {
             }
 
             searchTimer = setTimeout(() => {
-                this.next = null
-                this.$shadowRoot.find('#list-container').html('')
-                this.fetchAndInsertDeals(this.getQueryParameters())
+                this.refreshDealsList()
             }, 300)
         })
 
@@ -733,6 +722,21 @@ class DealsList extends HTMLElement {
         }
 
         this.loadingDeals = false
+    }
+
+    async insertDealCounts() {
+        this.$shadowRoot.find('#deal-count').text('...')
+
+        const { queryCount, totalCount } = await api.post('/dealCounts', this.getQueryParameters()).then(response => response.data)
+
+        this.$shadowRoot.find('#deal-count').text(`${queryCount} out of ${totalCount}`)
+    }
+
+    refreshDealsList() {
+        this.next = null
+        this.$shadowRoot.find('#list-container').html('')
+        this.fetchAndInsertDeals(this.getQueryParameters())
+        this.insertDealCounts()
     }
 }
 

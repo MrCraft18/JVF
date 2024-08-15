@@ -76,10 +76,10 @@ router.get('/cityOptions', async (req, res) => {
 router.get('/queryOptions', async (req, res) => {
     try {
         const [labels, states, cities, authors] = await Promise.all([
-            await Deal.distinct('label').then(results => results.filter(result => result != null)),
-            await Deal.distinct('address.state').then(results => results.filter(result => result != null)),
-            await Deal.distinct('address.city', req.query.blacklistedStates ? { 'address.state': { $nin: req.query.blacklistedStates.split(',') } } : {}).then(results => results.filter(result => result != null)),
-            await Deal.aggregate([
+            Deal.distinct('label').then(results => results.filter(result => result != null)),
+            Deal.distinct('address.state').then(results => results.filter(result => result != null)),
+            Deal.distinct('address.city', req.query.blacklistedStates ? { 'address.state': { $nin: req.query.blacklistedStates.split(',') } } : {}).then(results => results.filter(result => result != null)),
+            Deal.aggregate([
                 {
                     $lookup: {
                         from: 'posts',
@@ -127,133 +127,7 @@ router.post('/deals', async (req, res) => {
 
         if (!req.body['sort']) return res.status(400).json({ error: "Missing 'sort' parameter." })
 
-        const pipe = [
-            {
-                $lookup: {
-                    from: 'posts',
-                    localField: 'associatedPost',
-                    foreignField: '_id',
-                    as: 'post'
-                }
-            },
-            {
-                $unwind: '$post'
-            },
-            {
-                $match: {
-                    ...(req.body['sort'] !== 'Date' && { [req.body['sort'] === 'Asking' ? 'price' : req.body['sort'] === 'ARV' ? 'arv' : 'priceToARV']: { $ne: null } }),
-                    ...(req.body['blacklistedLabels'].length && { 'label': { $nin: req.body['blacklistedLabels'] } }),
-                    ...(req.body['blacklistedStates'].length && { 'address.state': { $nin: req.body['blacklistedStates'] } }),
-                    ...(req.body['blacklistedCities'].length && { 'address.city': { $nin: req.body['blacklistedCities'] } }),
-                    ...(req.body['blacklistedAuthors'].length && { 'post.author.id': { $nin: req.body['blacklistedAuthors'] } }),
-                    ...(req.body['daysOld'] && { 'post.createdAt': { $gte: new Date(new Date().setDate(new Date().getDate() - req.body['daysOld'])) } }),
-                    ...((req.body['text'] || req.body['dealTypes']) && {
-                        $and: [
-                            ...(req.body['dealTypes'] ? [{
-                                $or: req.body['dealTypes'].length ? req.body['dealTypes'].map(dealType => ({
-                                    category: dealType,
-                                    ...(req.body[dealType === 'SFH Deal' ? 'neededSFHInfo' : 'neededLandInfo'].length && {
-                                        $and: (() => {
-                                            if (dealType === 'SFH Deal') {
-                                                return req.body['neededSFHInfo'].map(info => {
-                                                    switch (info) {
-                                                        case 'street': return { 'address.streetName': { $ne: null } }
-                                                        case 'city': return { 'address.city': { $ne: null } }
-                                                        case 'state': return { 'address.state': { $ne: null } }
-                                                        case 'zip': return { 'address.zip': { $ne: null } }
-                                                        case 'price': return { 'price': { $ne: null } }
-                                                        case 'arv': return { 'arv': { $ne: null } }
-                                                    }
-                                                })
-                                            } else if (dealType === 'Land Deal') {
-                                                return req.body['neededLandInfo'].map(info => {
-                                                    switch (info) {
-                                                        case 'street': return { 'address.streetName': { $ne: null } }
-                                                        case 'city': return { 'address.city': { $ne: null } }
-                                                        case 'state': return { 'address.state': { $ne: null } }
-                                                        case 'zip': return { 'address.zip': { $ne: null } }
-                                                        case 'price': return { 'price': { $ne: null } }
-                                                    }
-                                                })
-                                            }
-                                        })()
-                                    })
-                                })) : [ { category: { $in: req.body['dealTypes'] } } ]
-                            }] : []),
-
-                            ...(req.body['text'] ? [{
-                                $or: [
-                                    { 'post.author.name': { $regex: req.body['text'], $options: "i" } },
-                                    { 'address.streetName': { $regex: req.body['text'], $options: "i" } },
-                                    { 'address.streetNumber': { $regex: req.body['text'], $options: "i" } },
-                                    { 'address.city': { $regex: req.body['text'], $options: "i" } },
-                                    { 'address.state': { $regex: req.body['text'], $options: "i" } },
-                                    { 'address.zip': { $regex: req.body['text'], $options: "i" } },
-                                ]
-                            }] : [])
-                        ]
-                    }),
-
-                    ...(req.body['next'] && { $or: (() => {
-                        const sortingDirection = req.body.order?.toLocaleLowerCase() === 'descending' ? '$lt' : '$gt'
-
-                        const sortingField = (() => {
-                            switch (req.body['sort'].toLowerCase()) {
-                                case 'date': return 'post.createdAt'
-                                case 'asking': return 'price'
-                                case 'arv': return 'arv'
-                                case 'price/arv': return 'priceToARV'
-                            }
-                        })()
-
-                        let [nextSortedValue, nextID] = req.body['next'].split('_')
-
-                        if (req.body['sort'].toLowerCase() === 'date') nextSortedValue = new Date(nextSortedValue)
-                        if (req.body['sort'].toLowerCase() === 'price') nextSortedValue = parseInt(nextSortedValue)
-                        if (req.body['sort'].toLowerCase() === 'arv') nextSortedValue = parseInt(nextSortedValue)
-                        if (req.body['sort'].toLowerCase() === 'price/arv') nextSortedValue = parseFloat(nextSortedValue)
-
-                        return [
-                            { [sortingField]: { [sortingDirection]: nextSortedValue } },
-                            {
-                                [sortingField]: { [sortingDirection]: nextSortedValue },
-                                _id: { [sortingDirection]: new ObjectId(nextID) }
-                            }
-                        ]
-                    })() })
-                }
-            },
-            {
-                $sort: (() => {
-                    const sortOrder = req.body.order?.toLocaleLowerCase() === 'descending' ? -1 : 1
-
-                    switch (req.body['sort'].toLowerCase()) {
-                        case 'date': return { 'post.createdAt': sortOrder, _id: sortOrder }
-                        case 'asking': return { 'price': sortOrder, _id: sortOrder }
-                        case 'arv': return { 'arv': sortOrder, _id: sortOrder }
-                        case 'price/arv': return { 'priceToARV': sortOrder, _id: sortOrder }
-                    }
-                })()
-            },
-            {
-                $limit: parseInt(req.body['limit']) + 1
-            },
-            {
-                $project: {
-                    __v: 0,
-                    'post.__v': 0,
-                    'post._id': 0,
-                    'post.attachedPost': 0,
-                    'post.comments': 0,
-                    'post.group': 0,
-                    'post.id': 0,
-                    'post.images': 0,
-                    'post.metadata': 0,
-                    'post.text': 0,
-                    'post.author.id': 0
-                }
-            }
-        ]
+        const pipe = createAggregationPipeFromQuery(req.body)
 
         // console.dir(pipe, { depth: 10 })
 
@@ -261,8 +135,8 @@ router.post('/deals', async (req, res) => {
         delete req.body.text
 
         const [deals] = await Promise.all([
-            await Deal.aggregate(pipe),
-            await usersCollection.updateOne({ _id: new ObjectId(req.user._id) }, { $set: { dealsQuery: req.body } })
+            Deal.aggregate(pipe),
+            usersCollection.updateOne({ _id: new ObjectId(req.user._id) }, { $set: { dealsQuery: req.body } })
         ])
 
         const next = (() => {
@@ -338,4 +212,162 @@ router.post('/changeLabel', async (req, res) => {
     }
 })
 
+router.post('/dealCounts', async (req, res) => {
+    try {
+        const pipe = []
+
+        createAggregationPipeFromQuery(req.body).forEach(step => {
+            const stepFields = ['$lookup', '$unwind', '$match']
+
+            if (stepFields.includes(Object.keys(step)[0])) pipe.push(step)
+        })
+
+        pipe.push({ $count: 'totalCount' })
+
+        const [queryCount, totalCount] = await Promise.all([
+            Deal.aggregate(pipe).then(docs => docs[0].totalCount),
+            Deal.countDocuments({})
+        ])
+
+        res.json({ queryCount, totalCount })
+    } catch (error) {
+        console.error(error)
+        res.sendStatus(500)
+    }
+})
+
 export default router
+
+
+
+
+
+function createAggregationPipeFromQuery(body) {
+    return [
+        {
+            $lookup: {
+                from: 'posts',
+                localField: 'associatedPost',
+                foreignField: '_id',
+                as: 'post'
+            }
+        },
+        {
+            $unwind: '$post'
+        },
+        {
+            $match: {
+                ...(body['sort'] !== 'Date' && { [body['sort'] === 'Asking' ? 'price' : body['sort'] === 'ARV' ? 'arv' : 'priceToARV']: { $ne: null } }),
+                ...(body['blacklistedLabels'].length && { 'label': { $nin: body['blacklistedLabels'] } }),
+                ...(body['blacklistedStates'].length && { 'address.state': { $nin: body['blacklistedStates'] } }),
+                ...(body['blacklistedCities'].length && { 'address.city': { $nin: body['blacklistedCities'] } }),
+                ...(body['blacklistedAuthors'].length && { 'post.author.id': { $nin: body['blacklistedAuthors'] } }),
+                ...(body['daysOld'] && { 'post.createdAt': { $gte: new Date(new Date().setDate(new Date().getDate() - body['daysOld'])) } }),
+                ...((body['text'] || body['dealTypes']) && {
+                    $and: [
+                        ...(body['dealTypes'] ? [{
+                            $or: body['dealTypes'].length ? body['dealTypes'].map(dealType => ({
+                                category: dealType,
+                                ...(body[dealType === 'SFH Deal' ? 'neededSFHInfo' : 'neededLandInfo'].length && {
+                                    $and: (() => {
+                                        if (dealType === 'SFH Deal') {
+                                            return body['neededSFHInfo'].map(info => {
+                                                switch (info) {
+                                                    case 'street': return { 'address.streetName': { $ne: null } }
+                                                    case 'city': return { 'address.city': { $ne: null } }
+                                                    case 'state': return { 'address.state': { $ne: null } }
+                                                    case 'zip': return { 'address.zip': { $ne: null } }
+                                                    case 'price': return { 'price': { $ne: null } }
+                                                    case 'arv': return { 'arv': { $ne: null } }
+                                                }
+                                            })
+                                        } else if (dealType === 'Land Deal') {
+                                            return body['neededLandInfo'].map(info => {
+                                                switch (info) {
+                                                    case 'street': return { 'address.streetName': { $ne: null } }
+                                                    case 'city': return { 'address.city': { $ne: null } }
+                                                    case 'state': return { 'address.state': { $ne: null } }
+                                                    case 'zip': return { 'address.zip': { $ne: null } }
+                                                    case 'price': return { 'price': { $ne: null } }
+                                                }
+                                            })
+                                        }
+                                    })()
+                                })
+                            })) : [ { category: { $in: body['dealTypes'] } } ]
+                        }] : []),
+
+                        ...(body['text'] ? [{
+                            $or: [
+                                { 'post.author.name': { $regex: body['text'], $options: "i" } },
+                                { 'address.streetName': { $regex: body['text'], $options: "i" } },
+                                { 'address.streetNumber': { $regex: body['text'], $options: "i" } },
+                                { 'address.city': { $regex: body['text'], $options: "i" } },
+                                { 'address.state': { $regex: body['text'], $options: "i" } },
+                                { 'address.zip': { $regex: body['text'], $options: "i" } },
+                            ]
+                        }] : [])
+                    ]
+                }),
+
+                ...(body['next'] && { $or: (() => {
+                    const sortingDirection = body.order?.toLocaleLowerCase() === 'descending' ? '$lt' : '$gt'
+
+                    const sortingField = (() => {
+                        switch (body['sort'].toLowerCase()) {
+                            case 'date': return 'post.createdAt'
+                            case 'asking': return 'price'
+                            case 'arv': return 'arv'
+                            case 'price/arv': return 'priceToARV'
+                        }
+                    })()
+
+                    let [nextSortedValue, nextID] = body['next'].split('_')
+
+                    if (body['sort'].toLowerCase() === 'date') nextSortedValue = new Date(nextSortedValue)
+                    if (body['sort'].toLowerCase() === 'price') nextSortedValue = parseInt(nextSortedValue)
+                    if (body['sort'].toLowerCase() === 'arv') nextSortedValue = parseInt(nextSortedValue)
+                    if (body['sort'].toLowerCase() === 'price/arv') nextSortedValue = parseFloat(nextSortedValue)
+
+                    return [
+                        { [sortingField]: { [sortingDirection]: nextSortedValue } },
+                        {
+                            [sortingField]: { [sortingDirection]: nextSortedValue },
+                            _id: { [sortingDirection]: new ObjectId(nextID) }
+                        }
+                    ]
+                })() })
+            }
+        },
+        {
+            $sort: (() => {
+                const sortOrder = body.order?.toLocaleLowerCase() === 'descending' ? -1 : 1
+
+                switch (body['sort'].toLowerCase()) {
+                    case 'date': return { 'post.createdAt': sortOrder, _id: sortOrder }
+                    case 'asking': return { 'price': sortOrder, _id: sortOrder }
+                    case 'arv': return { 'arv': sortOrder, _id: sortOrder }
+                    case 'price/arv': return { 'priceToARV': sortOrder, _id: sortOrder }
+                }
+            })()
+        },
+        {
+            $limit: parseInt(body['limit']) + 1
+        },
+        {
+            $project: {
+                __v: 0,
+                'post.__v': 0,
+                'post._id': 0,
+                'post.attachedPost': 0,
+                'post.comments': 0,
+                'post.group': 0,
+                'post.id': 0,
+                'post.images': 0,
+                'post.metadata': 0,
+                'post.text': 0,
+                'post.author.id': 0
+            }
+        }
+    ]
+}
