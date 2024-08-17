@@ -688,7 +688,7 @@ class DealsList extends HTMLElement {
                         </div>
 
                         <div class="deal-date">
-                            <span class="deal-info-value">${new Date(deal.post.createdAt).toLocaleString('en-US', { timeZone: 'America/Chicago', year: '2-digit', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true, })}</span>
+                            <span class="deal-info-value">${new Date(deal.post.createdAt).toLocaleString('en-US', { year: '2-digit', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true, })}</span>
                         </div>
                     </div>
                 `)

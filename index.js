@@ -65,12 +65,12 @@ async function scrapePostsLoop() {
     while (withinOperatingTime) {
         const group = checkQueue.shift()
 
+        console.log('\n', JSON.stringify(group), new Date().toLocaleString())
+
         try {
             const lastScrapedPost = await groupsCollection
                 .findOne({ id: group.id }, { projection: { lastScrapedPost: 1, _id: 0 } })
                 .then(response => response.lastScrapedPost)
-
-            console.log('\n', JSON.stringify(group), new Date().toLocaleString())
 
             if (lastScrapedPost && differenceInHours(lastScrapedPost.createdAt, new Date()) < 24) {
                 var endDate = lastScrapedPost.createdAt
