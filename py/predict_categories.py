@@ -1,3 +1,5 @@
+import sys
+import json
 from unidecode import unidecode
 import joblib
 import numpy as np
@@ -5,7 +7,6 @@ import os
 from datetime import datetime
 
 #Grab latest model
-
 model_dir = max([datetime.strptime(date_string, "%m-%d-%y") for date_string in os.listdir('./py/models')]).strftime("%m-%d-%y")
 
 model = joblib.load(f'./py/models/{model_dir}/model.joblib')
@@ -24,3 +25,10 @@ def predict_post_categories(texts_list):
     } for probabilities in y_pred_proba]
 
     return results
+
+if __name__ == "__main__":
+    input_texts = json.loads(sys.stdin.read())
+
+    output = predict_post_categories(input_texts)
+
+    print(json.dumps(output))

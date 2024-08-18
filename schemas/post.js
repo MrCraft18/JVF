@@ -1,7 +1,7 @@
 import OpenAI from 'openai'
 import fs from 'fs'
 import * as fuzz from 'fuzzball'
-import { interpreter as py } from 'node-calls-python'
+import predictCategories from '../functons/predictCategories.js'
 import axios from 'axios'
 import Email from './email.js'
 import Deal from './deal.js'
@@ -17,12 +17,6 @@ const groupsCollection = databaseClient.db('JVF').collection('groups')
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY
 })
-
-py.addImportPath(process.env.PYTHON_INTERPRETER_PATH)
-
-const predictCategoriesPyModule = await py.import('./py/predict_categories.py')
-
-await mongoose.connect(process.env.MONGODB_URI)
 
 
 
@@ -61,7 +55,6 @@ const postSchema = new mongoose.Schema({
         }
     },
     metadata: {
-        // predictedCategoryProbabilities: Object,
         includesMultipleDeals: Boolean,
         associatedDeal: {
             type: mongoose.Schema.Types.ObjectId,
@@ -116,7 +109,7 @@ postSchema.methods.checkIfDupilcate = async function () {
 
 postSchema.methods.getDeal = async function() {
     //Get Predicted Category
-    const predictionResult = await py.call(predictCategoriesPyModule, 'predict_post_categories', [this.allText()]).then(results => results[0])
+    const predictionResult = await predictCategories([this.allText()]).then(results => results[0])
 
     // this.metadata.predictedCategoryProbabilities = predictionResult.probabilities
 

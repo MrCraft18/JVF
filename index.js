@@ -41,11 +41,11 @@ if ((hour > 8 || (hour === 8 && minute >= 30)) && (hour < 16 || (hour === 16 && 
     withinOperatingTime = true
     scrapePostsLoop()
 } else {
-    socket.emit('scraperSleep')
-    console.log('Sleeping')
+    // socket.emit('scraperSleep')
+    // console.log('Sleeping')
 
-    // withinOperatingTime = true
-    // scrapePostsLoop()
+    withinOperatingTime = true
+    scrapePostsLoop()
 }
 
 async function scrapePostsLoop() {
