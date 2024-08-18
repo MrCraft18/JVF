@@ -631,6 +631,7 @@ class DealsList extends HTMLElement {
         this.next = next
 
         console.log(deals)
+        console.log(next)
 
         const listContainerDiv = this.$shadowRoot.find('#list-container')
 

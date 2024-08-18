@@ -1,3 +1,5 @@
+import '../loader.js'
+
 class VerifyInfo extends HTMLElement {
     constructor() {
         super()
@@ -70,7 +72,7 @@ class VerifyInfo extends HTMLElement {
 
             .modal {
                 background-color: var(--dark-color-1);
-                height: 60vh;
+                height: 65vh;
                 width: 70vw;
                 border-radius: 8px;
                 margin-top: 15vh;
@@ -82,16 +84,24 @@ class VerifyInfo extends HTMLElement {
             }
 
             .field-grid {
-                height: 70%;
+                height: 75%;
                 width: 100%;
                 display: grid;
-                grid-template-rows: repeat(8, minmax(0, 1fr));
+                grid-template-rows: 1fr repeat(8, minmax(0, 1fr));
                 grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            }
+
+            .id {
+                grid-area: 1 / 1 / 2 / 3;
+                justify-self: center;
+                color: var(--dark-color-2);
+                font-weight: 500;
+                text-align: center;
             }
 
             .field-name {
                 align-self: center;
-                font-size: 1.1rem;
+                font-size: 4vw;
                 color: var(--dark-color-2)
             }
 
@@ -105,6 +115,7 @@ class VerifyInfo extends HTMLElement {
                 background-color: var(--dark-color-8);
                 color: white;
                 border: none;
+                padding: 1vw
             }
 
             .dropdown-container {
@@ -158,13 +169,30 @@ class VerifyInfo extends HTMLElement {
                 background-color: white;
             }
 
+            .error-text {
+                font-weight: 500;
+                color: red;
+                font-size: 1em;
+                height: 1em;
+                font-size: 3.8vw;
+            }
+
             .submit-button {
                 background-color: var(--color-4);
                 color: white;
-                padding: 1.5vh;
+                height: 9%;
+                width: 45%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
                 border-radius: 8px;
                 font-weight: 600;
                 margin-bottom: 3vh;
+            }
+
+            .submit-loader {
+                height: 50%;
+                --loader-color: lightgrey;
             }
 
             .button:hover:active, .dropdown-button:hover:active, .dropdown-item:hover:active, .submit-button:hover:active {
@@ -195,10 +223,12 @@ class VerifyInfo extends HTMLElement {
             <div class="modal-container">
                 <div class="modal">
                     <div class="field-grid">
+                        <div class="id">Deal ID<br>${this.getAttribute('dealID')}</div>
+
                         <div class="field-name">Category:</div>
                         <div class="dropdown-container">
                             <div class="dropdown-button">
-                                <h4>SFH Deal</h4>
+                                <h4 id="category">${this.getAttribute('category')}</h4>
 
                                 <!-- Dropdown SVG -->
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="6.4 8.98 11.2 6.62"><path d="m8.12 9.29 3.88 3.88 3.88-3.88c.39-.39 1.02-.39 1.41 0s.39 1.02 0 1.41l-4.59 4.59c-.39.39-1.02.39-1.41 0l-4.59-4.59c-.39-.39-.39-1.02 0-1.41.39-.38 1.03-.39 1.42 0z"></path></svg>
@@ -212,28 +242,32 @@ class VerifyInfo extends HTMLElement {
                         </div>
 
                         <div class="field-name">Price:</div>
-                        <input class="field-value" type="text" value="100000">
+                        <input id="price" class="field-value" type="text" value="${this.getAttribute('price')}">
 
                         <div class="field-name">ARV:</div>
-                        <input class="field-value" type="text" value="1000000">
+                        <input id="arv" class="field-value" type="text" value="${this.getAttribute('arv')}">
 
                         <div class="field-name">Street Number:</div>
-                        <input class="field-value" type="text" value="1304">
+                        <input id="street-number" class="field-value" type="text" value="${this.getAttribute('streetNumber')}">
 
                         <div class="field-name">Street Name:</div>
-                        <input class="field-value" type="text" value="Shalimar Dr">
+                        <input id="street-name" class="field-value" type="text" value="${this.getAttribute('streetName')}">
 
                         <div class="field-name">City:</div>
-                        <input class="field-value" type="text" value="Fort Worth">
+                        <input id="city" class="field-value" type="text" value="${this.getAttribute('city')}">
 
                         <div class="field-name">State:</div>
-                        <input class="field-value" type="text" value="TX">
+                        <input id="state" class="field-value" type="text" value="${this.getAttribute('state')}">
 
                         <div class="field-name">ZIP:</div>
-                        <input class="field-value" type="text" value="76131">
+                        <input id="zip" class="field-value" type="text" value="${this.getAttribute('zip')}">
                     </div>
 
-                    <div class="submit-button">Submit Info</div>
+                    <span class="error-text"></span>
+
+                    <div class="submit-button">
+                        <span>Submit</span>
+                    </div>
                 </div>
             </div>
         `)
@@ -260,8 +294,48 @@ class VerifyInfo extends HTMLElement {
             }
         })
 
-        this.$shadowRoot.find('.submit-button').on('click', () => {
-            this.$shadowRoot.find('.modal-container').hide()
+        this.$shadowRoot.find('.submit-button').on('click', event => {
+            $(event.currentTarget).html(/*html*/`
+                <loader-component class="submit-loader"></loader-component>
+            `)
+
+            api.post('/verifyDeal', {
+                _id: this.getAttribute('dealID'),
+                category: this.$shadowRoot.find('#category').text(),
+                price: this.$shadowRoot.find('#price').val() ? parseInt(this.$shadowRoot.find('#price').val()) : null,
+                arv: this.$shadowRoot.find('#arv').val() ? parseInt(this.$shadowRoot.find('#arv').val()) : null,
+                address: {
+                    streetNumber: this.$shadowRoot.find('#street-number').val() || null,
+                    streetName: this.$shadowRoot.find('#street-name').val() || null,
+                    city: this.$shadowRoot.find('#city').val() || null,
+                    state: this.$shadowRoot.find('#state').val() || null,
+                    zip: this.$shadowRoot.find('#zip').val() || null
+                }
+            })
+            .then(() => {
+                if (this.$shadowRoot.find('#category').text() === 'None') return history.back()
+
+                $('deal-view').replaceWith(/*html*/`
+                    <deal-view></deal-view>
+                `)
+            })
+            .catch(error => {
+                $(event.currentTarget).html(/*html*/`
+                    <span>Submit</span>
+                `)
+
+                console.error('Verify Deal Request Error:', error)
+
+                if (error.response) {
+                    if (error.response.data) return this.$shadowRoot.find('.error-text').text(error.response.data)
+
+                    if (error.response.status) return this.$shadowRoot.find('.error-text').text(`Error: HTTP Code ${error.response.status}`)
+                }
+
+                if (error.code) return this.$shadowRoot.find('.error-text').text(`Error: Axios Code ${error.code}`)
+
+                this.$shadowRoot.find('.error-text').text('Unknown Verify Deal Error')
+            })
         })
     }
 }

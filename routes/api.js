@@ -1,6 +1,7 @@
 import express from 'express'
 import bcrypt from 'bcryptjs'
 import Deal from '../schemas/deal.js'
+import Post from '../schemas/post.js'
 import { MongoClient, ObjectId } from 'mongodb'
 import { configDotenv } from 'dotenv'; configDotenv()
 
@@ -167,6 +168,8 @@ router.post('/deals', async (req, res) => {
 
 router.get('/deal', async (req, res) => {
     try {
+        if (!ObjectId.isValid(req.query.id)) return res.status(400).send('Invalid Deal ID')
+
         const deal = await Deal.aggregate([
             {
                 $match: {
@@ -194,6 +197,8 @@ router.get('/deal', async (req, res) => {
             }
         ]).then(docs => docs[0])
 
+        if (!deal) return res.status(400).send('Deal not found')
+
         res.status(200).json(deal)
     } catch (error) {
         console.error(error)
@@ -203,7 +208,7 @@ router.get('/deal', async (req, res) => {
 
 router.post('/changeLabel', async (req, res) => {
     try {
-        if (req.user.role != 'editor' || req.user.role != 'admin') return res.sendStatus(401)
+        if (req.user.role != 'editor' && req.user.role != 'admin') return res.sendStatus(401)
 
         await Deal.updateOne({ _id: new ObjectId(req.body.id) }, { $set: { label: req.body.label } })
 
@@ -219,7 +224,7 @@ router.post('/dealCounts', async (req, res) => {
         const pipe = []
 
         createAggregationPipeFromQuery(req.body).forEach(step => {
-            const stepFields = ['$lookup', '$unwind', '$match']
+            const stepFields = ['$lookup', '$unwind', '$addFields', '$match']
 
             if (stepFields.includes(Object.keys(step)[0])) pipe.push(step)
         })
@@ -232,6 +237,40 @@ router.post('/dealCounts', async (req, res) => {
         ])
 
         res.json({ queryCount, totalCount })
+    } catch (error) {
+        console.error(error)
+        res.sendStatus(500)
+    }
+})
+
+router.post('/verifyDeal', async (req, res) => {
+    try {
+        if (req.user.role != 'editor' && req.user.role != 'admin') return res.status(401).send('You do not have permission to edit this.')
+
+        const deal = await Deal.findById(req.body._id)
+
+        if (!deal) return res.status(400).send('Deal not found')
+
+        if (req.body.category === 'None') {
+            const post = await Post.findById(deal.associatedPost)
+
+            post.metadata.eligibleForTraining = true
+            delete post.associatedDeal
+
+            await post.save()
+
+            await Deal.deleteOne({ _id: deal._id })
+        } else {
+            Object.assign(deal, req.body)
+
+            if (deal.category === 'Land Deal') delete deal.arv
+
+            deal.verified = true
+
+            await deal.save()
+        }
+
+        res.sendStatus(200)
     } catch (error) {
         console.error(error)
         res.sendStatus(500)
@@ -256,6 +295,17 @@ function createAggregationPipeFromQuery(body) {
         },
         {
             $unwind: '$post'
+        },
+        {
+            $addFields: {
+                priceToARV: {
+                    $cond: {
+                        if: { $and: [{ $ne: ["$price", null] }, { $ne: ["$arv", null] }] },
+                        then: { $divide: ["$price", "$arv"] },
+                        else: null
+                    }
+                }
+            }
         },
         {
             $match: {
@@ -327,7 +377,7 @@ function createAggregationPipeFromQuery(body) {
                     let [nextSortedValue, nextID] = body['next'].split('_')
 
                     if (body['sort'].toLowerCase() === 'date') nextSortedValue = new Date(nextSortedValue)
-                    if (body['sort'].toLowerCase() === 'price') nextSortedValue = parseInt(nextSortedValue)
+                    if (body['sort'].toLowerCase() === 'asking') nextSortedValue = parseInt(nextSortedValue)
                     if (body['sort'].toLowerCase() === 'arv') nextSortedValue = parseInt(nextSortedValue)
                     if (body['sort'].toLowerCase() === 'price/arv') nextSortedValue = parseFloat(nextSortedValue)
 

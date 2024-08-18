@@ -67,11 +67,6 @@ const postSchema = new mongoose.Schema({
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Deal'
         },
-        duplicatePosts: {
-            type: [mongoose.Schema.Types.ObjectId],
-            ref: 'Post',
-            default: undefined
-        },
         duplicateOf: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Post'
@@ -98,18 +93,12 @@ postSchema.methods.allText = function() {
 postSchema.methods.checkIfDupilcate = async function () {
     const postsCursor = this.model('Post').find({ 'metadata.duplicateOf': { $exists: false } }, { text: 1, 'attachedPost.text': 1, 'metadata.duplicatePosts': 1 }).cursor()
 
-    const ratios = []
-
     for await (const post of postsCursor) {
         const postText = `${post.text || ''}${post.attachedPost?.text ? `\n${post.attachedPost.text}` : ''}`
         const similarity = fuzz.ratio(this.allText(), postText)
 
-        ratios.push(similarity)
-
         if (similarity > 90) {
-            // console.log(similarity)
-
-            if (post.duplicatePosts) {
+            if (post.metadata.duplicatePosts) {
                 post.metadata.duplicatePosts.push(this._id)
             } else {
                 post.metadata.duplicatePosts = [this._id]
@@ -122,9 +111,6 @@ postSchema.methods.checkIfDupilcate = async function () {
             return true
         }
     }
-
-    // console.log(Math.max(...ratios))
-
     return false
 }
 

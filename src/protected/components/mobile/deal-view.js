@@ -21,6 +21,17 @@ class DealView extends HTMLElement {
                 z-index: 1;
             }
 
+            .error-text {
+                height: 100%;
+                width: 100%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                color: red;
+                font-weight: 500;
+                font-size: 1.2rem
+            }
+
             .post-container {
                 /* height: 65%; */
                 flex-grow: 1;
@@ -214,14 +225,12 @@ class DealView extends HTMLElement {
 
         if (!query.get('id')) window.location.href = '/deals'
 
-        const deal = await api.get(`/deal?id=${query.get('id')}`).then(response => response.data)
+        api.get(`/deal?id=${query.get('id')}`).then(response => {
+            const deal = response.data
 
-        $(this).attr('id', deal._id)
+            console.log(deal)
 
-        console.log(deal)
-
-        this.$shadowRoot.append(/*html*/`
-            <!-- <div class="lol"> -->
+            this.$shadowRoot.append(/*html*/`
                 <div class="post-container">
                     <div class="post">
                         <div class="post-header">
@@ -244,15 +253,10 @@ class DealView extends HTMLElement {
                                         <img src="${imageURL}">
                                     `).join('')
                                 }
-
-                                <img src="https://scontent-dfw5-1.xx.fbcdn.net/v/t39.30808-6/453884092_10160252875534053_4233656324536154436_n.jpg?stp=dst-jpg_s600x600&_nc_cat=103&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=cqH5gOOnKBYQ7kNvgFKgsk2&_nc_ht=scontent-dfw5-1.xx&cb_e2o_trans=t&oh=00_AYDlj-mS4rjzD3XCFg6FpXcPatD-9j8Lh-bY8GZ_eX2vug&oe=66B3AE95">
-
-                                <img src="https://scontent-dfw5-1.xx.fbcdn.net/v/t39.30808-6/453746918_10160252875504053_183775604910916250_n.jpg?stp=dst-jpg_s600x600&_nc_cat=101&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=mYmLeAOAnmUQ7kNvgHsjZGf&_nc_ht=scontent-dfw5-1.xx&cb_e2o_trans=t&oh=00_AYArPkdLTmY8x1Qpq_xlRq4Ip4v61_M_ppWJY6CFRgROcg&oe=66B3D418">
                             </div> -->
                         </div>
                     </div>
                 </div>
-
                 <div class="info-grid">
                     <div class="address">
                         <span>${deal.address.streetNumber ? `${deal.address.streetNumber} ` : ''}${deal.address.streetName ? `${deal.address.streetName}, ` : ''}${deal.address.city ? `${deal.address.city}, ` : ''}${deal.address.state ? `${deal.address.state} `: ''}${deal.address.zip || ''}</span>
@@ -281,13 +285,44 @@ class DealView extends HTMLElement {
                             defaultOption="${deal.label}"
                             options="Unchecked Checked"
                         ></label-dropdown>
+
                         <verify-info
                             verified="${deal.verified}"
+                            dealID="${deal._id}"
+                            category="${deal.category}"
+                            price="${deal.price || ''}"
+                            arv="${deal.arv || ''}"
+                            streetNumber="${deal.address.streetNumber || ''}"
+                            streetName="${deal.address.streetName || ''}"
+                            city="${deal.address.city || ''}"
+                            state="${deal.address.state || ''}"
+                            zip="${deal.address.zip || ''}"
                         ></verify-info>
                     </div>
                 </div>
-            <!-- </div> -->
-        `)
+            `)
+        })
+        .catch(error => {
+            console.error('Get Deal Request Error:', error)
+
+            if (error.response) {
+                if (error.response.data) return this.$shadowRoot.append(/*html*/`
+                    <div class="error-text">${error.response.data}</div>
+                `)
+
+                if (error.response.status) return this.$shadowRoot.append(/*html*/`
+                    <div class="error-text">Error: HTTP Code ${error.response.status}</div>
+                `)
+            }
+
+            if (error.code) return this.$shadowRoot.append(/*html*/`
+                <div class="error-text">Error: Axios Code ${error.code}</div>
+            `)
+
+            this.$shadowRoot.append(/*html*/`
+                <div class="error-text">Unknown Get Deal Error</div>
+            `)
+        })
     }
 }
 

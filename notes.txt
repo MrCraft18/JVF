@@ -61,3 +61,11 @@ Future Plans
 
 Bug Fixing
     Find out why the front-end axios requests decide to stop working randomly and are only fixed with a restart.
+
+
+
+Lowest similarity for duplicate posts needs to be > threshold
+HIGHER SCORE FOR DUPLCATE POSTS IS BETTER
+
+Highest similarity for NON-duplicate posts needs to be < thresold
+LOWER SCORE FOR NON DUPLCATE POSTS IS BETTER

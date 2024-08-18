@@ -108,11 +108,11 @@ async function scrapePostsLoop() {
 
     console.log('Done Looping')
 
-    //Extract emails from posts that are 3 days old and havent been marked already extracted
-    const threeDaysAgo = new Date()
-    threeDaysAgo.setDate(threeDaysAgo.getDate() - 3)
+    //Extract emails from posts that are a week old and havent been marked already extracted
+    const weekAgo = new Date()
+    weekAgo.setDate(weekAgo.getDate() - 7)
 
-    const posts = await Post.find({ 'metadata.checkedForEmails': false, createdAt: { $lte: threeDaysAgo } })
+    const posts = await Post.find({ 'metadata.checkedForEmails': false, createdAt: { $lte: weekAgo } })
 
     console.log(posts.length)
 
