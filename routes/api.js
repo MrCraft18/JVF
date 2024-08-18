@@ -208,7 +208,7 @@ router.get('/deal', async (req, res) => {
 
 router.post('/changeLabel', async (req, res) => {
     try {
-        if (req.user.role != 'editor' && req.user.role != 'admin') return res.sendStatus(401)
+        if (req.user.role != 'checker' && req.user.role != 'editor' && req.user.role != 'admin') return res.sendStatus(401)
 
         await Deal.updateOne({ _id: new ObjectId(req.body.id) }, { $set: { label: req.body.label } })
 

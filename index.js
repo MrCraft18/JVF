@@ -85,9 +85,13 @@ async function scrapePostsLoop() {
 
                 const existingPostDocument = await Post.findOne({ id: post.id, 'group.id': post.group.id })
 
-                if (existingPostDocument) continue
+                if (existingPostDocument) {
+                    continue
+                }
 
-                if (!await post.checkIfDupilcate()) await post.getDeal()
+                if (!await post.checkIfDupilcate()) {
+                    await post.getDeal()
+                }
 
                 console.log(post.metadata.associatedDeal ? 'DEAL' : '', post.metadata.duplicateOf ? 'DUPLICATE' : '', { name: post.author.name, id: post.id }, post.group.name, new Date(post.createdAt).toLocaleString())
 
