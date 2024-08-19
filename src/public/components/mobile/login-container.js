@@ -1,3 +1,5 @@
+import './notification-banner.js'
+
 class LoginContainer extends HTMLElement {
     constructor() {
         super()
@@ -71,15 +73,6 @@ class LoginContainer extends HTMLElement {
                 filter: brightness(85%);
                 cursor: pointer;
             }
-
-            #login-form > span {
-                color: red;
-                font-size: 6vw;
-                height: 6vw;
-                width: 100%;
-                text-align: center;
-                font-weight: 500;
-            }
         `
 
         this.$shadowRoot.append(/*html*/`
@@ -89,8 +82,6 @@ class LoginContainer extends HTMLElement {
         this.$shadowRoot.append(/*html*/`
             <form id="login-form" class="container">
                 <h1>Joint Venture Finder<br>(JVF) = Jeff</h1>
-
-                <span></span>
 
                 <div>
                     <input id="first-name" type="text" placeholder="First Name" name="firstName" required>
@@ -117,17 +108,9 @@ class LoginContainer extends HTMLElement {
                 window.location.href = '/deals-list'
             })
             .catch(error => {
-                console.error('Auth Login Request Error:', error)
+                console.error('Request Error:', error)
 
-                if (error.response) {
-                    if (error.response.data) return this.$shadowRoot.find('#login-form > span').text(error.response.data)
-
-                    if (error.response.status) return this.$shadowRoot.find('#login-form > span').text(`Error: HTTP Code ${error.response.status}`)
-                }
-
-                if (error.code) return this.$shadowRoot.find('#login-form > span').text(`Error: Axios Code ${error.code}`)
-
-                this.$shadowRoot.find('#login-form > span').text('Unknown Login Error')
+                $('<notification-banner></notification-banner>')[0].apiError(error, 'Login')
             })
         })
     }

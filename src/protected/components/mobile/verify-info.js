@@ -169,14 +169,6 @@ class VerifyInfo extends HTMLElement {
                 background-color: white;
             }
 
-            .error-text {
-                font-weight: 500;
-                color: red;
-                font-size: 1em;
-                height: 1em;
-                font-size: 3.8vw;
-            }
-
             .submit-button {
                 background-color: var(--color-4);
                 color: white;
@@ -263,8 +255,6 @@ class VerifyInfo extends HTMLElement {
                         <input id="zip" class="field-value" type="text" value="${this.getAttribute('zip')}">
                     </div>
 
-                    <span class="error-text"></span>
-
                     <div class="submit-button">
                         <span>Submit</span>
                     </div>
@@ -324,17 +314,9 @@ class VerifyInfo extends HTMLElement {
                     <span>Submit</span>
                 `)
 
-                console.error('Verify Deal Request Error:', error)
+                console.error('Request Error:', error)
 
-                if (error.response) {
-                    if (error.response.data) return this.$shadowRoot.find('.error-text').text(error.response.data)
-
-                    if (error.response.status) return this.$shadowRoot.find('.error-text').text(`Error: HTTP Code ${error.response.status}`)
-                }
-
-                if (error.code) return this.$shadowRoot.find('.error-text').text(`Error: Axios Code ${error.code}`)
-
-                this.$shadowRoot.find('.error-text').text('Unknown Verify Deal Error')
+                $('<notification-banner></notification-banner>')[0].apiError(error, 'Verify Deal')
             })
         })
     }

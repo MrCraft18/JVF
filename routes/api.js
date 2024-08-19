@@ -122,6 +122,8 @@ router.get('/queryOptions', async (req, res) => {
 
 router.post('/deals', async (req, res) => {
     try {
+        //Add Error display to component
+
         if (!req.body.limit) return res.status(400).json({ error: "Missing 'limit' parameter." })
 
         if (req.body.limit > 50) return res.status(400).json({ error: 'Limit must be less than 50.' })
@@ -208,7 +210,9 @@ router.get('/deal', async (req, res) => {
 
 router.post('/changeLabel', async (req, res) => {
     try {
-        if (req.user.role != 'checker' && req.user.role != 'editor' && req.user.role != 'admin') return res.sendStatus(401)
+        //Add Error display to component
+
+        if (req.user.role != 'checker' && req.user.role != 'editor' && req.user.role != 'admin') return res.status(401).send('You do not have permission to edit this.')
 
         await Deal.updateOne({ _id: new ObjectId(req.body.id) }, { $set: { label: req.body.label } })
 
@@ -221,6 +225,8 @@ router.post('/changeLabel', async (req, res) => {
 
 router.post('/dealCounts', async (req, res) => {
     try {
+        //Add Error display to component
+
         const pipe = []
 
         createAggregationPipeFromQuery(req.body).forEach(step => {

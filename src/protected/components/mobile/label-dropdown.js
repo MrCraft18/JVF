@@ -96,16 +96,21 @@ class LabelDropdown extends HTMLElement {
 
             this.$shadowRoot.find('.dropdown-options').slideUp('fast')
 
-            await api.post('/changeLabel', {
-                id: $('deal-view').attr('id'),
+            api.post('/changeLabel', {
+                id: this.getAttribute('_id'),
                 label: dropdownItemDiv.text()
+            }).then(() => {
+                console.log(`Changed Label of ${this.getAttribute('_id')} to ${dropdownItemDiv.text()}`)
+
+                this.$shadowRoot.find('.dropdown-button > h4').text(dropdownItemDiv.text())
+
+                if (this.selectedOption != dropdownItemDiv.text()) this.selectedOption = dropdownItemDiv.text()
             })
+            .catch(error => {
+                console.error('Request Error:', error)
 
-            console.log(`Changed Label of ${$('deal-view').attr('id')} to ${dropdownItemDiv.text()}`)
-
-            this.$shadowRoot.find('.dropdown-button > h4').text(dropdownItemDiv.text())
-
-            if (this.selectedOption != dropdownItemDiv.text()) this.selectedOption = dropdownItemDiv.text()
+                $('<notification-banner></notification-banner>')[0].apiError(error, 'Change Label')
+            })
         })
     }
 

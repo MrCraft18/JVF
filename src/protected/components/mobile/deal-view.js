@@ -1,5 +1,6 @@
 import './label-dropdown.js'
 import './verify-info.js'
+import './notification-banner.js'
 
 class DealView extends HTMLElement {
     constructor() {
@@ -223,9 +224,11 @@ class DealView extends HTMLElement {
     async connectedCallback() {
         const query = new URLSearchParams(window.location.search)
 
-        if (!query.get('id')) window.location.href = '/deals'
+        const dealID = query.get('id')
 
-        api.get(`/deal?id=${query.get('id')}`).then(response => {
+        if (!dealID) window.location.href = '/deals'
+
+        api.get(`/deal?id=${dealID}`).then(response => {
             const deal = response.data
 
             console.log(deal)
@@ -282,6 +285,7 @@ class DealView extends HTMLElement {
 
                     <div class="buttons">
                         <label-dropdown
+                            _id="${deal._id}"
                             defaultOption="${deal.label}"
                             options="Unchecked Checked"
                         ></label-dropdown>
@@ -303,25 +307,9 @@ class DealView extends HTMLElement {
             `)
         })
         .catch(error => {
-            console.error('Get Deal Request Error:', error)
+            console.error('Request Error:', error)
 
-            if (error.response) {
-                if (error.response.data) return this.$shadowRoot.append(/*html*/`
-                    <div class="error-text">${error.response.data}</div>
-                `)
-
-                if (error.response.status) return this.$shadowRoot.append(/*html*/`
-                    <div class="error-text">Error: HTTP Code ${error.response.status}</div>
-                `)
-            }
-
-            if (error.code) return this.$shadowRoot.append(/*html*/`
-                <div class="error-text">Error: Axios Code ${error.code}</div>
-            `)
-
-            this.$shadowRoot.append(/*html*/`
-                <div class="error-text">Unknown Get Deal Error</div>
-            `)
+            $('<notification-banner></notification-banner>')[0].apiError(error, 'Get Deal')
         })
     }
 }
