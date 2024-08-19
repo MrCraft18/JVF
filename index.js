@@ -78,8 +78,8 @@ async function scrapePostsLoop() {
                 var endDate = new Date(Date.now() - (1000 * 60 * 60 * 24))
             }
 
-            const posts = await fb.getGroupPosts(group.id, { dateRange: { endAfter: endDate }, sorting: 'new' }, async post => {
-                const post = new Post(postObj)
+            const posts = await fb.getGroupPosts(group.id, { dateRange: { endAfter: endDate }, sorting: 'new' }, async postData => {
+                const post = new Post(postData)
 
                 const existingPostDocument = await Post.findOne({ id: post.id, 'group.id': post.group.id })
 
