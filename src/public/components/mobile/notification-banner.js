@@ -21,11 +21,8 @@ class NotificationBanner extends HTMLElement {
                 height: 100%;
                 border-radius: 8px;
                 display: flex;
-                grid-template-rows: 1fr;
-                grid-template-columns: 6fr 1fr;
                 font-size: 4vw;
                 align-items: center;
-                justify-items: space-between;
                 flex-direction: row;
                 padding: 0px 4vw;
                 box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.25);
