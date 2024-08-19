@@ -63,11 +63,6 @@ class FilterOptionsSidebar extends HTMLElement {
                 color: white;
             }
 
-            .accordion-title:hover:active, .accordion-item:hover:active {
-                filter: brightness(95%);
-                cursor: pointer;
-            }
-
             .sidebar-container svg {
                 fill: white;
             }
@@ -112,17 +107,31 @@ class FilterOptionsSidebar extends HTMLElement {
             }
 
             .search {
-                justify-content: center;
+                justify-content: space-around;
+                padding: 0px;
             }
 
             .search input {
                 height: 60%;
-                width: 70%;
+                width: 50%;
                 border-radius: 8px;
                 padding-left: 9px;
                 font-size: 1rem;
                 background-color: var(--dark-color-8);
                 color: white;
+            }
+
+            .deselect-all {
+                height: 60%;
+                width: 30%;
+                border-radius: 8px;
+                padding: 0px 9px;
+                display: grid;
+                place-items: center;
+                color: white;
+                background-color: var(--color-4);
+                white-space: nowrap;
+                font-size: 4.2vw;
             }
 
             .content-search-container {
@@ -140,6 +149,11 @@ class FilterOptionsSidebar extends HTMLElement {
                 border: 2px solid rgb(150, 150, 150);
                 background-color: var(--dark-color-8);
                 color: var(--dark-color-2);
+            }
+
+            .accordion-title:hover:active, .accordion-item:not(.search):active, .deselect-all:hover:active {
+                filter: brightness(90%);
+                cursor: pointer;
             }
         `
 
@@ -164,6 +178,7 @@ class FilterOptionsSidebar extends HTMLElement {
                             ${accordion.searchbar ? /*html*/`
                                 <div class="accordion-item search">
                                     <input type="text" placeholder="Search">
+                                    <div class="deselect-all">Deselect All</div>
                                 </div>
 
                                 <div class="content-search-container">
@@ -279,19 +294,29 @@ class FilterOptionsSidebar extends HTMLElement {
         this.$shadowRoot.find('.search').on('input', event => {
             const inputText = event.target.value.toLowerCase()
 
-            const itemsContainer = $(event.target).parent()
+            const itemsContainer = $(event.target).parent().next()
 
             if (inputText === "") {
-                itemsContainer.next().find('> [key]').show()
+                itemsContainer.find('> [key]').show()
             } else {
-                itemsContainer.next().find('> [key]').each((index, element) => {
+                itemsContainer.find('> [key]').each((index, element) => {
                     if (!$(element).text().toLowerCase().includes(inputText)) {
                         $(element).hide()
                     } else {
                         $(element).show()
                     }
-                });
+                })
             }
+        })
+
+        this.$shadowRoot.find('.deselect-all').on('click', event => {
+            const itemsContainer = $(event.target).parent().next()
+
+            itemsContainer.children().each((index, element) => {
+                const inputElement = $(element).find('input')[0]
+                inputElement.checked = false
+                inputElement.dispatchEvent(new Event('change'))
+            })
         })
     }
 
