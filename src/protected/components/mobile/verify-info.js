@@ -1,4 +1,4 @@
-import '../loader.js'
+import './loader.js'
 
 class VerifyInfo extends HTMLElement {
     constructor() {

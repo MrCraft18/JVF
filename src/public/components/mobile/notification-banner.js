@@ -20,19 +20,22 @@ class NotificationBanner extends HTMLElement {
             .banner {
                 height: 100%;
                 border-radius: 8px;
-                display: grid;
+                display: flex;
                 grid-template-rows: 1fr;
                 grid-template-columns: 6fr 1fr;
                 font-size: 4vw;
                 align-items: center;
-                justify-items: center;
-                padding-left: 2vw;
+                justify-items: space-between;
+                flex-direction: row;
+                padding: 0px 4vw;
                 box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.25);
             }
 
             .banner span {
                 width: 100%;
                 text-align: left;
+                flex-grow: 1;
+                font-weight: 500;
             }
 
             .banner svg {
