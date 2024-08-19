@@ -22,19 +22,7 @@ class DealView extends HTMLElement {
                 z-index: 1;
             }
 
-            .error-text {
-                height: 100%;
-                width: 100%;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                color: red;
-                font-weight: 500;
-                font-size: 1.2rem
-            }
-
             .post-container {
-                /* height: 65%; */
                 flex-grow: 1;
                 padding: 1.5vw;
                 box-sizing: border-box;
