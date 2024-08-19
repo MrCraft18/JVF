@@ -88,60 +88,60 @@ postSchema.methods.checkIfDupilcate = async function () {
 
     const postsCursor = Post.find({ 'metadata.duplicateOf': { $exists: false } }, { text: 1, 'attachedPost.text': 1, 'metadata.duplicatePosts': 1 }).sort({ _id: -1 }).cursor()
 
-    return new Promise((resolve, reject) => {
-        let cursorClosed = false
+    // return new Promise((resolve, reject) => {
+    //     let cursorClosed = false
 
-        postsCursor.on('data', async postDoc => {
-            if (cursorClosed) return
+    //     postsCursor.on('data', async postDoc => {
+    //         if (cursorClosed) return
 
-            const post = new Post(postDoc)
+    //         const post = new Post(postDoc)
 
-            if (fuzz.ratio(this.allText(), post.allText()) > 90) {
-                cursorClosed = true
-                postsCursor.close()
+    //         if (fuzz.ratio(this.allText(), post.allText()) > 90) {
+    //             cursorClosed = true
+    //             postsCursor.close()
 
-                this.metadata.duplicateOf = post._id
+    //             this.metadata.duplicateOf = post._id
 
-                resolve(true)
+    //             resolve(true)
 
-                if (post.metadata.duplicatePosts) {
-                    post.metadata.duplicatePosts.push(this._id)
-                } else {
-                    post.metadata.duplicatePosts = [this._id]
-                }
+    //             if (post.metadata.duplicatePosts) {
+    //                 post.metadata.duplicatePosts.push(this._id)
+    //             } else {
+    //                 post.metadata.duplicatePosts = [this._id]
+    //             }
 
-                await post.save()
-            }
-        })
-
-        postsCursor.on('end', () => {
-            if (!cursorClosed) {
-                resolve(false)
-            }
-        })
-    })
-
-    // for await (const post of postsCursor) {
-    //     index++
-    //     console.log(index)
-    //     const postText = `${post.text || ''}${post.attachedPost?.text ? `\n${post.attachedPost.text}` : ''}`
-    //     const similarity = fuzz.ratio(this.allText(), postText)
-
-    //     if (similarity > 90) {
-    //         if (post.metadata.duplicatePosts) {
-    //             post.metadata.duplicatePosts.push(this._id)
-    //         } else {
-    //             post.metadata.duplicatePosts = [this._id]
+    //             await post.save()
     //         }
+    //     })
 
-    //         await post.save()
+    //     postsCursor.on('end', () => {
+    //         if (!cursorClosed) {
+    //             resolve(false)
+    //         }
+    //     })
+    // })
 
-    //         this.metadata.duplicateOf = post._id
+    for await (const post of postsCursor) {
+        index++
+        console.log(index)
+        const postText = `${post.text || ''}${post.attachedPost?.text ? `\n${post.attachedPost.text}` : ''}`
+        const similarity = fuzz.ratio(this.allText(), postText)
 
-    //         return true
-    //     }
-    // }
-    // return false
+        if (similarity > 90) {
+            if (post.metadata.duplicatePosts) {
+                post.metadata.duplicatePosts.push(this._id)
+            } else {
+                post.metadata.duplicatePosts = [this._id]
+            }
+
+            await post.save()
+
+            this.metadata.duplicateOf = post._id
+
+            return true
+        }
+    }
+    return false
 }
 
 postSchema.methods.getDeal = async function() {
