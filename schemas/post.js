@@ -121,11 +121,9 @@ postSchema.methods.checkIfDupilcate = async function () {
     //     })
     // })
 
-    for await (const post of postsCursor) {
-        index++
-        console.log(index)
-        const postText = `${post.text || ''}${post.attachedPost?.text ? `\n${post.attachedPost.text}` : ''}`
-        const similarity = fuzz.ratio(this.allText(), postText)
+    for await (const postDoc of postsCursor) {
+        const post = new Post(postDoc)
+        const similarity = fuzz.ratio(this.allText(), post.allText())
 
         if (similarity > 90) {
             if (post.metadata.duplicatePosts) {
