@@ -69,7 +69,10 @@ async function scrapePostsLoop() {
 
         for (const group of groups) {
             if (group.nextCheckTime) {
-                if (Date.now() <= group.nextCheckTime) continue
+                if (Date.now() <= group.nextCheckTime) {
+                    console.log('Waiting longer before checking group')
+                    continue
+                }
             }
 
             console.log('\n', JSON.stringify(group), new Date().toLocaleString())
