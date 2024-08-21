@@ -115,6 +115,8 @@ class LabelDropdown extends HTMLElement {
     }
 
     connectedCallback() {
+        if (this.hasRendered) return
+
         this.setAttribute('tabindex', '0')
 
         this.selectedOption = this.getAttribute('defaultOption')
@@ -133,6 +135,8 @@ class LabelDropdown extends HTMLElement {
         this.addEventListener('focusout', (event) => {
             if (!this.contains(event.relatedTarget)) this.$shadowRoot.find('.dropdown-options').slideUp('fast')
         })
+
+        this.hasRendered = true
     }
 }
 

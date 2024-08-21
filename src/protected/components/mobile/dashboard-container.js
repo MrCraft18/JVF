@@ -13,7 +13,7 @@ class DashboardContainer extends HTMLElement {
                 bottom: ${$('nav-bar').outerHeight()}px;
                 width: 100%;
                 display: flex;
-                max-height: calc(100vh - (8vh + 4vh));
+                max-height: calc(100vh - ${$('title-bar').outerHeight() + $('nav-bar').outerHeight()}px);
                 z-index: 1;
             }
 
@@ -32,9 +32,15 @@ class DashboardContainer extends HTMLElement {
     }
 
     connectedCallback() {
+        $('title-bar')[0].backButton = false
+
+        if (this.hasRendered) return
+
         this.$shadowRoot.append(/*html*/`
             <span>This component does not exist yet.</span>
         `)
+
+        this.hasRendered = true
     }
 }
 

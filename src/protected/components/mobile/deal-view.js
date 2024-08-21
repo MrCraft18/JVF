@@ -18,7 +18,7 @@ class DealView extends HTMLElement {
                 width: 100%;
                 display: flex;
                 flex-direction: column;
-                max-height: calc(100vh - (8vh + 4vh));
+                max-height: calc(100vh - (6vh + 8vh));
                 z-index: 1;
             }
 
@@ -210,6 +210,10 @@ class DealView extends HTMLElement {
     }
 
     async connectedCallback() {
+        $('title-bar')[0].backButton = '/deals-list'
+
+        if (this.hasRendered) return
+
         const query = new URLSearchParams(window.location.search)
 
         const dealID = query.get('id')
@@ -299,6 +303,8 @@ class DealView extends HTMLElement {
 
             $('<notification-banner></notification-banner>')[0].apiError(error, 'Get Deal')
         })
+
+        this.hasRendered = true
     }
 }
 

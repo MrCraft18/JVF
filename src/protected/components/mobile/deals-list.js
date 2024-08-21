@@ -20,7 +20,7 @@ class DealsList extends HTMLElement {
                 display: flex;
                 flex-direction: column;
                 align-items: center;
-                max-height: calc(100vh - (8vh + 4vh));
+                max-height: calc(100vh - ${$('title-bar').outerHeight() + $('nav-bar').outerHeight()}px);
                 z-index: 1;
             }
 
@@ -100,7 +100,7 @@ class DealsList extends HTMLElement {
 
             .hover:hover:active {
                 cursor: pointer;
-                filter: brightness(95%);
+                filter: brightness(90%);
             }
 
             #sort-by {
@@ -302,6 +302,10 @@ class DealsList extends HTMLElement {
     }
 
     async connectedCallback() {
+        $('title-bar')[0].backButton = false
+
+        if (this.hasRendered) return //Add function to only call when this is true. This should only occur when its reinstated from a cache.
+
         //Get User query params and then set them in sorting-dropdown and filter-options-sidebar.
 
         const savedQuery = await api.get('/user').then(response => response.data.dealsQuery)
@@ -586,6 +590,8 @@ class DealsList extends HTMLElement {
                 this.fetchAndInsertDeals(this.getQueryParameters())
             }
         })
+
+        this.hasRendered = true
     }
 
     getQueryParameters() {
@@ -643,7 +649,7 @@ class DealsList extends HTMLElement {
 
             if (deals.length) {
                 for (const deal of deals) {
-                    listContainerDiv.append(/*html*/`
+                    const dealListItemDiv = $(/*html*/`
                         <div id="${deal._id}" class="deal-list-item hover ${deal.category === 'SFH Deal' ? 'sfh' : 'land'}">
                             <div class="icons-container">
                                 ${
@@ -699,25 +705,19 @@ class DealsList extends HTMLElement {
                             </div>
                         </div>
                     `)
+
+                    dealListItemDiv.on('click', event => {
+                        pushHistoryState(`/deals-list/deal?id=${event.currentTarget.id}`)
+
+                        $('deals-list').replaceWith(/*html*/`
+                            <deal-view></deal-view>
+                        `)
+
+                        history.customCache[window.location.href] = $('body').contents()
+                    })
+
+                    listContainerDiv.append(dealListItemDiv)
                 }
-
-                listContainerDiv.find('.deal-list-item').on('click', event => {
-                    // window.history.replaceState(currentState, '', window.location.pathname)
-
-                    // Push the new state into history along with the current state
-                    window.history.pushState({}, '', `/deals-list/deal?id=${event.currentTarget.id}`)
-
-                    // Replace the current content with the new view
-
-                    // $('deals-list').hide()
-
-                    // if ()
-
-
-                    $('deals-list').replaceWith(/*html*/`
-                        <deal-view></deal-view>
-                    `)
-                })
             } else {
                 listContainerDiv.append(/*html*/`
                     <div id="meme">

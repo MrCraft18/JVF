@@ -162,6 +162,8 @@ class SortingDropdown extends HTMLElement {
     }
 
     connectedCallback() {
+        if (this.hasRendered) return
+
         this.setAttribute('tabindex', '0')
 
         const dropdownButtonTitle = this.$shadowRoot.find('.dropdown-button>h4')
@@ -179,6 +181,8 @@ class SortingDropdown extends HTMLElement {
         this.addEventListener('focusout', (event) => {
             if (!this.contains(event.relatedTarget)) this.closeDropdown()
         })
+
+        this.hasRendered = true
     }
 
     toggleDropdown() {
