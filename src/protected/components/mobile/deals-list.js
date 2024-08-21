@@ -20,7 +20,7 @@ class DealsList extends HTMLElement {
                 display: flex;
                 flex-direction: column;
                 align-items: center;
-                max-height: calc(100vh - ${$('title-bar').outerHeight() + $('nav-bar').outerHeight()}px);
+                max-height: calc(100vh - (6vh + 8vh));
                 z-index: 1;
             }
 

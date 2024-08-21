@@ -13,7 +13,7 @@ class ToDo extends HTMLElement {
                 bottom: ${$('nav-bar').outerHeight()}px;
                 width: 100%;
                 display: flex;
-                max-height: calc(100vh - ${$('title-bar').outerHeight() + $('nav-bar').outerHeight()}px);
+                max-height: calc(100vh - (6vh + 8vh));
                 z-index: 1;
             }
 
