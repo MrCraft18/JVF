@@ -49,7 +49,7 @@ if ((hour > 8 || (hour === 8 && minute >= 30)) && (hour < 16 || (hour === 16 && 
 
     setTimeout(() => {
         withinOperatingTime = false
-    }, 1000 * 60 * 60 * 90)
+    }, 1000 * 5)
 }
 
 async function scrapePostsLoop() {
@@ -70,7 +70,6 @@ async function scrapePostsLoop() {
         for (const group of groups) {
             if (group.nextCheckTime) {
                 if (Date.now() <= group.nextCheckTime) {
-                    console.log('Waiting longer before checking group')
                     continue
                 }
             }
@@ -115,7 +114,7 @@ async function scrapePostsLoop() {
             } catch (error) {
                 error.caught = "Moving on to check next group."
 
-                console.log(error)
+                console.dir(error, {depth: null})
             }
         }
     }
