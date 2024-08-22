@@ -64,58 +64,53 @@ async function scrapePostsLoop() {
         await groupsCollection.findOneAndUpdate({ id: group.id }, { $set: { ...group } }, { upsert: true })
     }
 
+    let checkQueue = shuffleArray([...groups])
+
     while (withinOperatingTime) {
-        groups = shuffleArray([...groups])
+        const group = checkQueue.shift()
 
-        for (const group of groups) {
-            if (group.nextCheckTime) {
-                if (Date.now() <= group.nextCheckTime) {
-                    continue
-                }
+        console.log('\n', JSON.stringify(group), new Date().toLocaleString())
+
+        try {
+            const lastScrapedPost = await groupsCollection
+                .findOne({ id: group.id }, { projection: { lastScrapedPost: 1, _id: 0 } })
+                .then(response => response.lastScrapedPost)
+
+            if (lastScrapedPost && differenceInHours(lastScrapedPost.createdAt, new Date()) < 24) {
+                var endDate = lastScrapedPost.createdAt
+            } else if (lastScrapedPost && differenceInHours(lastScrapedPost.createdAt, new Date()) > 24 || !lastScrapedPost) {
+                var endDate = new Date(Date.now() - (1000 * 60 * 60 * 24))
             }
 
-            console.log('\n', JSON.stringify(group), new Date().toLocaleString())
+            const posts = await fb.getGroupPosts(group.id, { dateRange: { endAfter: endDate }, sorting: 'new' }, async postData => {
+                const post = new Post(postData)
 
-            try {
-                const lastScrapedPost = await groupsCollection
-                    .findOne({ id: group.id }, { projection: { lastScrapedPost: 1, _id: 0 } })
-                    .then(response => response.lastScrapedPost)
+                const existingPostDocument = await Post.findOne({ id: post.id, 'group.id': post.group.id })
 
-                if (lastScrapedPost && differenceInHours(lastScrapedPost.createdAt, new Date()) < 24) {
-                    var endDate = lastScrapedPost.createdAt
-                } else if (lastScrapedPost && differenceInHours(lastScrapedPost.createdAt, new Date()) > 24 || !lastScrapedPost) {
-                    var endDate = new Date(Date.now() - (1000 * 60 * 60 * 24))
+                if (existingPostDocument) {
+                    return
                 }
 
-                const posts = await fb.getGroupPosts(group.id, { dateRange: { endAfter: endDate }, sorting: 'new' }, async postData => {
-                    const post = new Post(postData)
-
-                    const existingPostDocument = await Post.findOne({ id: post.id, 'group.id': post.group.id })
-
-                    if (existingPostDocument) {
-                        return
-                        // continue
-                    }
-
-                    if (!await post.checkIfDupilcate()) {
-                        await post.getDeal()
-                    }
-
-                    console.log(post.metadata.associatedDeal ? 'DEAL' : '', post.metadata.duplicateOf ? 'DUPLICATE' : '', { name: post.author.name, id: post.id }, post.group.name, new Date(post.createdAt).toLocaleString())
-
-                    await post.save()
-                })
-
-                if (posts.length > 0) {
-                    await groupsCollection.updateOne({ id: group.id }, { $set: { lastScrapedPost: posts[0] } })
-                } else {
-                    group.nextCheckTime = Date.now() + (1000 * 60 * 60)
+                if (!await post.checkIfDupilcate()) {
+                    await post.getDeal()
                 }
-            } catch (error) {
-                error.caught = "Moving on to check next group."
 
-                console.dir(error, {depth: null})
+                console.log(post.metadata.associatedDeal ? 'DEAL' : '', post.metadata.duplicateOf ? 'DUPLICATE' : '', { name: post.author.name, id: post.id }, post.group.name, new Date(post.createdAt).toLocaleString())
+
+                await post.save()
+            })
+
+            if (posts.length > 0) {
+                await groupsCollection.updateOne({ id: group.id }, { $set: { lastScrapedPost: posts[0] } })
             }
+        } catch (error) {
+            error.caught = "Moving on to check next group."
+
+            console.log(error)
+        } finally {
+            if (checkQueue.length === 0) checkQueue = shuffleArray([...groups])
+
+            await new Promise(resolve => setTimeout(resolve, 1000 * 60 * 30))
         }
     }
 
