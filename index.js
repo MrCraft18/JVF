@@ -82,13 +82,15 @@ async function scrapePostsLoop() {
                 var endDate = new Date(Date.now() - (1000 * 60 * 60 * 24))
             }
 
-            const posts = await fb.getGroupPosts(group.id, { dateRange: { endAfter: endDate }, sorting: 'new' }, async postData => {
+            const posts = await fb.getGroupPosts(group.id, { dateRange: { endAfter: endDate }, sorting: 'new' })
+
+            for (const postData of posts) {
                 const post = new Post(postData)
 
                 const existingPostDocument = await Post.findOne({ id: post.id, 'group.id': post.group.id })
 
                 if (existingPostDocument) {
-                    return
+                    continue
                 }
 
                 if (!await post.checkIfDupilcate()) {
@@ -98,7 +100,7 @@ async function scrapePostsLoop() {
                 console.log(post.metadata.associatedDeal ? 'DEAL' : '', post.metadata.duplicateOf ? 'DUPLICATE' : '', { name: post.author.name, id: post.id }, post.group.name, new Date(post.createdAt).toLocaleString())
 
                 await post.save()
-            })
+            }
 
             if (posts.length > 0) {
                 await groupsCollection.updateOne({ id: group.id }, { $set: { lastScrapedPost: posts[0] } })
