@@ -106,8 +106,6 @@ class NavBar extends HTMLElement {
 
             history.customCache[window.location.href] = $('body').contents()
         } else {
-            console.log(this.getAttribute('currentNav'))
-
             switch (this.getAttribute('currentNav')) {
                 case 'dashboard':
                     $('nav-bar').prev().replaceWith(/*html*/`

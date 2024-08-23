@@ -122,11 +122,9 @@ router.get('/queryOptions', async (req, res) => {
 
 router.post('/deals', async (req, res) => {
     try {
-        //Add Error display to component
-
         if (!req.body.limit) return res.status(400).json({ error: "Missing 'limit' parameter." })
 
-        if (req.body.limit > 50) return res.status(400).json({ error: 'Limit must be less than 50.' })
+        // if (req.body.limit > 50) return res.status(400).json({ error: 'Limit must be less than 50.' })
 
         if (!req.body['sort']) return res.status(400).json({ error: "Missing 'sort' parameter." })
 
@@ -210,8 +208,6 @@ router.get('/deal', async (req, res) => {
 
 router.post('/changeLabel', async (req, res) => {
     try {
-        //Add Error display to component
-
         if (req.user.role != 'checker' && req.user.role != 'editor' && req.user.role != 'admin') return res.status(401).send('You do not have permission to edit this.')
 
         await Deal.updateOne({ _id: new ObjectId(req.body.id) }, { $set: { label: req.body.label } })
@@ -225,8 +221,6 @@ router.post('/changeLabel', async (req, res) => {
 
 router.post('/dealCounts', async (req, res) => {
     try {
-        //Add Error display to component
-
         const pipe = []
 
         createAggregationPipeFromQuery(req.body).forEach(step => {
@@ -257,6 +251,8 @@ router.post('/verifyDeal', async (req, res) => {
 
         if (!deal) return res.status(400).send('Deal not found')
 
+        if (deal.verified) return res.status(400).send('Deal is already verified')
+
         if (req.body.category === 'None') {
             const post = await Post.findById(deal.associatedPost)
 
@@ -272,6 +268,7 @@ router.post('/verifyDeal', async (req, res) => {
             if (deal.category === 'Land Deal') delete deal.arv
 
             deal.verified = true
+            deal.verifiedByUser = req.user._id
 
             await deal.save()
         }

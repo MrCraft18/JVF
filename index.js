@@ -103,14 +103,14 @@ async function scrapePostsLoop() {
             if (posts.length > 0) {
                 await groupsCollection.updateOne({ id: group.id }, { $set: { lastScrapedPost: posts[0] } })
             }
+
+            await new Promise(resolve => setTimeout(resolve, 1000 * 60 * 30))
         } catch (error) {
             error.caught = "Moving on to check next group."
 
             console.log(error)
         } finally {
             if (checkQueue.length === 0) checkQueue = shuffleArray([...groups])
-
-            await new Promise(resolve => setTimeout(resolve, 1000 * 60 * 30))
         }
     }
 
