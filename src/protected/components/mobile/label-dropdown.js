@@ -13,27 +13,40 @@ class LabelDropdown extends HTMLElement {
                 height: 65%;
             }
 
+            .unchecked {
+                border: 4px solid var(--dark-color-3);
+                color: var(--dark-color-3);
+            }
+
+            .checked {
+                border: 4px solid var(--dark-color-4);
+                color: var(--dark-color-4);
+            }
+
             .dropdown-button {
-                background-color: var(--color-4);
+                background-color: var(--dark-color-1);
+                filter: brightness(95%);
                 display: flex;
                 flex-direction: row;
                 align-items: center;
                 padding: 0px 1.8vh;
                 height: 100%;
                 border-radius: 8px;
+                box-sizing: border-box;
             }
 
             .dropdown-button h4 {
                 text-align: center;
                 margin: 0px;
-                color: white;
             }
 
             .dropdown-button svg {
                 margin-left: 2vw;
                 height: 1em;
                 aspect-ratio: 1 / 1;
-                fill: white;
+                fill: currentColor;
+                transform: rotate(-180deg);
+                transition: transform 0.3s ease-in-out;
             }
 
             .dropdown-options {
@@ -79,7 +92,7 @@ class LabelDropdown extends HTMLElement {
                 `).join('')}
             </div>
 
-            <div class="dropdown-button">
+            <div class="dropdown-button ${this.getAttribute('defaultOption').toLowerCase()}">
                 <h4>${this.getAttribute('defaultOption')}</h4>
 
                 <!-- Dropdown SVG -->
@@ -87,8 +100,41 @@ class LabelDropdown extends HTMLElement {
             </div>
         `)
 
+        this.selectedOption = this.getAttribute('defaultOption')
+        this.hasBeenClicked = false
+
         this.$shadowRoot.find('.dropdown-button').on('click', () => {
-            this.$shadowRoot.find('.dropdown-options').slideToggle('fast')
+            if (!this.hasBeenClicked && this.selectedOption === 'Unchecked') {
+                api.post('/changeLabel', {
+                    id: this.getAttribute('_id'),
+                    label: 'Checked'
+                }).then(() => {
+                    console.log(`Changed Label of ${this.getAttribute('_id')} to ${'Checked'}`)
+
+                    this.$shadowRoot.find('.dropdown-button > h4').text('Checked')
+
+                    this.selectedOption = 'Checked'
+
+                    this.$shadowRoot.find('.dropdown-button').attr('class', `dropdown-button checked`)
+                })
+                .catch(error => {
+                    console.error('Request Error:', error)
+
+                    $('<notification-banner></notification-banner>')[0].apiError(error, 'Change Label')
+                })
+            } else {
+                this.$shadowRoot.find('.dropdown-options').slideToggle('fast')
+
+                console.log(this.$shadowRoot.find('.dropdown-options').height())
+
+                if (this.$shadowRoot.find('.dropdown-options').height() < 5) {
+                    this.$shadowRoot.find('svg').css({ transform: 'rotate(0deg)' })
+                } else {
+                    this.$shadowRoot.find('svg').css({ transform: 'rotate(-180deg)' })
+                }
+            }
+
+            this.hasBeenClicked = true
         })
 
         this.$shadowRoot.find('.dropdown-item').on('click', async event => {
@@ -105,6 +151,8 @@ class LabelDropdown extends HTMLElement {
                 this.$shadowRoot.find('.dropdown-button > h4').text(dropdownItemDiv.text())
 
                 if (this.selectedOption != dropdownItemDiv.text()) this.selectedOption = dropdownItemDiv.text()
+
+                this.$shadowRoot.find('.dropdown-button').attr('class', `dropdown-button ${dropdownItemDiv.text().toLowerCase()}`)
             })
             .catch(error => {
                 console.error('Request Error:', error)

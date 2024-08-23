@@ -216,7 +216,7 @@ router.post('/changeLabel', async (req, res) => {
 
         if (req.body.label === 'Checked') deal.checkedBy = req.user._id
 
-        if (req.body.label === 'Unchecked') delete deal.checkedBy
+        if (req.body.label === 'Unchecked') deal.checkedBy = undefined
 
         await deal.save()
 
