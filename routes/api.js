@@ -210,7 +210,15 @@ router.post('/changeLabel', async (req, res) => {
     try {
         if (req.user.role != 'checker' && req.user.role != 'editor' && req.user.role != 'admin') return res.status(401).send('You do not have permission to edit this.')
 
-        await Deal.updateOne({ _id: new ObjectId(req.body.id) }, { $set: { label: req.body.label } })
+        const deal = await Deal.findById(req.body.id)
+
+        deal.label = req.body.label
+
+        if (req.body.label === 'Checked') deal.checkedBy = req.user._id
+
+        if (req.body.label === 'Unchecked') delete deal.checkedBy
+
+        await deal.save()
 
         res.sendStatus(200)
     } catch (error) {

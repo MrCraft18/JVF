@@ -9,9 +9,17 @@ const dealSchema = mongoose.Schema({
         type: String,
         default: 'Unchecked'
     },
+    checkedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+    },
     verified: {
         type: Boolean,
         default: false
+    },
+    verifiedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
     },
     address: {
         streetName: String,
