@@ -30,7 +30,6 @@ const dealSchema = mongoose.Schema({
     },
     price: Number,
     arv: Number,
-    priceToARV: Number,
     associatedPost: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Post',

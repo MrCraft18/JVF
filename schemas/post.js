@@ -86,42 +86,9 @@ postSchema.methods.allText = function() {
 postSchema.methods.checkIfDupilcate = async function () {
     const Post = this.model('Post')
 
-    const postsCursor = Post.find({ 'metadata.duplicateOf': { $exists: false } }, { text: 1, 'attachedPost.text': 1, 'metadata.duplicatePosts': 1 }).sort({ _id: -1 }).cursor()
+    const postsCursor = await Post.find({ 'metadata.duplicateOf': { $exists: false } }, { text: 1, 'attachedPost.text': 1, 'metadata.duplicatePosts': 1 }).sort({ _id: -1 })
 
-    // return new Promise((resolve, reject) => {
-    //     let cursorClosed = false
-
-    //     postsCursor.on('data', async postDoc => {
-    //         if (cursorClosed) return
-
-    //         const post = new Post(postDoc)
-
-    //         if (fuzz.ratio(this.allText(), post.allText()) > 90) {
-    //             cursorClosed = true
-    //             postsCursor.close()
-
-    //             this.metadata.duplicateOf = post._id
-
-    //             resolve(true)
-
-    //             if (post.metadata.duplicatePosts) {
-    //                 post.metadata.duplicatePosts.push(this._id)
-    //             } else {
-    //                 post.metadata.duplicatePosts = [this._id]
-    //             }
-
-    //             await post.save()
-    //         }
-    //     })
-
-    //     postsCursor.on('end', () => {
-    //         if (!cursorClosed) {
-    //             resolve(false)
-    //         }
-    //     })
-    // })
-
-    for await (const postDoc of postsCursor) {
+    for (const postDoc of postsCursor) {
         const post = new Post(postDoc)
         const similarity = fuzz.ratio(this.allText(), post.allText())
 
@@ -207,7 +174,6 @@ postSchema.methods.getDeal = async function() {
         },
         price: extractedInfo.price,
         arv: predictionResult.category != 'Land Deal' ? extractedInfo.arv : undefined,
-        priceToARV: extractedInfo.price && extractedInfo.arv && predictionResult.category != 'Land Deal' ? extractedInfo.price / extractedInfo.arv : undefined,
         associatedPost: this._id
     })
 
