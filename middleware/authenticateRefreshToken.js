@@ -1,18 +1,12 @@
 import jwt from 'jsonwebtoken'
-import { MongoClient, ObjectId } from 'mongodb'
+import RefreshToken from '../schemas/RefreshToken.js';
 import { configDotenv } from 'dotenv'; configDotenv()
-
-const databaseClient = new MongoClient(process.env.MONGODB_URI)
-const refreshTokensCollection = databaseClient.db('JVF').collection('refreshTokens')
-const usersCollection = databaseClient.db('JVF').collection('users')
 
 export default async (req, res, next) => {
     try {
-        // console.log(req.url)
-
         if (!req.cookies.refreshToken) return res.sendStatus(401)
 
-        const storedRefreshToken = await refreshTokensCollection.findOne({ token: req.cookies.refreshToken })
+        const storedRefreshToken = await RefreshToken.findOne({ token: req.cookies.refreshToken })
 
         if (!storedRefreshToken) {
             console.log('Refresh Token doesnt exist sent 401')
@@ -30,12 +24,6 @@ export default async (req, res, next) => {
             req.userID = data.id
 
             next()
-
-            // if (req.path.includes('/pages/')) {
-            //     const user = await usersCollection.findOne({ _id: new ObjectId(data.id) }, { projection: { name: 1} })
-
-            //     console.log(`${user.name.first} ${user.name.last} Successfully Reached ${req.url}`)
-            // }
         })
     } catch (error) {
         console.error(error)

@@ -1,12 +1,9 @@
 import express from 'express'
 import bcrypt from 'bcryptjs'
-import Deal from '../schemas/deal.js'
-import Post from '../schemas/post.js'
-import { MongoClient, ObjectId } from 'mongodb'
+import User from '../schemas/User.js'
+import Deal from '../schemas/Deal.js'
+import Post from '../schemas/Post.js'
 import { configDotenv } from 'dotenv'; configDotenv()
-
-const databaseClient = new MongoClient(process.env.MONGODB_URI)
-const usersCollection = databaseClient.db('JVF').collection('users')
 
 const router = express.Router()
 
@@ -22,7 +19,7 @@ router.post('/createUser', async (req, res) => {
 
         if (!req.body.password) return res.status(400).send("Missing Password")
 
-        const existingUser = await usersCollection.findOne({ 'name.first': req.body.name.first, 'name.last': req.body.name.last })
+        const existingUser = await User.findOne({ 'name.first': req.body.name.first, 'name.last': req.body.name.last })
 
         if (existingUser) return res.status(409).send("User With Same Name Exists")
 
@@ -30,7 +27,7 @@ router.post('/createUser', async (req, res) => {
 
         req.body.password = hashedPassword
 
-        await usersCollection.insertOne(req.body)
+        await User.insertOne(req.body)
 
         res.sendStatus(201)
     } catch (error) {
@@ -43,7 +40,7 @@ router.get('/allUsers', async (req, res) => {
     try {
         if (req.user.role != 'admin') return res.sendStatus(401)
 
-        const users = await usersCollection.find({}, { projection: { password: 0 } }).toArray()
+        const users = await User.find({}, { projection: { password: 0 } }).toArray()
 
         res.status(200).json(users)
     } catch (error) {
@@ -54,7 +51,7 @@ router.get('/allUsers', async (req, res) => {
 
 router.get('/user', async (req, res) => {
     try {
-        const user = await usersCollection.findOne({ _id: new ObjectId(req.user._id) }, { projection: { password: 0 } })
+        const user = await User.findOne({ _id: new ObjectId(req.user._id) }, { projection: { password: 0 } })
 
         res.status(200).json(user)
     } catch (error) {
@@ -137,7 +134,7 @@ router.post('/deals', async (req, res) => {
 
         const [deals] = await Promise.all([
             Deal.aggregate(pipe),
-            usersCollection.updateOne({ _id: new ObjectId(req.user._id) }, { $set: { dealsQuery: req.body } })
+            User.updateOne({ _id: new ObjectId(req.user._id) }, { $set: { dealsQuery: req.body } })
         ])
 
         const next = (() => {

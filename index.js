@@ -1,5 +1,5 @@
 import Facebook from 'facebook.js'
-import Post from './schemas/post.js'
+import Post from './schemas/Post.js'
 import cron from 'node-cron'
 import io from 'socket.io-client'
 import { MongoClient, ObjectId } from 'mongodb'

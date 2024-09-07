@@ -15,10 +15,7 @@
     "express": "^4.19.2",
     "fuzzball": "^2.1.2",
     "jsonwebtoken": "^9.0.2",
-    "mongodb": "^6.7.0",
     "mongoose": "^8.4.4",
-    "node-calls-python": "^1.9.1",
-    "node-cron": "^3.0.3",
     "openai": "^4.51.0",
     "socket.io": "^4.7.5",
     "socket.io-client": "^4.7.5"

@@ -1,9 +1,6 @@
 import jwt from 'jsonwebtoken'
-import { MongoClient, ObjectId } from 'mongodb'
+import RefreshToken from '../schemas/RefreshToken.js'
 import { configDotenv } from 'dotenv'; configDotenv()
-
-const databaseClient = new MongoClient(process.env.MONGODB_URI)
-const refreshTokensCollection = databaseClient.db('JVF').collection('refreshTokens')
 
 export default (req, res, next) => {
     try {
@@ -13,7 +10,7 @@ export default (req, res, next) => {
         if (!authToken) return res.sendStatus(401)
 
         jwt.verify(authToken, process.env.ACCESS_TOKEN_SECRET, async (error, data) => {
-            const storedParentToken = await refreshTokensCollection.findOne({ token: data.parentToken })
+            const storedParentToken = await RefreshToken.findOne({ token: data.parentToken })
 
             if (error) return res.sendStatus(401)
 
