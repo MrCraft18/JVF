@@ -5,14 +5,12 @@ import predictCategories from '../functons/predictCategories.js'
 import axios from 'axios'
 import Email from './Email.js'
 import Deal from './Deal.js'
+import Group from './Group.js'
 import mongoose from 'mongoose'
-import { MongoClient, ObjectId } from 'mongodb'
 import { configDotenv } from 'dotenv'; configDotenv()
 
+await mongoose.connect(process.env.MONGODB_URI)
 
-
-const databaseClient = new MongoClient(process.env.MONGODB_URI)
-const groupsCollection = databaseClient.db('JVF').collection('groups')
 
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY
@@ -79,7 +77,7 @@ const postSchema = new mongoose.Schema({
     }
 })
 
-postSchema.methods.allText = function() {
+postSchema.methods.allText = function () {
     return `${this.text || ''}${this.attachedPost?.text ? `\n${this.attachedPost.text}` : ''}`
 }
 
@@ -109,7 +107,7 @@ postSchema.methods.checkIfDupilcate = async function () {
     return false
 }
 
-postSchema.methods.getDeal = async function() {
+postSchema.methods.getDeal = async function () {
     //Get Predicted Category
     const predictionResult = await predictCategories([this.allText()]).then(results => results[0])
 
@@ -152,14 +150,18 @@ postSchema.methods.getDeal = async function() {
     // }
 
     if (extractedInfo.zip && !extractedInfo.state) {
-        const zipSearch = await axios.get(`http://api.zippopotam.us/us/${extractedInfo.zip}`).then(response => response.data)
+        try {
+            const zipSearch = await axios.get(`http://api.zippopotam.us/us/${extractedInfo.zip}`).then(response => response.data)
 
-        extractedInfo.state = zipSearch.places[0]['state abbreviation']
-        extractedInfo.city = zipSearch.places[0]['place name']
+            extractedInfo.state = zipSearch.places[0]['state abbreviation']
+            extractedInfo.city = zipSearch.places[0]['place name']
+        } catch (error) {
+            if (error?.response?.status !== 404) throw error
+        }
     }
 
     if (!extractedInfo.zip && !extractedInfo.state) {
-        const group = await groupsCollection.findOne({ id: this.group.id })
+        const group = await Group.findOne({ id: this.group.id })
         extractedInfo.state = group.impliedState
     }
 
@@ -179,10 +181,10 @@ postSchema.methods.getDeal = async function() {
 
     this.metadata.associatedDeal = deal._id
 
-    await deal.save()
+    return deal
 }
 
-postSchema.methods.extractEmails = async function() {
+postSchema.methods.extractEmails = async function () {
     let searchText = this.allText()
 
     if (this.comments) {
@@ -201,24 +203,17 @@ postSchema.methods.extractEmails = async function() {
         })
     }
 
-    const emails = new Set(searchText.match(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g) || [])
+    const emails = new Set(searchText.toLowerCase().match(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g) || [])
 
-    for (const email of emails) {
-        const existingEmailDoc = await Email.findOne({ email })
-
-        if (!existingEmailDoc) {
-            const emailDoc = new Email({
-                email,
-                post: this._id
-            })
-
-            console.log('Found Email:', email)
-
-            await emailDoc.save()
-        }
-    }
+    const emailDocs = (await Promise.all(
+        Array.from(emails).map(async email =>
+            await Email.findOne({ email }) ? null : new Email({ email, post: this._id })
+        )
+    )).filter(emailDoc => emailDoc !== null)
 
     this.metadata.checkedForEmails = true
+
+    return emailDocs
 }
 
 export default mongoose.model('Post', postSchema)
@@ -243,6 +238,5 @@ async function promptGPT(systemPrompt, userPrompt) {
         response_format: {
             type: 'json_object'
         }
-    })
-    .then(response => JSON.parse(response.choices[0].message.content))
+    }).then(response => JSON.parse(response.choices[0].message.content))
 }

@@ -32,11 +32,9 @@ async function main() {
                         assignedGroups: { $includes: group.id }
                     }).sort({ createdAt: 1 })
 
-                    const proxy = ScrapingProxy.findOne()
-
-                    return facebook.createContext().setAccount(account).setProxy(proxy)
+                    return facebook.createContext({ account, proxy: account.proxy })
                 } else {
-                    return facebook.createContext().setRemoteCDP(process.env.REMOTE_CDP)
+                    return facebook.createContext({ proxy })
                 }
             })()
 
@@ -72,7 +70,8 @@ async function main() {
                         }
 
                         if (!await post.checkIfDupilcate()) {
-                            await post.getDeal()
+                            const deal = await post.getDeal()
+                            if (deal) await deal.save()
                         }
 
                         console.log('POST: ', post.metadata.associatedDeal ? 'DEAL' : '', post.metadata.duplicateOf ? 'DUPLICATE' : '', { name: post.author.name, id: post.id }, post.group.name, new Date(post.createdAt).toLocaleString())
