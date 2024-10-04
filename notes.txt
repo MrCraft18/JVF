@@ -69,3 +69,19 @@ HIGHER SCORE FOR DUPLCATE POSTS IS BETTER
 
 Highest similarity for NON-duplicate posts needs to be < thresold
 LOWER SCORE FOR NON DUPLCATE POSTS IS BETTER
+
+
+Error: Facebook Account doesnt have read access to Group.
+    at file:///home/user/programming/facebook.js/classes/Group/methods/findPosts/index.js:69:106
+    at runNextTicks (node:internal/process/task_queues:60:5)
+    at process.processImmediate (node:internal/timers:449:9)
+    at process.callbackTrampoline (node:internal/async_hooks:130:17)
+    at async executeWithRetry (file:///home/user/programming/facebook.js/common/executeWithRetry.js:6:20)
+    at async Group.findPosts (file:///home/user/programming/facebook.js/classes/Group/methods/findPosts/index.js:19:12)
+    at async file:///home/user/programming/JVF/newindex.js:81:31
+    at async Promise.all (index 24)
+    at async main (file:///home/user/programming/JVF/newindex.js:47:5) {
+  method: 'findPosts',
+  scrapingContext: { account: '6823909482' },
+  group: { name: 'TEXAS OFF-MARKET DEALS', id: '1567294316872709' }
+}

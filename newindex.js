@@ -5,109 +5,233 @@ import FacebookAccount from './schemas/FacebookAccount.js'
 import io from 'socket.io-client'
 import { configDotenv } from 'dotenv'; configDotenv()
 
-const socket = io(`http://localhost:${process.env.PORT}`, {
-    auth: {
-        clientType: 'scraper',
-        key: process.env.SCRAPER_WS_KEY
-    }
-})
+// const socket = io(`http://localhost:${process.env.PORT}`, {
+//     auth: {
+//         clientType: 'scraper',
+//         key: process.env.SCRAPER_WS_KEY
+//     }
+// })
 
 async function main() {
-    await new Promise(res => setTimeout(res, getDelay()))
+    // await new Promise(res => setTimeout(res, getDelay()))
 
-    const groupDocs = await Group.find()
+    const groups = await Group.find()
 
-    const facebook = new FacebookJS({ headless: true, maxConcurrentTasks: 2, allowAccountConcurrentTaks: false })
+    const facebook = new FacebookJS({ headless: false, maxConcurrentTasks: 2, allowAccountConcurrentTaks: false })
 
-    await Promise.all(groupDocs.map(group => {
-        return new Promise(async resolve => {
-            const fbContext = await (async () => {
-                if (group.isPrivate) {
-                    const account = await FacebookAccount.findOne({
-                        suspended: false,
-                        $or: [
-                            { noGroupAccessOn: { $exists: false } },
-                            { noGroupAccessOn: new Date(new Date().setDate(new Date().getDate() - 1)) }
-                        ],
-                        assignedGroups: { $includes: group.id }
-                    }).sort({ createdAt: 1 })
+    const accounts = await FacebookAccount.find()
 
-                    return facebook.createContext({ account, proxy: account.proxy })
-                } else {
-                    return facebook.createContext({ proxy })
-                }
-            })()
 
-            let skipDelay = true
-            while (!getDelay()) {
-                if (skipDelay) {
-                    skipDelay = false
-                } else {
-                    const minWait = 1000 * 60 * 15
-                    const maxWait = 1000 * 60 * 60
-                    await new Promise(res => setTimeout(res, Math.floor(Math.random() * (maxWait - minWait + 1)) + minWait))
-                }
+    await Promise.all(accounts.map(async account => {
+        try {
+            await facebook.createContext({ account, proxy: account.proxy })
 
-                try {
-                    const lastScrapedPost = await Group.findOne({ id: group.id }).select('lastScrapedPost').then(doc => doc.lastScrapedPost)
-
-                    console.log('\n', 'GROUP: ', JSON.stringify(group), new Date().toLocaleString())
-
-                    const posts = await fbContext.group(group.id).posts({
-                        dateRange: {
-                            minDate: lastScrapedPost && Math.abs(lastScrapedPost.createdAt - new Date()) / (1000 * 60 * 60) < 24 ? lastScrapedPost.createdAt : new Date(Date.now() - (1000 * 60 * 60 * 24))
-                        },
-                        sorting: 'new'
-                    })
-
-                    for (const postData of posts) {
-                        const post = new Post(postData)
-
-                        const existingPostDocument = await Post.findOne({ id: post.id, 'group.id': post.group.id })
-
-                        if (existingPostDocument) {
-                            continue
-                        }
-
-                        if (!await post.checkIfDupilcate()) {
-                            const deal = await post.getDeal()
-                            if (deal) await deal.save()
-                        }
-
-                        console.log('POST: ', post.metadata.associatedDeal ? 'DEAL' : '', post.metadata.duplicateOf ? 'DUPLICATE' : '', { name: post.author.name, id: post.id }, post.group.name, new Date(post.createdAt).toLocaleString())
-
-                        await post.save()
-                    }
-
-                    //Update last scraped post group document if everything went well.
-                    if (posts.length) Group.updateOne({ id: group.id }, { $set: { lastScrapedPost: posts[0] } })
-                } catch (error) {
-                    const expectedMessages = [
-                        'Facebook Account doesnt have read access to Group.',
-                        'Facebook Account is suspended',
-                        'IP is blocked'
-                    ]
-
-                    if (expectedMessages.find(expectedMessage => error.message.includes(expectedMessage))) {
-                        skipDelay = true
-
-                        if (error.message === 'Facebook Account doesnt have read access to Group.') account.noGroupAccessOn = new Date()
-
-                        if (error.message === 'Facebook Account is suspended') account.suspended = true
-
-                        await account.save()
-                    } else {
-                        console.log(`Stopped Group Checking for ${group.id} due to unknown error: ${error}`)
-                        break
-                    }
+            if (account.suspended) {
+                account.suspended = false
+                await account.save()
+            }
+        } catch (error) {
+            console.log(error)
+            if (error.message.includes('Facebook Account is suspended')) {
+                if (!account.suspended) {
+                    account.suspended = true
+                    await account.save()
                 }
             }
+        }
 
-            resolve()
-        })
+        //get joined groups
+        // await context.getJoinedGroups()
     }))
 
-    //Run email scrape
+    console.log(facebook.scrapingContexts.length)
+
+    // await Promise.all(groups.map(async group => {
+    //     let skipDelay = true
+    //     while (!getDelay()) {
+    //         if (skipDelay) {
+    //             skipDelay = false
+    //         } else {
+    //             const minWait = 1000 * 60 * 45
+    //             const maxWait = 1000 * 60 * 60
+    //             await new Promise(res => setTimeout(res, Math.floor(Math.random() * (maxWait - minWait + 1)) + minWait))
+    //         }
+
+    //         const account = (await FacebookAccount.aggregate([
+    //             {
+    //                 $match: {
+    //                     suspended: false,
+    //                     unavailableContentGroups: { $nin: [group.id] },
+    //                     ...(group.private && { joinedGroups: group.id })
+    //                 }
+    //             },
+    //             { $sample: { size: 1 } }
+    //         ]))[0]
+
+    //         if (!account) {
+    //             console.log(`No eligible Facebook Account for Group: ${group.id} stopping checks.`)
+    //             return
+    //         }
+
+    //         const fbContext = facebook.scrapingContexts.find(context => context.account.username === account.username)
+
+    //         try {
+    //             const lastScrapedPost = (await Group.findOne({ id: group.id }).populate('lastScrapedPost')).lastScrapedPost
+
+    //             console.log('\n', 'GROUP: ', JSON.stringify(group), new Date().toLocaleString())
+
+    //             const posts = await fbContext.group(group.id).findPosts({
+    //                 dateRange: {
+    //                     min: lastScrapedPost && Math.abs(lastScrapedPost.createdAt - new Date()) / (1000 * 60 * 60) < 24 ? lastScrapedPost.createdAt : new Date(Date.now() - (1000 * 60 * 60 * 24))
+    //                 },
+    //                 sorting: 'new'
+    //             })
+
+    //             console.log(facebook.taskQueue.length)
+
+    //             for (let i = 0; i < posts.length; i++) {
+    //                 const post = new Post(posts[i])
+
+    //                 const existingPostDocument = await Post.findOne({ id: post.id, 'group.id': post.group.id })
+
+    //                 if (existingPostDocument) {
+    //                     continue
+    //                 }
+
+    //                 if (!await post.checkIfDupilcate()) {
+    //                     await post.getDeal()
+    //                 }
+
+    //                 console.log('POST: ', post.metadata.associatedDeal ? 'DEAL' : '', post.metadata.duplicateOf ? 'DUPLICATE' : '', { name: post.author.name, id: post.id }, post.group.name, new Date(post.createdAt).toLocaleString())
+
+    //                 await post.save()
+
+    //                 if (i + 1 === posts.length) {
+    //                     group.lastScrapedPost = post._id
+    //                     await group.save()
+    //                 }
+    //             }
+
+    //             //Update last scraped post group document if everything went well.
+    //             // if (posts.length) await Group.updateOne({ id: group.id }, { $set: { lastScrapedPost: posts[0] } })
+    //         } catch (error) {
+    //             const expectedMessages = [
+    //                 'Facebook Account is suspended',
+    //                 "Group content isn't available",
+    //                 'Facebook Account doesnt have read access to Group',
+    //                 'ERR_TUNNEL_CONNECTION_FAILED',
+    //                 'ERR_HTTP_RESPONSE_CODE_FAILURE',
+    //                 'Timeout',
+    //                 'ECONNRESET'
+    //             ]
+
+    //             if (expectedMessages.find(expectedMessage => error.message.includes(expectedMessage))) {
+    //                 console.log(error)
+
+    //                 skipDelay = true
+
+    //                 if (error.message.includes('ERR_TUNNEL_CONNECTION_FAILED') || error.message.includes('ERR_HTTP_RESPONSE_CODE_FAILURE') || error.message.includes('Timeout') || error.message.includes('ECONNRESET')) {
+    //                     fbContext.proxyFailedAt = new Date()
+    //                     return
+    //                 }
+
+    //                 if (error.message.includes("Facebook Account doesnt have read access to Group")) {
+    //                     await Group.updateOne({ id: group.id }, { $set: { private: true } })
+    //                     return
+    //                 }
+
+    //                 const account = await FacebookAccount.findOne({ username: fbContext.account.username })
+
+    //                 if (error.message.includes("Group content isn't available")) account.unavailableContentGroups.push(group.id)
+
+    //                 if (error.message.includes('Facebook Account is suspended')) {
+    //                     account.suspended = true
+    //                     await fbContext.close()
+    //                 }
+
+    //                 await account.save()
+    //             } else {
+    //                 console.log(`Stopped Group Checking for ${group.id} due to unknown error:\n`, error)
+    //                 break
+    //             }
+    //         }
+    //     }
+    // }))
+
+    //Extract emails from posts that are a week old and havent been marked already extracted
+    const weekAgo = new Date()
+    weekAgo.setDate(weekAgo.getDate() - 7)
+
+    const posts = await Post.find({ 'metadata.checkedForEmails': false, createdAt: { $lte: weekAgo } })
+
+    console.log(posts.length)
+
+    let i = 0
+    while (i < posts.length) {
+        const post = posts[i]
+
+        console.log('Checking Post:', post.id)
+        console.log(posts.length - (i + 1))
+
+        const group = await Group.findOne({ id: post.group.id })
+
+        const account = (await FacebookAccount.aggregate([
+            {
+                $match: {
+                    suspended: false,
+                    unavailableContentGroups: { $nin: [group.id] },
+                    ...(group.private && { joinedGroups: group.id })
+                }
+            },
+            { $sample: { size: 1 } }
+        ]))[0]
+
+        if (!account) {
+            console.log(`No eligible Facebook Account for Group: ${group.id} can't get emails for ${post.id}.`)
+            continue
+        }
+
+        const fbContext = facebook.scrapingContexts.find(context => context.account.username === account.username)
+
+        try {
+            post.comments = await fbContext.group(post.group.id).post(post.id).getComments()
+
+            await post.extractEmails()
+
+            await post.save()
+
+            i++
+        } catch (error) {
+            const expectedMessages = [
+                'Facebook Account is suspended',
+                "Post content isn't available",
+                // 'Facebook Account doesnt have read access to Group',
+                'ERR_TUNNEL_CONNECTION_FAILED',
+                'ERR_HTTP_RESPONSE_CODE_FAILURE',
+                'Timeout',
+                'ECONNRESET'
+            ]
+
+            if (expectedMessages.find(expectedMessage => error.message.includes(expectedMessage))) {
+                if (error.message.includes('Facebook Account is suspended')) {
+                    const account = await FacebookAccount.findOne({ username: fbContext.account.username })
+                    account.suspended = true
+                    await account.save()
+                    await fbContext.close()
+                }
+
+                if (error.message.includes("Post content isn't available")) {
+                    post.metadata.checkedForEmails = true
+                    await post.save()
+                    i++
+                }
+            }
+        }
+    }
+
+    await facebook.close()
+
+    console.log('Done Checking Posts')
 
     main()
 }
@@ -117,8 +241,11 @@ main()
 
 function getDelay() {
     const now = new Date()
-    const targetTime = new Date(now).setHours(8, 0, 0, 0)
-    const endOfWorkDay = new Date(now).setHours(17, 0, 0, 0)
+    const targetTime = new Date(now)
+    targetTime.setHours(8, 0, 0, 0)
+
+    const endOfWorkDay = new Date(now)
+    endOfWorkDay.setHours(17, 0, 0, 0)
 
     if (now >= targetTime && now <= endOfWorkDay) {
         return 0

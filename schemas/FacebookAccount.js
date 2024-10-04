@@ -9,15 +9,11 @@ const facebookAccountSchema = new mongoose.Schema({
     email: String,
     phone: String,
     proxy: {
-        type: {
-            address: String,
-            port: String,
-            username: String,
-            password: String
-        },
+        type: Object,
         default: undefined
     },
     joinedGroups: [String],
+    unavailableContentGroups: [String],
     createdAt: {
         type: Date,
         default: new Date

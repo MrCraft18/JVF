@@ -181,7 +181,7 @@ postSchema.methods.getDeal = async function () {
 
     this.metadata.associatedDeal = deal._id
 
-    return deal
+    await deal.save()
 }
 
 postSchema.methods.extractEmails = async function () {
@@ -205,15 +205,21 @@ postSchema.methods.extractEmails = async function () {
 
     const emails = new Set(searchText.toLowerCase().match(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g) || [])
 
-    const emailDocs = (await Promise.all(
-        Array.from(emails).map(async email =>
-            await Email.findOne({ email }) ? null : new Email({ email, post: this._id })
-        )
-    )).filter(emailDoc => emailDoc !== null)
+    //If post has not been checked for a deal then do that.
+
+    await Promise.all(Array.from(emails).map(async email => {
+        if (!await Email.findOne({ email })) {
+            await new Email({
+                email,
+                post: this._id,
+                contextAddress: this.metadata.associatedDeal ? (await Deal.findById(this.metadata.associatedDeal)).address : { state: (await Group.findOne({ id: this.group.id })).impliedState }
+            }).save()
+
+            console.log('Found Email:', email)
+        }
+    }))
 
     this.metadata.checkedForEmails = true
-
-    return emailDocs
 }
 
 export default mongoose.model('Post', postSchema)
