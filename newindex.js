@@ -15,16 +15,27 @@ import { configDotenv } from 'dotenv'; configDotenv()
 async function main() {
     await new Promise(res => setTimeout(res, getDelay()))
 
+    console.log('Hero we go bois.')
+
     const groups = await Group.find()
 
-    const facebook = new FacebookJS({ headless: false, maxConcurrentTasks: 2, allowAccountConcurrentTaks: false })
+    const facebook = new FacebookJS({ headless: false, allowAccountConcurrentTaks: false })
 
     const accounts = await FacebookAccount.find()
 
 
     await Promise.all(accounts.map(async account => {
         try {
-            await facebook.createContext({ account, proxy: account.proxy })
+            await facebook.createContext({
+                account,
+                fingerprint: account.fingerprint,
+                remoteBrowserEndpoint: account.remoteBrowserEndpoint,
+                storageState: account.storageState,
+                onStorageUpdate: async function (storageState) {
+                    account.storageState = storageState
+                    await account.save()
+                }
+            })
 
             if (account.suspended) {
                 account.suspended = false
@@ -60,6 +71,7 @@ async function main() {
             const account = (await FacebookAccount.aggregate([
                 {
                     $match: {
+                        username: { $in: facebook.scrapingContexts.filter(context => context.browser.isConnected()).map(context => context.account.username) },
                         suspended: false,
                         unavailableContentGroups: { $nin: [group.id] },
                         ...(group.private && { joinedGroups: group.id })
@@ -87,7 +99,9 @@ async function main() {
                     sorting: 'new'
                 })
 
-                console.log(facebook.taskQueue.length)
+                console.log(facebook.taskQueue.length, `Checked with ${account.username}`
+
+                )
 
                 for (let i = 0; i < posts.length; i++) {
                     const post = new Post(posts[i])
@@ -116,6 +130,7 @@ async function main() {
                 // if (posts.length) await Group.updateOne({ id: group.id }, { $set: { lastScrapedPost: posts[0] } })
             } catch (error) {
                 const expectedMessages = [
+                    "Browser Server got disconnected.",
                     'Facebook Account is suspended',
                     "Group content isn't available",
                     'Facebook Account doesnt have read access to Group',
@@ -130,7 +145,7 @@ async function main() {
 
                     skipDelay = true
 
-                    if (error.message.includes('ERR_TUNNEL_CONNECTION_FAILED') || error.message.includes('ERR_HTTP_RESPONSE_CODE_FAILURE') || error.message.includes('Timeout') || error.message.includes('ECONNRESET')) {
+                    if (error.message.includes('ERR_TUNNEL_CONNECTION_FAILED') || error.message.includes('ERR_HTTP_RESPONSE_CODE_FAILURE') || error.message.includes('ECONNRESET')) {
                         fbContext.proxyFailedAt = new Date()
                         return
                     }
@@ -160,7 +175,7 @@ async function main() {
 
     //Extract emails from posts that are a week old and havent been marked already extracted
     const weekAgo = new Date()
-    weekAgo.setDate(weekAgo.getDate() - 7)
+    weekAgo.setDate(weekAgo.getDate() - 4)
 
     const posts = await Post.find({ 'metadata.checkedForEmails': false, createdAt: { $lte: weekAgo } })
 
@@ -178,6 +193,7 @@ async function main() {
         const account = (await FacebookAccount.aggregate([
             {
                 $match: {
+                    username: { $in: facebook.scrapingContexts.filter(context => context.browser.isConnected()).map(context => context.account.username) },
                     suspended: false,
                     unavailableContentGroups: { $nin: [group.id] },
                     ...(group.private && { joinedGroups: group.id })
@@ -188,10 +204,11 @@ async function main() {
 
         if (!account) {
             console.log(`No eligible Facebook Account for Group: ${group.id} can't get emails for ${post.id}.`)
+            i++
             continue
         }
 
-        const fbContext = facebook.scrapingContexts.find(context => context.account.username === account.username)
+        const fbContext = facebook.scrapingContexts.find(context => context.account.username === account.username && context.browser.isConnected())
 
         try {
             post.comments = await fbContext.group(post.group.id).post(post.id).getComments()
@@ -202,9 +219,12 @@ async function main() {
 
             i++
         } catch (error) {
+            console.log(error)
+
             const expectedMessages = [
                 'Facebook Account is suspended',
                 "Post content isn't available",
+                "Browser Server got disconnected.",
                 // 'Facebook Account doesnt have read access to Group',
                 'ERR_TUNNEL_CONNECTION_FAILED',
                 'ERR_HTTP_RESPONSE_CODE_FAILURE',
@@ -242,10 +262,10 @@ main()
 function getDelay() {
     const now = new Date()
     const targetTime = new Date(now)
-    targetTime.setHours(8, 0, 0, 0)
+    targetTime.setHours(8, 0, 0, 0) //CHANGE BACK TO 8
 
     const endOfWorkDay = new Date(now)
-    endOfWorkDay.setHours(17, 0, 0, 0)
+    endOfWorkDay.setHours(16, 0, 0, 0)
 
     if (now >= targetTime && now <= endOfWorkDay) {
         return 0

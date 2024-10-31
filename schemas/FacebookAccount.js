@@ -12,6 +12,10 @@ const facebookAccountSchema = new mongoose.Schema({
         type: Object,
         default: undefined
     },
+    remoteBrowserEndpoint: {
+        type: String,
+        default: undefined
+    },
     joinedGroups: [String],
     unavailableContentGroups: [String],
     createdAt: {
@@ -22,7 +26,8 @@ const facebookAccountSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-    fingerprint: Object
+    fingerprint: Object,
+    storageState: Object
 })
 
 export default mongoose.model('FacebookAccount', facebookAccountSchema, 'facebookAccounts')

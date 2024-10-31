@@ -19,16 +19,17 @@ router.post('/login', async (req, res) => {
             {
               'name.first': { $regex: new RegExp(`^${req.body.name.first}$`, 'i') },
               'name.last': { $regex: new RegExp(`^${req.body.name.last}$`, 'i') }
-            },
-            { projection: { password: 1 } }
+            }
         )
+
+        console.log(foundUser)
 
         if (!foundUser) return res.status(404).send("User Does Not Exist")
 
         if (await bcrypt.compare(req.body.password, foundUser.password)) {
             const refreshToken = jwt.sign({ id: foundUser._id.toString(), ip: req.ip }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '3d' })
 
-            await RefreshToken.insertOne({ token: refreshToken, createdAt: new Date() })
+            await new RefreshToken({ token: refreshToken }).save()
 
             res.cookie('refreshToken', refreshToken, { httpOnly: true, sameSite: 'strict', maxAge: 1000 * 60 * 60 * 24 * 3  })
             res.sendStatus(200)
@@ -44,7 +45,7 @@ router.post('/login', async (req, res) => {
 
 router.post('/accessToken', authenticateRefreshToken, async (req, res) => {
     try {
-        const user = await User.findOne({ _id: new ObjectId(req.userID) }, { projection: { name: 1, role: 1 } })
+        const user = await User.findById(req.userID)//.projection({ projection: { name: 1, role: 1 } })
 
         console.log(user)
 
@@ -52,7 +53,7 @@ router.post('/accessToken', authenticateRefreshToken, async (req, res) => {
         const accessToken = jwt.sign({ user, ip: req.ip, parentToken: newRefreshToken }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '5m' })
 
         await RefreshToken.deleteOne({ token: req.cookies.refreshToken })
-        await RefreshToken.insertOne({ token: newRefreshToken, createdAt: new Date() })
+        await new RefreshToken({ token: newRefreshToken }).save()
 
         res.cookie('refreshToken', newRefreshToken, { httpOnly: true, sameSite: 'strict', maxAge: 1000 * 60 * 60 * 24 * 3 })
         res.json({ accessToken })

@@ -3,7 +3,10 @@ import bcrypt from 'bcryptjs'
 import User from '../schemas/User.js'
 import Deal from '../schemas/Deal.js'
 import Post from '../schemas/Post.js'
+import mongoose from 'mongoose'
 import { configDotenv } from 'dotenv'; configDotenv()
+
+import { isValidObjectId } from 'mongoose'
 
 const router = express.Router()
 
@@ -51,7 +54,7 @@ router.get('/allUsers', async (req, res) => {
 
 router.get('/user', async (req, res) => {
     try {
-        const user = await User.findOne({ _id: new ObjectId(req.user._id) }, { projection: { password: 0 } })
+        const user = await User.findById(req.user._id) //{ projection: { password: 0 } }
 
         res.status(200).json(user)
     } catch (error) {
@@ -134,7 +137,7 @@ router.post('/deals', async (req, res) => {
 
         const [deals] = await Promise.all([
             Deal.aggregate(pipe),
-            User.updateOne({ _id: new ObjectId(req.user._id) }, { $set: { dealsQuery: req.body } })
+            User.updateOne({ _id: req.user._id }, { $set: { dealsQuery: req.body } })
         ])
 
         const next = (() => {
@@ -165,12 +168,12 @@ router.post('/deals', async (req, res) => {
 
 router.get('/deal', async (req, res) => {
     try {
-        if (!ObjectId.isValid(req.query.id)) return res.status(400).send('Invalid Deal ID')
+        if (!isValidObjectId(req.query.id)) return res.status(400).send('Invalid Deal ID')
 
         const deal = await Deal.aggregate([
             {
                 $match: {
-                    _id: new ObjectId(req.query.id)
+                    _id: new mongoose.Types.ObjectId(req.query.id)
                 }
             },
             {
