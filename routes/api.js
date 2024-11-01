@@ -54,7 +54,7 @@ router.get('/allUsers', async (req, res) => {
 
 router.get('/user', async (req, res) => {
     try {
-        const user = await User.findById(req.user._id) //{ projection: { password: 0 } }
+        const user = await User.findById(req.user._id, { password: 0 })
 
         res.status(200).json(user)
     } catch (error) {
