@@ -3,10 +3,9 @@ import bcrypt from 'bcryptjs'
 import User from '../schemas/User.js'
 import Deal from '../schemas/Deal.js'
 import Post from '../schemas/Post.js'
-import mongoose from 'mongoose'
 import { configDotenv } from 'dotenv'; configDotenv()
 
-import { isValidObjectId } from 'mongoose'
+import { isValidObjectId, Types } from 'mongoose'
 
 const router = express.Router()
 
@@ -173,7 +172,7 @@ router.get('/deal', async (req, res) => {
         const deal = await Deal.aggregate([
             {
                 $match: {
-                    _id: new mongoose.Types.ObjectId(req.query.id)
+                    _id: new Types.ObjectId(req.query.id)
                 }
             },
             {
@@ -396,7 +395,7 @@ function createAggregationPipeFromQuery(body) {
                         { [sortingField]: { [sortingDirection]: nextSortedValue } },
                         {
                             [sortingField]: { [sortingDirection]: nextSortedValue },
-                            _id: { [sortingDirection]: new ObjectId(nextID) }
+                            _id: { [sortingDirection]: new Types.ObjectId(nextID) }
                         }
                     ]
                 })() })
