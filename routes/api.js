@@ -29,7 +29,7 @@ router.post('/createUser', async (req, res) => {
 
         req.body.password = hashedPassword
 
-        await User.insertOne(req.body)
+        await new User(req.body).save()
 
         res.sendStatus(201)
     } catch (error) {
