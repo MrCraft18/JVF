@@ -23,8 +23,6 @@ router.post('/login', async (req, res) => {
             { password: 1, _id: 1 }
         )
 
-        console.log(foundUser)
-
         if (!foundUser) return res.status(404).send("User Does Not Exist")
 
         if (await bcrypt.compare(req.body.password, foundUser.password)) {

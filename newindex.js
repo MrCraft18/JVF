@@ -124,9 +124,6 @@ async function main() {
                         await group.save()
                     }
                 }
-
-                //Update last scraped post group document if everything went well.
-                // if (posts.length) await Group.updateOne({ id: group.id }, { $set: { lastScrapedPost: posts[0] } })
             } catch (error) {
                 const expectedMessages = [
                     "Browser Server got disconnected.",
@@ -178,12 +175,11 @@ async function main() {
 
     const posts = await Post.find({ 'metadata.checkedForEmails': false, createdAt: { $lte: weekAgo } })
 
+    console.log(posts.length)
+
     let i = 0
     while (i < posts.length) {
         const post = posts[i]
-
-        console.log('Checking Post:', post.id)
-        console.log(posts.length - (i + 1))
 
         const group = await Group.findOne({ id: post.group.id })
 
@@ -213,6 +209,8 @@ async function main() {
             await post.extractEmails()
 
             await post.save()
+
+            console.log('Checked Post:', post.id, account.username, posts.length - (i + 1))
 
             i++
         } catch (error) {
