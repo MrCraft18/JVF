@@ -30,37 +30,19 @@ DONE | Try speeding up deals-list loading by combining filter-options-sidebar re
 DONE | Add color coding to labels.
 DONE | Work on colors.
 DONE | Add total document matches to deals list page.
+DONE | Find out why the front-end axios requests decide to stop working randomly and are only fixed with a restart.
+DONE | Make verify info functionality.
+DONE | Error popups for api calls.
+DONE | 404 components for unused nav icons
+DONE | Back button in deal-view that saves your scroll position in your previous deals-list session
+DONE | Mess with component loading in router.html
+DONE | When nav-bar and title-bar are used for navigation in the app use component swapping instead of actual browser navigation.
+DONE | Emails need to be associated with cities from the deal they were posted with. And if they dont have a deal then they are associated with the state group.
+DONE | Add Florida Groups to group lists. Organge County, Orlando.
 
-LOW PRIORITY | Make deals list live update when new deals are found | Load images in deal-view (GridFS) | Make a map where deals that have full address are displayed on. (Extreme low priority) | Streamline adding facebook groups for branching into any market.
 
-Make verify info functionality.
-
-Error popups for api calls.
-
-404 components for unused nav icons
 
 Add user query instances for switching between multiple user defined queries
-
-Better App Navigation:
-    Back button in deal-view that saves your scroll position in your previous deals-list session
-    When nav-bar and title-bar are used for navigation in the app use component swapping instead of actual browser navigation.
-
-Mess with component loading in router.html
-
-FOCUS ON BRANCHING INTO ORLANDO
-    Emails need to be associated with cities from the deal they were posted with. And if they dont have a deal then they are associated with the state group.
-    Add Florida Groups to group lists. Organge County, Orlando.
-
-
-
-Front-End
-
-Back-End
-
-Future Plans
-
-Bug Fixing
-    Find out why the front-end axios requests decide to stop working randomly and are only fixed with a restart.
 
 
 
@@ -71,17 +53,5 @@ Highest similarity for NON-duplicate posts needs to be < thresold
 LOWER SCORE FOR NON DUPLCATE POSTS IS BETTER
 
 
-Error: Facebook Account doesnt have read access to Group.
-    at file:///home/user/programming/facebook.js/classes/Group/methods/findPosts/index.js:69:106
-    at runNextTicks (node:internal/process/task_queues:60:5)
-    at process.processImmediate (node:internal/timers:449:9)
-    at process.callbackTrampoline (node:internal/async_hooks:130:17)
-    at async executeWithRetry (file:///home/user/programming/facebook.js/common/executeWithRetry.js:6:20)
-    at async Group.findPosts (file:///home/user/programming/facebook.js/classes/Group/methods/findPosts/index.js:19:12)
-    at async file:///home/user/programming/JVF/newindex.js:81:31
-    at async Promise.all (index 24)
-    at async main (file:///home/user/programming/JVF/newindex.js:47:5) {
-  method: 'findPosts',
-  scrapingContext: { account: '6823909482' },
-  group: { name: 'TEXAS OFF-MARKET DEALS', id: '1567294316872709' }
-}
+
+LOW PRIORITY | Make deals list live update when new deals are found | Load images in deal-view (GridFS) | Make a map where deals that have full address are displayed on. (Extreme low priority) | Streamline adding facebook groups for branching into any market.

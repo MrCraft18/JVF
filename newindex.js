@@ -246,7 +246,7 @@ async function main() {
 
     await facebook.close()
 
-    console.log('Done Checking Posts')
+    console.log('Done Checking Posts', new Date().toLocaleString())
 
     main()
 }
