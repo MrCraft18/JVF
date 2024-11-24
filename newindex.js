@@ -183,6 +183,11 @@ async function main() {
 
         const group = await Group.findOne({ id: post.group.id })
 
+        if (!group) {
+            i++
+            continue
+        }
+
         const account = (await FacebookAccount.aggregate([
             {
                 $match: {
