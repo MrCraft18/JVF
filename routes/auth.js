@@ -30,7 +30,7 @@ router.post('/login', async (req, res) => {
 
             await new RefreshToken({ token: refreshToken }).save()
 
-            res.cookie('refreshToken', refreshToken, { httpOnly: true, sameSite: 'strict', maxAge: 1000 * 60 * 60 * 24 * 3  })
+            res.cookie('refreshToken', refreshToken, { httpOnly: true, sameSite: 'strict', maxAge: 1000 * 60 * 60 * 24 * 3 })
             res.sendStatus(200)
         } else {
             res.status(400).send("Incorrect Password")

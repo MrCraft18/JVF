@@ -8,7 +8,8 @@ const refreshTokensSchema = new mongoose.Schema({
     token: String,
     createdAt: {
         type: Date,
-        default: new Date
+        default: new Date,
+        expires: 1000 * 60 * 60 * 24 * 3
     }
 })
 
