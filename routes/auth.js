@@ -11,6 +11,8 @@ const router = express.Router()
 
 router.post('/login', async (req, res) => {
     try {
+        console.log(req.body)
+
         if (!req.body.name.first || !req.body.name.first) return res.status(400).send("Missing Name")
 
         if (!req.body.password) return res.status(400).send("Missing Password")
