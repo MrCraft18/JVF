@@ -1,0 +1,49 @@
+[ ] Make Desktop Page
+
+[X] Remove Redundant web components in the mobile page
+
+[X] Remove meme when no deals found
+
+[ ] Make it so every user has its own database for labeled deals
+
+[X] Remove the email scraping part
+
+[X] For the moment remove scraping in Florida groups
+
+[ ] Create account registration system
+
+[ ] Make images be shown in deal-view
+
+[ ] Replace verify info with flagging deals for specific reasons
+    - This is not an off market deal
+    - This is an SFH/Land deal
+    - Incorrect Info
+        - Price
+        - ARV
+        - Street Number
+        - Street Name
+        - City
+        - State
+        - ZIP
+    - Other:
+
+[X] Change deselect all button to toggle all button
+
+[ ] Add block author button to deal-view and change authors sider bar option to a list of blocked authors only with an X to unblock them. 
+
+[ ] Make it so when chat gpt parses a dumb city name it will map to the closest city with fuzzy find
+
+
+Elijah Talking Points:
+
+The scraping computer that was taken down? Not Crucial
+The HTTPS certrificate/domain stuff in general | Just have to add on?
+Email scraping? Omit
+Should we continue scraping florida? Omit
+Should we ask users what area they want deals in and only have deals in that region visible to them?
+Get external hosting (not hosting from my laptop)
+We should figure out a charging strategy for teams who want to buy the software and have multiple users for their organization
+
+
+Check if newwestern guy wants teams of users or every user is individual
+Elijah made the decision for to have every user seperate.

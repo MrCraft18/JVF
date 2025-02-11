@@ -121,7 +121,7 @@ class FilterOptionsSidebar extends HTMLElement {
                 color: white;
             }
 
-            .deselect-all {
+            .toggle-all {
                 height: 60%;
                 width: 30%;
                 border-radius: 8px;
@@ -151,7 +151,7 @@ class FilterOptionsSidebar extends HTMLElement {
                 color: var(--dark-color-2);
             }
 
-            .accordion-title:hover:active, .accordion-item:not(.search):active, .deselect-all:hover:active {
+            .accordion-title:hover:active, .accordion-item:not(.search):active, .toggle-all:hover:active {
                 filter: brightness(90%);
                 cursor: pointer;
             }
@@ -178,7 +178,7 @@ class FilterOptionsSidebar extends HTMLElement {
                             ${accordion.searchbar ? /*html*/`
                                 <div class="accordion-item search">
                                     <input type="text" placeholder="Search">
-                                    <div class="deselect-all">Deselect All</div>
+                                    <div class="toggle-all">Toggle All</div>
                                 </div>
 
                                 <div class="content-search-container">
@@ -265,11 +265,51 @@ class FilterOptionsSidebar extends HTMLElement {
             }
         })
 
-        this.$shadowRoot.find('input[type="checkbox"]').on('click', event => {
+        this.setAccordionItemEventListeners()
+
+        this.$shadowRoot.find('.search').on('input', event => {
+            const inputText = event.target.value.toLowerCase()
+
+            const itemsContainer = $(event.target).parent().next()
+
+            if (inputText === "") {
+                itemsContainer.find('> [key]').show()
+            } else {
+                itemsContainer.find('> [key]').each((_, element) => {
+                    if (!$(element).text().toLowerCase().includes(inputText)) {
+                        $(element).hide()
+                    } else {
+                        $(element).show()
+                    }
+                })
+            }
+        })
+
+        this.$shadowRoot.find('.toggle-all').on('click', event => {
+            const itemsContainer = $(event.target).parent().next()
+
+            const totalItems = itemsContainer.children().length
+            const checkedItems = itemsContainer.children().filter((_, element) => $(element).find('input').prop('checked')).length
+
+            itemsContainer.children().each((_, element) => {
+                const inputElement = $(element).find('input')[0]
+                inputElement.checked = (totalItems / 2) > checkedItems
+            })
+
+            this.dispatchEvent(new CustomEvent('valueChange', {
+                detail: { group: $(event.target).closest('.search').parent().parent().prev()[0].getAttribute('group'), key: null, value: null }
+            }))
+        })
+    }
+
+    setAccordionItemEventListeners(element) {
+        const parentElement = element || this.$shadowRoot
+
+        parentElement.find('input[type="checkbox"]').off('click').on('click', event => {
             event.stopPropagation()
         })
 
-        this.$shadowRoot.find('.accordion-item').has('> input').on('click', event => {
+        parentElement.find('.accordion-item').has('> input[type="checkbox"]').off('click').on('click', event => {
             const checkbox = $(event.currentTarget).find('input')[0]
 
             checkbox.checked = !checkbox.checked
@@ -277,7 +317,7 @@ class FilterOptionsSidebar extends HTMLElement {
             checkbox.dispatchEvent(new Event('change'))
         })
 
-        this.$shadowRoot.find('[key] > input').on('change', event => {
+        parentElement.find('[key] > input').off('change').on('change', event => {
             const input = $(event.target)
 
             const group = input.closest('.accordion-content').prev()[0].getAttribute('group')
@@ -289,34 +329,6 @@ class FilterOptionsSidebar extends HTMLElement {
             this.dispatchEvent(new CustomEvent('valueChange', {
                 detail: { group, key, value }
             }))
-        })
-
-        this.$shadowRoot.find('.search').on('input', event => {
-            const inputText = event.target.value.toLowerCase()
-
-            const itemsContainer = $(event.target).parent().next()
-
-            if (inputText === "") {
-                itemsContainer.find('> [key]').show()
-            } else {
-                itemsContainer.find('> [key]').each((index, element) => {
-                    if (!$(element).text().toLowerCase().includes(inputText)) {
-                        $(element).hide()
-                    } else {
-                        $(element).show()
-                    }
-                })
-            }
-        })
-
-        this.$shadowRoot.find('.deselect-all').on('click', event => {
-            const itemsContainer = $(event.target).parent().next()
-
-            itemsContainer.children().each((index, element) => {
-                const inputElement = $(element).find('input')[0]
-                inputElement.checked = false
-                inputElement.dispatchEvent(new Event('change'))
-            })
         })
     }
 
@@ -336,10 +348,10 @@ class FilterOptionsSidebar extends HTMLElement {
     options() {
         const result = {}
 
-        this.$shadowRoot.find('.accordion-title').each((index, element) => {
+        this.$shadowRoot.find('.accordion-title').each((_, element) => {
             const obj = {}
 
-            $(element).next().find('> div > [key]').each((index, element) => {
+            $(element).next().find('> div > [key]').each((_, element) => {
                 obj[element.getAttribute('key')] = getValue(element)
             })
 
@@ -369,7 +381,7 @@ class FilterOptionsSidebar extends HTMLElement {
         function extractSubAccordion(element) {
             const obj = {}
 
-            $(element).next().find('> div > [key]').each((index, element) => {
+            $(element).next().find('> div > [key]').each((_, element) => {
                 obj[element.getAttribute('key')] = getValue(element)
             })
 
@@ -380,7 +392,7 @@ class FilterOptionsSidebar extends HTMLElement {
 
 
     getGroupItems(group) {
-        return this.$shadowRoot.find(`[group="${group}"]`).next().find('.accordion-item[key]').map((index, element) => ({
+        return this.$shadowRoot.find(`[group="${group}"]`).next().find('.accordion-item[key]').map((_, element) => ({
             key: element.getAttribute('key'),
             value: $(element).find('input')[0].type === 'checkbox' ? $(element).find('input')[0].checked : $(element).find('input')[0].value
         })).get()
@@ -404,6 +416,7 @@ class FilterOptionsSidebar extends HTMLElement {
                 ${searchbar ? /*html*/`
                     <div class="accordion-item search">
                         <input type="text" placeholder="Search">
+                        <div class="toggle-all">Toggle All</div>
                     </div>
                     <div class="content-search-container">
                 ` : ''}
@@ -452,6 +465,8 @@ class FilterOptionsSidebar extends HTMLElement {
                 ` : ''}
             </div>
         `)
+
+        this.setAccordionItemEventListeners(accoridonContentDiv)
     }
 }
 

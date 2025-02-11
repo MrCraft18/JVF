@@ -17,7 +17,7 @@ async function main() {
 
     console.log('Hero we go bois.')
 
-    const groups = await Group.find()
+    const groups = await Group.find({ impliedState: "TX" })
 
     const facebook = new FacebookJS({ headless: false, allowAccountConcurrentTasks: false })
 
@@ -170,84 +170,84 @@ async function main() {
     }))
 
     //Extract emails from posts that are a week old and havent been marked already extracted
-    const weekAgo = new Date()
-    weekAgo.setDate(weekAgo.getDate() - 4)
-
-    const posts = await Post.find({ 'metadata.checkedForEmails': false, createdAt: { $lte: weekAgo } })
-
-    console.log(posts.length)
-
-    let i = 0
-    while (i < posts.length) {
-        const post = posts[i]
-
-        const group = await Group.findOne({ id: post.group.id })
-
-        if (!group) {
-            i++
-            continue
-        }
-
-        const account = (await FacebookAccount.aggregate([
-            {
-                $match: {
-                    username: { $in: facebook.scrapingContexts.filter(context => context.browser.isConnected()).map(context => context.account.username) },
-                    suspended: false,
-                    unavailableContentGroups: { $nin: [group.id] },
-                    ...(group.private && { joinedGroups: group.id })
-                }
-            },
-            { $sample: { size: 1 } }
-        ]))[0]
-
-        if (!account) {
-            console.log(`No eligible Facebook Account for Group: ${group.id} can't get emails for ${post.id}.`)
-            i++
-            continue
-        }
-
-        const fbContext = facebook.scrapingContexts.find(context => context.account.username === account.username && context.browser.isConnected())
-
-        try {
-            post.comments = await fbContext.group(post.group.id).post(post.id).getComments()
-
-            await post.extractEmails()
-
-            await post.save()
-
-            console.log('Checked Post:', post.id, account.username, posts.length - (i + 1))
-
-            i++
-        } catch (error) {
-            console.log(error)
-
-            const expectedMessages = [
-                'Facebook Account is suspended',
-                "Post content isn't available",
-                "Browser Server got disconnected.",
-                // 'Facebook Account doesnt have read access to Group',
-                'ERR_TUNNEL_CONNECTION_FAILED',
-                'ERR_HTTP_RESPONSE_CODE_FAILURE',
-                'Timeout',
-                'ECONNRESET'
-            ]
-
-            if (expectedMessages.find(expectedMessage => error.message.includes(expectedMessage))) {
-                if (error.message.includes('Facebook Account is suspended')) {
-                    const account = await FacebookAccount.findOne({ username: fbContext.account.username })
-                    account.suspended = true
-                    await account.save()
-                    await fbContext.close()
-                }
-
-                if (error.message.includes("Post content isn't available")) {
-                    post.metadata.checkedForEmails = true
-                    await post.save()
-                    i++
-                }
-            }
-        }
-    }
+    //const weekAgo = new Date()
+    //weekAgo.setDate(weekAgo.getDate() - 4)
+    //
+    //const posts = await Post.find({ 'metadata.checkedForEmails': false, createdAt: { $lte: weekAgo } })
+    //
+    //console.log(posts.length)
+    //
+    //let i = 0
+    //while (i < posts.length) {
+    //    const post = posts[i]
+    //
+    //    const group = await Group.findOne({ id: post.group.id })
+    //
+    //    if (!group) {
+    //        i++
+    //        continue
+    //    }
+    //
+    //    const account = (await FacebookAccount.aggregate([
+    //        {
+    //            $match: {
+    //                username: { $in: facebook.scrapingContexts.filter(context => context.browser.isConnected()).map(context => context.account.username) },
+    //                suspended: false,
+    //                unavailableContentGroups: { $nin: [group.id] },
+    //                ...(group.private && { joinedGroups: group.id })
+    //            }
+    //        },
+    //        { $sample: { size: 1 } }
+    //    ]))[0]
+    //
+    //    if (!account) {
+    //        console.log(`No eligible Facebook Account for Group: ${group.id} can't get emails for ${post.id}.`)
+    //        i++
+    //        continue
+    //    }
+    //
+    //    const fbContext = facebook.scrapingContexts.find(context => context.account.username === account.username && context.browser.isConnected())
+    //
+    //    try {
+    //        post.comments = await fbContext.group(post.group.id).post(post.id).getComments()
+    //
+    //        await post.extractEmails()
+    //
+    //        await post.save()
+    //
+    //        console.log('Checked Post:', post.id, account.username, posts.length - (i + 1))
+    //
+    //        i++
+    //    } catch (error) {
+    //        console.log(error)
+    //
+    //        const expectedMessages = [
+    //            'Facebook Account is suspended',
+    //            "Post content isn't available",
+    //            "Browser Server got disconnected.",
+    //            // 'Facebook Account doesnt have read access to Group',
+    //            'ERR_TUNNEL_CONNECTION_FAILED',
+    //            'ERR_HTTP_RESPONSE_CODE_FAILURE',
+    //            'Timeout',
+    //            'ECONNRESET'
+    //        ]
+    //
+    //        if (expectedMessages.find(expectedMessage => error.message.includes(expectedMessage))) {
+    //            if (error.message.includes('Facebook Account is suspended')) {
+    //                const account = await FacebookAccount.findOne({ username: fbContext.account.username })
+    //                account.suspended = true
+    //                await account.save()
+    //                await fbContext.close()
+    //            }
+    //
+    //            if (error.message.includes("Post content isn't available")) {
+    //                post.metadata.checkedForEmails = true
+    //                await post.save()
+    //                i++
+    //            }
+    //        }
+    //    }
+    //}
 
     await facebook.close()
 

@@ -56,6 +56,9 @@ router.post('/accessToken', authenticateRefreshToken, async (req, res) => {
 
         res.cookie('refreshToken', newRefreshToken, { httpOnly: true, sameSite: 'strict', maxAge: 1000 * 60 * 60 * 24 * 3 })
         res.json({ accessToken })
+
+        user.lastTokenAccess = new Date()
+        await user.save()
     } catch (error) {
         console.error(error)
         res.sendStatus(500)

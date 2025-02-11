@@ -1,5 +1,4 @@
 import './sorting-dropdown.js'
-import './filter-options-sidebar.js'
 import './deal-view.js'
 import './notification-banner.js'
 
@@ -12,28 +11,28 @@ class DealsList extends HTMLElement {
         this.$shadowRoot = $(this.shadowRoot)
 
         const styles = /*css*/`
-            :host {
+            :host(*) {
                 position: fixed;
-                top: ${$('title-bar').outerHeight()}px;
-                bottom: 0px;
-                width: 100%;
+                left: min(400px, 25vw);
+                width: 40vw;
+                max-width: 600px;
+                height: 100vh;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
-                max-height: calc(100vh - ${$('title-bar').outerHeight()}px);
-                z-index: 1;
+                border-right: 2px solid var(--dark-color-9);
+                box-sizing: border-box;
             }
 
             #top-bar {
                 background-color: var(--dark-color-1);
                 width: 100%;
-                height: 13vh;
-                display: grid;
-                grid-template-rows: 2fr 2fr 1fr;
-                grid-template-columns: 1fr;
-                flex-shrink: 0;
+                min-height: 4.5vh;
+                max-height: 4.5vh;
+                display: flex;
+                flex-direction: row;
                 align-items: center;
-                justify-items: center;
+                justify-content: space-around;
             }
 
             input {
@@ -47,12 +46,11 @@ class DealsList extends HTMLElement {
             }
 
             #searchbar {
-                align-self: center;
-                width: 85%;
-                height: 4vh;
+                width: 45%;
+                height: 80%;
                 border-radius: 8px;
                 font-size: 100%;
-                padding: 0.5vw 3vw;
+                padding: 0vw 1vw;
                 color: white;
                 background-color: var(--dark-color-8);
             }
@@ -61,53 +59,16 @@ class DealsList extends HTMLElement {
                 outline: 2px solid rgb(64, 46, 122);
             }
 
-            #options-container {
-                height: 4vh;
-                width: 100%;
-                display: flex;
-                flex-direction: row;
-                justify-content: space-around;
-                --option-button-background-color: var(--color-4);
-                --option-button-border-radius: 8px;
-                --option-button-height: 100%;
-                --option-button-padding: 3vw;
-                --option-button-border-radius: 100px;
-            }
-
-            #filter-button {
-                background-color: var(--option-button-background-color);
-                border-radius: var(--option-button-border-radius);
-                height: var(--option-button-height);
-                padding-left: var(--option-button-padding);
-                padding-right: 4vw;
-                display: flex;
-                flex-direction: row;
-                justify-content: center;
-                align-items: center;
-                color: white;
-            }
-
-            #filter-button h4 {
-                margin: 0px;
-                margin-left: 4vw;
-            }
-
-            #filter-button svg {
-                aspect-ratio: 1 / 1;
-                height: 60%;
-                fill: white;
-            }
-
-            .hover:hover:active {
+            .hover:hover {
                 cursor: pointer;
                 filter: brightness(90%);
             }
 
             #sort-by {
-                height: var(--option-button-height);
-                --dropdown-button-background-color: var(--option-button-background-color);
-                --dropdown-button-padding: var(--option-button-padding);
-                --dropdown-button-border-radius: var(--option-button-border-radius);
+                height: 80%;
+                --dropdown-button-background-color: var(--color-4);
+                --dropdown-button-padding: 1vw;
+                --dropdown-button-border-radius: 100px;
                 --dropdown-options-border-radius: 10px;
                 --dropdown-options-margin-top: 0.8vh;
                 --dropdown-item-font-size: 0.9rem;
@@ -117,11 +78,12 @@ class DealsList extends HTMLElement {
                 color: var(--dark-color-2);
                 font-size: 1.2rem;
                 font-weight: 500;
+                margin-bottom: 4px;
             }
 
             #list-container {
                 overflow-y: scroll;
-                    height: 100%;
+                height: 100%;
             }
 
             .deal-list-item {
@@ -129,7 +91,7 @@ class DealsList extends HTMLElement {
                 color: var(--dark-color-2);
                 width: 100%;
                 height: 120px;
-                padding: 1vw;
+                padding: 4px;
                 font-size: 1.1rem;
                 box-sizing: border-box;
                 display: grid;
@@ -148,7 +110,7 @@ class DealsList extends HTMLElement {
             }
 
             .deal-list-item > div:not(.icons-container) {
-                margin: auto 0.8vw;
+                margin: auto 4px;
                 padding: 0.1vh 1.5vw;
                 border-radius: 4px;
             }
@@ -163,7 +125,7 @@ class DealsList extends HTMLElement {
             }
 
             .icons-container > svg, .checkbox-container {
-                height: 30%;
+                height: 35%;
                 aspect-ratio: 1 / 1;
                 border-radius: 6px;
                 box-sizing: border-box;
@@ -211,7 +173,6 @@ class DealsList extends HTMLElement {
             }
 
             .deal-address {
-                font-size: 4.5vw;
                 font-weight: 800;
                 grid-area: 1 / 2 / 2 / 4;
             }
@@ -274,12 +235,10 @@ class DealsList extends HTMLElement {
             }
 
             .deal-info-field {
-                font-size: 4vw;
                 font-weight: 400;
             }
 
             .deal-info-value {
-                font-size: 4.5vw;
                 font-weight: 500;
             }
 
@@ -299,263 +258,31 @@ class DealsList extends HTMLElement {
     }
 
     async connectedCallback() {
-        $('title-bar')[0].backButton = false
-
         if (this.hasRendered) return this.reinsertedCallback() //Add function to only call when this is true. This should only occur when its reinstated from a cache.
 
         //Get User query params and then set them in sorting-dropdown and filter-options-sidebar.
 
-        const savedQuery = await api.get('/user').then(response => response.data.dealsQuery)
-        .catch(error => {
-            console.error('Request Error:', error)
-
-            $('<notification-banner></notification-banner>')[0].apiError(error, 'Get User Query')
-        })
-
-        console.log(savedQuery)
+        const savedQuery = await window.savedQueryPromise
 
         this.$shadowRoot.append(/*html*/`
             <div id="top-bar">
                 <input id="searchbar" type="text" placeholder="Search">
 
-                <div id="options-container">
-                    <div id="filter-button" class="hover">
-                        <!-- Filter SVG -->
-                         <svg viewBox="4 4 40.02 40"><g id="Layer_2" data-name="Layer 2"><g id="invisible_box" data-name="invisible box"><rect width="48" height="48" fill="none" /></g><g id="icons_Q2" data-name="icons Q2"><path d="M41.8,8H21.7A6.2,6.2,0,0,0,16,4a6,6,0,0,0-5.6,4H6.2A2.1,2.1,0,0,0,4,10a2.1,2.1,0,0,0,2.2,2h4.2A6,6,0,0,0,16,16a6.2,6.2,0,0,0,5.7-4H41.8A2.1,2.1,0,0,0,44,10,2.1,2.1,0,0,0,41.8,8Z"/><path d="M41.8,22H37.7A6.2,6.2,0,0,0,32,18a6,6,0,0,0-5.6,4H6.2a2,2,0,1,0,0,4H26.4A6,6,0,0,0,32,30a6.2,6.2,0,0,0,5.7-4h4.1a2,2,0,1,0,0-4Z"/><path d="M41.8,36H24.7A6.2,6.2,0,0,0,19,32a6,6,0,0,0-5.6,4H6.2a2,2,0,1,0,0,4h7.2A6,6,0,0,0,19,44a6.2,6.2,0,0,0,5.7-4H41.8a2,2,0,1,0,0-4Z"/></g></g></svg>
-
-                        <h4>Filter</h4>
-                    </div>
-
-                    <sorting-dropdown
-                        id="sort-by"
-                        defaultOption="${savedQuery?.sort || 'Date'}"
-                        options="Date Asking ARV Price/ARV"
-                        defaultOrder="${savedQuery?.order || 'descending'}"
-                    ></sorting-dropdown>
-                </div>
-
-                <span id="deal-count">...</span>
+                <sorting-dropdown
+                    id="sort-by"
+                    defaultOption="${savedQuery?.sort || 'Date'}"
+                    options="Date Asking ARV Price/ARV"
+                    defaultOrder="${savedQuery?.order || 'descending'}"
+                ></sorting-dropdown>
             </div>
+
+            <span id="deal-count">...</span>
 
             <div id="list-container"></div>
         `)
 
-        if (savedQuery) this.fetchAndInsertDeals(savedQuery)
-
-        this.$shadowRoot.append(/*html*/`
-            <filter-options-sidebar></filter-options-sidebar>
-        `)
-
-        const options = await api.get(`/queryOptions${savedQuery?.blacklistedStates ? `?blacklistedStates=${savedQuery.blacklistedStates}` : ''}`).then(response => response.data)
-        .catch(error => {
-            console.error('Request Error:', error)
-
-            $('<notification-banner></notification-banner>')[0].apiError(error, 'Get Options')
-        })
-
-        this.$shadowRoot.find('filter-options-sidebar')[0].createLayout([
-            {
-                title: 'Deal Types',
-                group: 'dealTypes',
-                items: [
-                    {
-                        label: 'SFH Deal',
-                        key: 'SFH Deal',
-                        type: 'checkbox',
-                        value: savedQuery?.dealTypes ? savedQuery.dealTypes.includes('SFH Deal') : true
-                    },
-                    {
-                        label: 'Land Deal',
-                        key: 'Land Deal',
-                        type: 'checkbox',
-                        value: savedQuery?.dealTypes ? savedQuery.dealTypes.includes('Land Deal') : true
-                    },
-                ]
-            },
-            {
-                title: 'Labels',
-                group: 'labels',
-                items: options.labels.map(label => ({
-                    label: label,
-                    key: label,
-                    type: 'checkbox',
-                    value: savedQuery?.blacklistedLabels ? !savedQuery.blacklistedLabels.includes(label) : true
-                }))
-            },
-            {
-                title: 'Needed Info',
-                group: 'neededInfo',
-                items: [
-                    {
-                        label: 'SFH Deals',
-                        group: 'neededSFHInfo',
-                        type: 'sub-accordion',
-                        items: [
-                            {
-                                label: 'Street',
-                                key: 'street',
-                                type: 'checkbox',
-                                value: savedQuery?.neededSFHInfo ? savedQuery.neededSFHInfo.includes('street') : false
-                            },
-                            {
-                                label: 'City',
-                                key: 'city',
-                                type: 'checkbox',
-                                value: savedQuery?.neededSFHInfo ? savedQuery.neededSFHInfo.includes('city') : false
-                            },
-                            {
-                                label: 'State',
-                                key: 'state',
-                                type: 'checkbox',
-                                value: savedQuery?.neededSFHInfo ? savedQuery.neededSFHInfo.includes('state') : false
-                            },
-                            {
-                                label: 'Zip',
-                                key: 'zip',
-                                type: 'checkbox',
-                                value: savedQuery?.neededSFHInfo ? savedQuery.neededSFHInfo.includes('zip') : false
-                            },
-                            {
-                                label: 'Price',
-                                key: 'price',
-                                type: 'checkbox',
-                                value: savedQuery?.neededSFHInfo ? savedQuery.neededSFHInfo.includes('price') : false
-                            },
-                            {
-                                label: 'ARV',
-                                key: 'arv',
-                                type: 'checkbox',
-                                value: savedQuery?.neededSFHInfo ? savedQuery.neededSFHInfo.includes('arv') : false
-                            }
-                        ]
-                    },
-                    {
-                        label: 'Land Deals',
-                        group: 'neededLandInfo',
-                        type: 'sub-accordion',
-                        items: [
-                            {
-                                label: 'Street',
-                                key: 'street',
-                                type: 'checkbox',
-                                value: savedQuery?.neededLandInfo ? savedQuery.neededLandInfo.includes('street') : false
-                            },
-                            {
-                                label: 'City',
-                                key: 'city',
-                                type: 'checkbox',
-                                value: savedQuery?.neededLandInfo ? savedQuery.neededLandInfo.includes('city') : false
-                            },
-                            {
-                                label: 'State',
-                                key: 'state',
-                                type: 'checkbox',
-                                value: savedQuery?.neededLandInfo ? savedQuery.neededLandInfo.includes('state') : false
-                            },
-                            {
-                                label: 'Zip',
-                                key: 'zip',
-                                type: 'checkbox',
-                                value: savedQuery?.neededLandInfo ? savedQuery.neededLandInfo.includes('zip') : false
-                            },
-                            {
-                                label: 'Price',
-                                key: 'price',
-                                type: 'checkbox',
-                                value: savedQuery?.neededLandInfo ? savedQuery.neededLandInfo.includes('price') : false
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                title: 'States',
-                group: 'states',
-                searchbar: true,
-                items: options.states.map(state => ({
-                    label: state,
-                    key: state,
-                    type: 'checkbox',
-                    value: savedQuery?.blacklistedStates ? !savedQuery.blacklistedStates.includes(state) : true
-                }))
-            },
-            {
-                title: 'Cities',
-                group: 'cities',
-                searchbar: true,
-                items: options.cities.map(city => ({
-                    label: city,
-                    key: city,
-                    type: 'checkbox',
-                    value: savedQuery?.blacklistedCities ? !savedQuery.blacklistedCities.includes(city) : true
-                }))
-            },
-            {
-                title: 'Posted Age',
-                group: 'postedAge',
-                items: [
-                    {
-                        label: 'Newer Than Days',
-                        key: 'daysOld',
-                        type: 'number',
-                        value: savedQuery?.daysOld || ''
-                    }
-                ]
-            },
-            {
-                title: 'Authors',
-                group: 'authors',
-                searchbar: true,
-                items: options.authors
-                    .sort((a, b) => a.name
-                    .localeCompare(b.name))
-                    .map(author => ({
-                        label: author.name,
-                        key: author.id,
-                        type: 'checkbox',
-                        value: savedQuery?.blacklistedAuthors ? !savedQuery.blacklistedAuthors.includes(author.id) : true
-                }))
-            }
-        ])
-
-        if (!savedQuery) this.fetchAndInsertDeals(this.getQueryParameters())
-
-        this.insertDealCounts(this.getQueryParameters())
-
-        this.$shadowRoot.find('#filter-button').on('click', () => {
-            this.$shadowRoot.find('filter-options-sidebar')[0].openSidebar()
-        })
-
-        let sidebarOptionChanged = false
-
-        this.$shadowRoot.find('filter-options-sidebar').on('sidebarClose', () => {
-            if (sidebarOptionChanged) {
-                this.refreshDealsList()
-            }
-            sidebarOptionChanged = false
-        })
-
-        this.$shadowRoot.find('filter-options-sidebar').on('valueChange', async event => {
-            sidebarOptionChanged = true
-
-            //If state options is changed then update the city options list for available cities of selected states
-            if (event.detail.group === 'states') {
-                const FilterOptionsSidebar = this.$shadowRoot.find('filter-options-sidebar')[0]
-
-                const selectedStates = FilterOptionsSidebar.getGroupItems('states')
-                .filter(item => item.value === true)
-                .map(item => item.key)
-                .join(',')
-
-                api.get(`/cityOptions?states=${selectedStates}`).then(response => response.data.map(city => ({
-                    label: city,
-                    key: city,
-                    type: 'checkbox',
-                    value: true
-                }))).then(cityItems => {
-                    FilterOptionsSidebar.buildGroupItems('cities', cityItems, { searchbar: true })
-                })
-            }
+        $('filter-options-sidebar').on('valueChange', () => {
+            this.refreshDealsList()
         })
 
         this.$shadowRoot.find('sorting-dropdown').on('orderToggle', () => {
@@ -583,7 +310,6 @@ class DealsList extends HTMLElement {
             const scrollPos = listContainerDiv.scrollTop + listContainerDiv.clientHeight
             const threshold = 2000
 
-            //And not already loading new deals
             if (listContainerDiv.scrollHeight - scrollPos <= threshold && !this.loadingDeals && this.next !== null) {
                 this.fetchAndInsertDeals(this.getQueryParameters())
             }
@@ -592,10 +318,11 @@ class DealsList extends HTMLElement {
         this.hasRendered = true
     }
 
+    //TODO: This has to be reworked to grab the parameters from the filter-sidebar component
     getQueryParameters() {
-        const FilterOptionsSidebar = this.$shadowRoot.find('filter-options-sidebar')[0]
         const SortingDropdown = this.$shadowRoot.find('sorting-dropdown')[0]
-
+        const FilterOptionsSidebar = $('filter-options-sidebar')[0]
+        
         const body = {
             limit: 30,
             sort: SortingDropdown.selectedOption,
@@ -625,7 +352,7 @@ class DealsList extends HTMLElement {
                 .map(item => item.key)
         }
 
-        if (FilterOptionsSidebar.getItemValue('postedAge', 'daysOld')) body.daysOld = FilterOptionsSidebar.getItemValue('postedAge', 'daysOld')
+        if (FilterOptionsSidebar.getItemValue('postedAge', 'daysOld')) body.daysOld = parseInt(FilterOptionsSidebar.getItemValue('postedAge', 'daysOld'))
 
         return body
     }
@@ -640,7 +367,7 @@ class DealsList extends HTMLElement {
 
             this.next = next
 
-            console.log(deals)
+            //console.log(deals)
 
             const listContainerDiv = this.$shadowRoot.find('#list-container')
 
@@ -685,37 +412,7 @@ class DealsList extends HTMLElement {
     }
 
     reinsertedCallback() {
-        this.loadingDeals = true
 
-        const body = this.getQueryParameters()
-
-        body.limit = this.$shadowRoot.find('#list-container').children().length
-
-        api.post('/deals', body).then(response => {
-            const { deals, next } = response.data
-
-            this.next = next
-
-            console.log(deals)
-
-            const listContainerDivContent = $()
-
-            if (deals.length) {
-                for (const deal of deals) {
-                    listContainerDivContent.push(dealDiv(deal)[0])
-                }
-
-                this.$shadowRoot.find('#list-container').html(listContainerDivContent)
-            } else {
-                listContainerDiv.html(/*html*/`
-                    <div id="meme">
-                        <img src="https://i.imgflip.com/8zyf2r.jpg"/>
-                    </div>
-                `)
-            }
-
-            this.loadingDeals = false
-        })
     }
 }
 
@@ -780,9 +477,7 @@ function dealDiv(deal) {
     `).on('click', event => {
         pushHistoryState(`/deals-list/deal?id=${event.currentTarget.id}`)
 
-        $('deals-list').replaceWith(/*html*/`
-            <deal-view></deal-view>
-        `)
+        $('deal-view')[0].renderDeal(event.currentTarget.id)
 
         history.customCache[window.location.href] = $('body').contents()
     })

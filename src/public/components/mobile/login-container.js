@@ -81,7 +81,7 @@ class LoginContainer extends HTMLElement {
 
         this.$shadowRoot.append(/*html*/`
             <form id="login-form" class="container">
-                <h1>Joint Venture Finder<br>(JVF) = Jeff</h1>
+                <h1>REventures</h1>
 
                 <div>
                     <input id="first-name" type="text" placeholder="First Name" name="firstName" required>

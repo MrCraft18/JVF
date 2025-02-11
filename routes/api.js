@@ -64,7 +64,7 @@ router.get('/user', async (req, res) => {
 
 router.get('/cityOptions', async (req, res) => {
     try {
-        const cities = await Deal.distinct('address.city', req.query.states ? { 'address.state': { $in: req.query.states.split(',') } } : {}).then(results => results.filter(result => result != null))
+        const cities = await Deal.distinct('address.city', req.query.states || req.query.states === '' ? { 'address.state': { $in: req.query.states.split(',') } } : {}).then(results => results.filter(result => result != null))
 
         res.status(200).json(cities)
     } catch (error) {

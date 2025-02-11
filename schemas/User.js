@@ -11,7 +11,8 @@ const userSchema = new mongoose.Schema({
     },
     password: String,
     role: String,
-    dealsQuery: Object
+    dealsQuery: Object,
+    lastTokenAccess: Date
 })
 
 export default mongoose.model('User', userSchema)

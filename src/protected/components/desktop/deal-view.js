@@ -1,5 +1,4 @@
 import './label-dropdown.js'
-import './verify-info.js'
 import './notification-banner.js'
 
 class DealView extends HTMLElement {
@@ -11,20 +10,30 @@ class DealView extends HTMLElement {
         this.$shadowRoot = $(this.shadowRoot)
 
         const styles = /*css*/`
-            :host {
+            :host(*) {
                 position: fixed;
-                top: ${$('title-bar').outerHeight()}px;
-                bottom: 0px;
+                left: calc(min(40vw, 600px) + min(25vw, 400px));
+                width: auto;
+                height: 100vh;
+            }
+
+            h4 {
+                margin: 0px;
+            }
+
+            #content {
+                height: 100%;
                 width: 100%;
                 display: flex;
                 flex-direction: column;
-                max-height: calc(100vh - ${$('title-bar').outerHeight()}px);
                 z-index: 1;
+                max-height: 100vh;
             }
 
             .post-container {
                 flex-grow: 1;
                 padding: 1.5vw;
+                padding: 12px;
                 box-sizing: border-box;
                 overflow-y: auto;
             }
@@ -51,7 +60,7 @@ class DealView extends HTMLElement {
             }
 
             .author-name, .timestamp {
-                margin-left: 4vw;
+                margin-left: 20px;
                 display: flex;
                 align-items: center;
             }
@@ -70,21 +79,6 @@ class DealView extends HTMLElement {
             .timestamp {
                 grid-area: 2 / 1 / 3 / 2;
                 margin-bottom: 1vh;
-            }
-
-            .facebook-button {
-                grid-area: 1 / 2 / 3 / 3;
-                align-self: center;
-                justify-self: center;
-                background-color: var(--color-4);
-                padding: 1.2vh;
-                border-radius: 8px;
-            }
-
-            .facebook-button a {
-                color: var(--dark-color-2);
-                text-decoration: none;
-                font-weight: 500;
             }
 
             .post-body {
@@ -117,10 +111,11 @@ class DealView extends HTMLElement {
                 padding-top: 0.8vh;
                 flex-shrink: 0;
                 width: 100%;
-                height: clamp(230px, 30%, 100000px);
+                padding: 0px 12px;
+                height: 230px;
                 display: grid;
-                grid-template-rows: 2fr 2fr 2fr 2fr 4fr;
-                grid-template-columns: 2.7fr 2.7fr 1fr;
+                grid-template-rows: 2fr 2fr 2fr 4fr;
+                grid-template-columns: 2.7fr 2.7fr 3fr;
                 background-color: var(--dark-color-1);
             }
 
@@ -140,24 +135,23 @@ class DealView extends HTMLElement {
                 grid-area: 2 / 3 / 4 / 4;
             }
 
-            .deal-type {
-                grid-area: 4 / 1 / 5 / 4;
-            }
-
             .buttons {
-                grid-area: 5 / 1 / 6 / 4;
+                grid-area: 4 / 1 / 6 / 4;
             }
 
             .info-grid > div:not(.buttons) {
                 display: flex;
-                flex-direction: row;
-                justify-content: center;
                 align-items: center;
-                margin: auto 2vw;
+                margin: 5px 0px;
                 background-color: var(--dark-color-9);
                 filter: brightness(85%);
                 border-radius: 7px;
                 color: var(--dark-color-2);
+            }
+
+            .info-grid > div:not(.buttons, .price-to-arv) {
+                flex-direction: row;
+                justify-content: center;
             }
 
             .address > span {
@@ -166,28 +160,34 @@ class DealView extends HTMLElement {
                 white-space: nowrap;
             }
 
-            .price-to-arv > span {
-                font-size: 1.3rem;
-                font-weight: 600;
-            }
-
-            .price, .arv, .address, .deal-type {
+            .price, .arv, .address {
                 padding: 0.5vh;
             }
 
-            .price > :first-child, .arv > :first-child {
+            .price > :first-child, .arv > :first-child  {
                 margin-right: 3vw;
                 font-size: 1.1rem;
             }
 
-            .price > :last-child , .arv > :last-child {
+            .price-to-arv > :first-child {
+                font-size: 1.1rem;
+            }
+
+            .price > :last-child , .arv > :last-child, .price-to-arv > :last-child {
                 font-size: 1.2rem;
                 font-weight: 600;
             }
 
             .price-to-arv {
+                padding: 0.5vh 0.8vw;
                 justify-self: center;
-                padding: 2.2vw 1.5vw;
+                flex-direction: column;
+                justify-content: space-around;
+            }
+
+            .hover:hover {
+                cursor: pointer;
+                filter: brightness(90%);
             }
 
             .deal-type {
@@ -202,6 +202,22 @@ class DealView extends HTMLElement {
                 justify-content: space-around;
                 align-items: center;
             }
+
+            .facebook-button {
+                border: 4px solid var(--color-3);
+                height: 65%;
+                box-sizing: border-box;
+                background-color: var(--color-4);
+                padding: 1.5vh;
+                align-content: center;
+                border-radius: 8px;
+            }
+
+            .facebook-button a {
+                color: var(--dark-color-2);
+                text-decoration: none;
+                font-weight: 500;
+            }
         `
 
         this.$shadowRoot.append(/*html*/`
@@ -209,32 +225,51 @@ class DealView extends HTMLElement {
         `)
     }
 
-    async connectedCallback() {
-        $('title-bar')[0].backButton = '/deals-list'
+    connectedCallback() {
+        if (this.hasRendered) return this.reinsertedCallback()
 
-        if (this.hasRendered) return
+        this.$shadowRoot.append('<div id="content"></div>')
 
         const query = new URLSearchParams(window.location.search)
 
         const dealID = query.get('id')
 
-        if (!dealID) window.location.href = '/deals'
+        if (!dealID) {
+            this.$shadowRoot.find('#content').html(/*html*/`
+                <span id="no-deal">No Deal Selected</span> 
+            `)
+        } else {
+            this.renderDeal(dealID)
+        }
+        this.hasRendered = true
+    }
 
+    reinsertedCallback() {
+        const query = new URLSearchParams(window.location.search)
+
+        const dealID = query.get('id')
+
+        if (!dealID) {
+            this.$shadowRoot.find('#content').html(/*html*/`
+                <span id="no-deal">No Deal Selected</span> 
+            `)
+        } else {
+            this.renderDeal(dealID)
+        }
+    }
+
+    renderDeal(dealID) {
         api.get(`/deal?id=${dealID}`).then(response => {
             const deal = response.data
 
             console.log(deal)
 
-            this.$shadowRoot.append(/*html*/`
+            const postContainerHTML = /*html*/`
                 <div class="post-container">
                     <div class="post">
                         <div class="post-header">
                             <span class="author-name">${deal.post.author.name}</span>
                             <span class="timestamp">${new Date(deal.post.createdAt).toLocaleString('en-US', { timeZone: 'America/Chicago', year: '2-digit', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true, })}</span>
-
-                            <div class="facebook-button">
-                                <a href="https://www.facebook.com/groups/${deal.post.group.id}/posts/${deal.post.id}" target="_blank">Facebook Link</a>
-                            </div>
                         </div>
 
                         <div class="post-body">
@@ -243,11 +278,9 @@ class DealView extends HTMLElement {
                             </div>
 
                             <!-- <div class="images">
-                                ${
-                                    deal.post.images.map(imageURL => /*html*/`
+                                ${deal.post.images.map(imageURL => /*html*/`
                                         <img src="${imageURL}">
-                                    `).join('')
-                                }
+                                `).join('')}
                             </div> -->
                         </div>
                     </div>
@@ -268,11 +301,8 @@ class DealView extends HTMLElement {
                     </div>
 
                     <div class="price-to-arv">
+                        <span>Price/ARV:</span>
                         <span>${deal.price && deal.arv ? `${Math.round((deal.price / deal.arv) * 100)}%` : '?'}</span>
-                    </div>
-
-                    <div class="deal-type">
-                        <span>${deal.category}</span>
                     </div>
 
                     <div class="buttons">
@@ -282,29 +312,20 @@ class DealView extends HTMLElement {
                             options="Unchecked Checked"
                         ></label-dropdown>
 
-                        <verify-info
-                            verified="${deal.verified}"
-                            dealID="${deal._id}"
-                            category="${deal.category}"
-                            price="${deal.price || ''}"
-                            arv="${deal.arv || ''}"
-                            streetNumber="${deal.address.streetNumber || ''}"
-                            streetName="${deal.address.streetName || ''}"
-                            city="${deal.address.city || ''}"
-                            state="${deal.address.state || ''}"
-                            zip="${deal.address.zip || ''}"
-                        ></verify-info>
+                        <div class="facebook-button hover">
+                            <a href="https://www.facebook.com/groups/${deal.post.group.id}/posts/${deal.post.id}" target="_blank"><h4>Facebook Link</h4></a>
+                        </div>
                     </div>
                 </div>
-            `)
+            `
+
+            this.$shadowRoot.find('#content').html(postContainerHTML)
         })
         .catch(error => {
             console.error('Request Error:', error)
 
             $('<notification-banner></notification-banner>')[0].apiError(error, 'Get Deal')
         })
-
-        this.hasRendered = true
     }
 }
 
