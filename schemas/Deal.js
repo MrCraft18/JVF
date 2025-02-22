@@ -5,21 +5,17 @@ await mongoose.connect(process.env.MONGODB_URI)
 
 const dealSchema = mongoose.Schema({
     category: String,
+    //Change this
     label: {
         type: String,
         default: 'Unchecked'
     },
-    checkedBy: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-    },
-    verified: {
-        type: Boolean,
-        default: false
-    },
-    verifiedBy: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
+    raisedIssues: {
+        type: Map,
+        of: {
+            type: [String],
+            default: []
+        }
     },
     address: {
         streetName: String,

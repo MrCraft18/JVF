@@ -1,5 +1,4 @@
 import './label-dropdown.js'
-import './verify-info.js'
 import './notification-banner.js'
 
 class DealView extends HTMLElement {
@@ -11,7 +10,7 @@ class DealView extends HTMLElement {
         this.$shadowRoot = $(this.shadowRoot)
 
         const styles = /*css*/`
-            :host {
+            :host(*) {
                 position: fixed;
                 top: ${$('title-bar').outerHeight()}px;
                 bottom: 0px;
@@ -19,12 +18,26 @@ class DealView extends HTMLElement {
                 display: flex;
                 flex-direction: column;
                 max-height: calc(100vh - ${$('title-bar').outerHeight()}px);
+                z-index: -1;
+                background-color: var(--dark-color-1);
+            }
+
+            h4 {
+                margin: 0px;
+            }
+
+            #content {
+                height: 100%;
+                width: 100%;
+                display: flex;
+                flex-direction: column;
                 z-index: 1;
+                max-height: 100vh;
             }
 
             .post-container {
                 flex-grow: 1;
-                padding: 1.5vw;
+                padding: 0px 1.5vw;
                 box-sizing: border-box;
                 overflow-y: auto;
             }
@@ -43,24 +56,37 @@ class DealView extends HTMLElement {
             .post-header {
                 flex-shrink: 0;
                 width: 100%;
-                height: clamp(60px, 13%, 1000000000px);
-                border-bottom: 2px solid var(--dark-color-1);
-                display: grid;
-                grid-template-rows: 1fr 1fr;
-                grid-template-columns: minmax(0, 4fr) minmax(0, 3fr);
+                min-height: 60px;
+                height: 10%;
+                /*border-bottom: 2px solid var(--dark-color-1);*/
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+                /*grid-template-rows: 1fr 1fr;*/
+                /*grid-template-columns: minmax(0, 4fr) minmax(0, 3fr);*/
+                box-sizing: border-box;
+                padding: 8px 12px; 
+            }
+
+            .info-container {
+                height: 100%;
+                width: 45%;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                /*display: flex;*/
+                /*flex-direction: */
             }
 
             .author-name, .timestamp {
-                margin-left: 4vw;
                 display: flex;
                 align-items: center;
             }
 
             .author-name {
-                grid-area: 1 / 1 / 2 / 2;
                 font-size: 1.1rem;
-                font-weight: 500;
-                margin-top: 1vh;
+                font-weight: 600;
                 overflow: hidden;
                 white-space: nowrap;
                 text-overflow: ellipsis;
@@ -68,23 +94,70 @@ class DealView extends HTMLElement {
             }
 
             .timestamp {
-                grid-area: 2 / 1 / 3 / 2;
+            }
+
+            .icons-container {
+                height: 100%;
+                display: flex;
+                justify-content: flex-end;
+                align-items: center;
+            }
+
+            .icons-container > * {
+                box-sizing: border-box;
+                height: 85%;
+                border-radius: 6px;
+            }
+
+            .block-author {
+                color: var(--dark-color-5);
+                padding: 0px 3%;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                white-space: nowrap;
+                border: 2px solid var(--dark-color-5);
+            }
+
+            .blocked {
+                height: 85%;
+                box-sizing: border-box;
+                border-radius: 6px;
+                color: var(--dark-color-8);
+                padding: 3%;
+                display: flex;
+                align-items: center;
+                font-weight: 600;
+                border: 2px solid var(--dark-color-8);
+            }
+
+            .issue-icon {
+                flex-shrink: 0;
+                padding: 2px;
+                aspect-ratio: 1 / 1;
+                border: 2px solid var(--dark-color-5);
+                fill: var(--dark-color-5);
+                margin-left: 5%;
+            }
+
+            .deal-type {
+                margin: 0px 12px;
                 margin-bottom: 1vh;
+                border-radius: 10px;
+                font-size: 1.1rem;
+                font-weight: 600;
+                text-align: center;
+                padding: 0.4vh 0px;
             }
 
-            .facebook-button {
-                grid-area: 1 / 2 / 3 / 3;
-                align-self: center;
-                justify-self: center;
-                background-color: var(--color-4);
-                padding: 1.2vh;
-                border-radius: 8px;
+            .sfh {
+                border: 2px solid var(--dark-color-3);
+                color: var(--dark-color-3);
             }
 
-            .facebook-button a {
-                color: var(--dark-color-2);
-                text-decoration: none;
-                font-weight: 500;
+            .land {
+                border: 2px solid var(--dark-color-4);
+                color: var(--dark-color-4);
             }
 
             .post-body {
@@ -97,6 +170,7 @@ class DealView extends HTMLElement {
 
             .text {
                 padding: 3vw;
+                padding-top: 0px;
             }
 
             .images {
@@ -117,10 +191,11 @@ class DealView extends HTMLElement {
                 padding-top: 0.8vh;
                 flex-shrink: 0;
                 width: 100%;
-                height: clamp(230px, 30%, 100000px);
+                padding: 0px 1.5vw;
+                height: 200px;
                 display: grid;
-                grid-template-rows: 2fr 2fr 2fr 2fr 4fr;
-                grid-template-columns: 2.7fr 2.7fr 1fr;
+                grid-template-rows: 2fr 2fr 2fr 4fr;
+                grid-template-columns: 2.7fr 2.7fr 3fr;
                 background-color: var(--dark-color-1);
             }
 
@@ -140,60 +215,55 @@ class DealView extends HTMLElement {
                 grid-area: 2 / 3 / 4 / 4;
             }
 
-            .deal-type {
-                grid-area: 4 / 1 / 5 / 4;
-            }
-
             .buttons {
-                grid-area: 5 / 1 / 6 / 4;
+                grid-area: 4 / 1 / 6 / 4;
             }
 
             .info-grid > div:not(.buttons) {
                 display: flex;
-                flex-direction: row;
-                justify-content: center;
                 align-items: center;
-                margin: auto 2vw;
+                margin: auto 0vw;
                 background-color: var(--dark-color-9);
                 filter: brightness(85%);
                 border-radius: 7px;
                 color: var(--dark-color-2);
             }
 
+            .info-grid > div:not(.buttons, .price-to-arv) {
+                flex-direction: row;
+                justify-content: center;
+            }
+
             .address > span {
-                font-size: 1.1rem;
+                /*font-size: 4vw;*/
+                font-size: 1rem;
                 font-weight: 600;
                 white-space: nowrap;
             }
 
-            .price-to-arv > span {
-                font-size: 1.3rem;
-                font-weight: 600;
-            }
-
-            .price, .arv, .address, .deal-type {
+            .price, .arv, .address {
                 padding: 0.5vh;
             }
 
-            .price > :first-child, .arv > :first-child {
+            .price > :first-child, .arv > :first-child  {
                 margin-right: 3vw;
                 font-size: 1.1rem;
             }
 
-            .price > :last-child , .arv > :last-child {
+            .price-to-arv > :first-child {
+                font-size: 1.1rem;
+            }
+
+            .price > :last-child , .arv > :last-child, .price-to-arv > :last-child {
                 font-size: 1.2rem;
                 font-weight: 600;
             }
 
             .price-to-arv {
+                padding: 8px;
                 justify-self: center;
-                padding: 2.2vw 1.5vw;
-            }
-
-            .deal-type {
-                margin: auto;
-                font-size: 1.1rem;
-                font-weight: 600;
+                flex-direction: column;
+                justify-content: space-around;
             }
 
             .buttons {
@@ -201,6 +271,22 @@ class DealView extends HTMLElement {
                 flex-direction: row;
                 justify-content: space-around;
                 align-items: center;
+            }
+
+            .facebook-button {
+                border: 4px solid var(--color-3);
+                height: 65%;
+                box-sizing: border-box;
+                background-color: var(--color-4);
+                padding: 1.5vh;
+                align-content: center;
+                border-radius: 8px;
+            }
+
+            .facebook-button a {
+                color: var(--dark-color-2);
+                text-decoration: none;
+                font-weight: 500;
             }
         `
 
@@ -210,32 +296,52 @@ class DealView extends HTMLElement {
     }
 
     async connectedCallback() {
-        $('title-bar')[0].backButton = '/deals-list'
-
         if (this.hasRendered) return
 
-        const query = new URLSearchParams(window.location.search)
+        this.$shadowRoot.append('<div id="content"></div>')
 
-        const dealID = query.get('id')
+        if (new URLSearchParams(window.location.search).get('id')) this.populateDeal()
 
-        if (!dealID) window.location.href = '/deals'
+        this.hasRendered = true
+    }
 
-        api.get(`/deal?id=${dealID}`).then(response => {
+    populateDeal() {
+        this.$shadowRoot.find('#content').html('')
+
+        $(this).css('z-index', '2')
+
+        $('title-bar')[0].backButton = () => {
+            $(this).css('z-index', '-1')
+
+            const url = new URL(window.location.href)
+
+            url.searchParams.delete('id')
+
+            window.history.replaceState({}, '', url.toString())
+        }
+
+        api.get(`/deal?id=${new URLSearchParams(window.location.search).get('id')}`).then(response => {
             const deal = response.data
 
             console.log(deal)
 
-            this.$shadowRoot.append(/*html*/`
+            this.$shadowRoot.find('#content').html(/*html*/`
                 <div class="post-container">
                     <div class="post">
                         <div class="post-header">
-                            <span class="author-name">${deal.post.author.name}</span>
-                            <span class="timestamp">${new Date(deal.post.createdAt).toLocaleString('en-US', { timeZone: 'America/Chicago', year: '2-digit', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true, })}</span>
+                            <div class="info-container">
+                                <span class="author-name">${deal.post.author.name}</span>
+                                <span class="timestamp">${new Date(deal.post.createdAt).toLocaleString('en-US', { timeZone: 'America/Chicago', year: '2-digit', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true, })}</span>
+                            </div>
 
-                            <div class="facebook-button">
-                                <a href="https://www.facebook.com/groups/${deal.post.group.id}/posts/${deal.post.id}" target="_blank">Facebook Link</a>
+                            <div class="icons-container">
+                                <!--<div class="block-author hover">Block Author</div>-->
+                                <!--<div class="blocked">Blocked</div>-->
+                                <svg class="issue-icon hover" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 16" id="issue"><g id="Octicons"><g id="issue-opened"><path id="Shape" d="M7 2.3c3.14 0 5.7 2.56 5.7 5.7s-2.56 5.7-5.7 5.7A5.71 5.71 0 0 1 1.3 8c0-3.14 2.56-5.7 5.7-5.7zM7 1C3.14 1 0 4.14 0 8s3.14 7 7 7 7-3.14 7-7-3.14-7-7-7zm1 3H6v5h2V4zm0 6H6v2h2v-2z"></path></g></g></svg>
                             </div>
                         </div>
+
+                        <span class="deal-type ${deal.category === "SFH Deal" ? "sfh" : "land"}">${deal.category}</span>
 
                         <div class="post-body">
                             <div class="text">
@@ -268,11 +374,8 @@ class DealView extends HTMLElement {
                     </div>
 
                     <div class="price-to-arv">
+                        <span>Price/ARV:</span>
                         <span>${deal.price && deal.arv ? `${Math.round((deal.price / deal.arv) * 100)}%` : '?'}</span>
-                    </div>
-
-                    <div class="deal-type">
-                        <span>${deal.category}</span>
                     </div>
 
                     <div class="buttons">
@@ -282,29 +385,53 @@ class DealView extends HTMLElement {
                             options="Unchecked Checked"
                         ></label-dropdown>
 
-                        <verify-info
-                            verified="${deal.verified}"
-                            dealID="${deal._id}"
-                            category="${deal.category}"
-                            price="${deal.price || ''}"
-                            arv="${deal.arv || ''}"
-                            streetNumber="${deal.address.streetNumber || ''}"
-                            streetName="${deal.address.streetName || ''}"
-                            city="${deal.address.city || ''}"
-                            state="${deal.address.state || ''}"
-                            zip="${deal.address.zip || ''}"
-                        ></verify-info>
+                        <div class="facebook-button hover">
+                            <a href="https://www.facebook.com/groups/${deal.post.group.id}/posts/${deal.post.id}" target="_blank"><h4>Facebook Link</h4></a>
+                        </div>
                     </div>
                 </div>
             `)
+
+            window.savedQueryPromise.then(savedQuery => {
+                if (savedQuery.blacklistedAuthors.find(blacklistedAuthor => blacklistedAuthor.id === deal.post.author.id)) {
+                    this.$shadowRoot.find('.icons-container').prepend('<div class="blocked">Blocked</div>')
+                } else {
+                    this.$shadowRoot.find('.icons-container').prepend('<div class="block-author hover">Block Author</div>')
+
+                    this.$shadowRoot.find('.block-author').on('click', event => {
+                        $($('filter-options-sidebar')[0].shadowRoot).find('.no-blocked-authors').remove()
+
+                        $(event.currentTarget).replaceWith('<div class="blocked">Blocked</div>')
+
+                        const element = $(/*html*/`
+                            <div class="accordion-item active" key="${deal.post.author.id}">
+                                <h5>${deal.post.author.name}</h5>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="remove hover" viewBox="4.47 4.47 7.05 7.05"><path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/></svg>
+                            </div>
+                        `)
+
+                        element.find('svg').on('click', event => {
+                            const group = $(event.target).closest('.accordion-content').prev()[0].getAttribute('group')
+
+                            $(event.currentTarget).closest('.accordion-item').remove()
+
+                            $('filter-options-sidebar')[0].dispatchEvent(new CustomEvent('valueChange', {
+                                detail: { group, key: null, value: null }
+                            }))
+                        })
+
+                        $($('filter-options-sidebar')[0].shadowRoot).find('[group="blacklisted-authors"]').next().children().first().append(element)
+
+                        $('deals-list')[0].refreshDealsList()
+                    })
+                }
+            })
         })
         .catch(error => {
             console.error('Request Error:', error)
 
             $('<notification-banner></notification-banner>')[0].apiError(error, 'Get Deal')
         })
-
-        this.hasRendered = true
     }
 }
 

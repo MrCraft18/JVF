@@ -95,15 +95,6 @@ async function urlLocationHandler() {
 }
 
 window.onpopstate = (event) => {
-    //console.log(event.target.location.href)
-    //console.log(history.customCache)
-    //console.log(history.customCache[event.target.location.href])
-
-
-    console.log("event.target.location.href:", event.target.location?.href)
-    console.log("Keys in history.customCache:", Object.keys(history.customCache))
-    console.log("Match found?", Object.keys(history.customCache).includes(event.target.location?.href))
-
     //Add replace history state here for caching before loading old/new cahce?
 
     if (history.customCache[event.target.location.href]) {

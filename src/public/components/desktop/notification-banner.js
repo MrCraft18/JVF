@@ -21,10 +21,10 @@ class NotificationBanner extends HTMLElement {
                 height: 100%;
                 border-radius: 8px;
                 display: flex;
-                font-size: 4vw;
+                font-size: 1.4rem;
                 align-items: center;
                 flex-direction: row;
-                padding: 0px 4vw;
+                padding: 0px 1vw;
                 box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.25);
             }
 
@@ -38,11 +38,11 @@ class NotificationBanner extends HTMLElement {
             .banner svg {
                 height: 30%;
                 aspect-ratio: 1 / 1;
-                padding: 1.5vw;
+                padding: 1.5vh;
                 border-radius: 1vw;
             }
 
-            svg:hover:active {
+            svg:hover {
                 cursor: pointer;
                 background-color: inherit;
                 filter: brightness(90%);

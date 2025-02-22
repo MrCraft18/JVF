@@ -1,4 +1,6 @@
-[ ] Make Desktop Page
+[X] Make Desktop Page
+
+[ ] Make login desktop page
 
 [X] Remove Redundant web components in the mobile page
 
@@ -12,11 +14,9 @@
 
 [ ] Create account registration system
 
-[ ] Make images be shown in deal-view
-
 [ ] Replace verify info with flagging deals for specific reasons
     - This is not an off market deal
-    - This is an SFH/Land deal
+    - This is a SFH/Land deal
     - Incorrect Info
         - Price
         - ARV
@@ -29,9 +29,26 @@
 
 [X] Change deselect all button to toggle all button
 
-[ ] Add block author button to deal-view and change authors sider bar option to a list of blocked authors only with an X to unblock them. 
+[X] Add block author button to deal-view and change authors sider bar option to a list of blocked authors only with an X to unblock them. 
 
 [ ] Make it so when chat gpt parses a dumb city name it will map to the closest city with fuzzy find
+
+
+
+LATER
+[ ] Make images be shown in deal-view
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 Elijah Talking Points:

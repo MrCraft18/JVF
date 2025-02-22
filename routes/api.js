@@ -250,35 +250,13 @@ router.post('/dealCounts', async (req, res) => {
     }
 })
 
-router.post('/verifyDeal', async (req, res) => {
+router.post('/dealIssue', async (req, res) => {
     try {
-        if (req.user.role != 'editor' && req.user.role != 'admin') return res.status(401).send('You do not have permission to edit this.')
-
-        const deal = await Deal.findById(req.body._id)
-
-        if (!deal) return res.status(400).send('Deal not found')
-
-        if (deal.verified) return res.status(400).send('Deal is already verified')
-
-        if (req.body.category === 'None') {
-            const post = await Post.findById(deal.associatedPost)
-
-            post.metadata.eligibleForTraining = true
-            delete post.associatedDeal
-
-            await post.save()
-
-            await Deal.deleteOne({ _id: deal._id })
-        } else {
-            Object.assign(deal, req.body)
-
-            if (deal.category === 'Land Deal') delete deal.arv
-
-            deal.verified = true
-            deal.verifiedByUser = req.user._id
-
-            await deal.save()
-        }
+        await Deal.updateOne( { _id: req.body.id }, { 
+            $addToSet: { 
+                [`raisedIssues.${req.user._id}`]: { $each: req.body.selectedIssues } 
+            } 
+        })
 
         res.sendStatus(200)
     } catch (error) {
@@ -323,7 +301,7 @@ function createAggregationPipeFromQuery(body) {
                 ...(body['blacklistedLabels'].length && { 'label': { $nin: body['blacklistedLabels'] } }),
                 ...(body['blacklistedStates'].length && { 'address.state': { $nin: body['blacklistedStates'] } }),
                 ...(body['blacklistedCities'].length && { 'address.city': { $nin: body['blacklistedCities'] } }),
-                ...(body['blacklistedAuthors'].length && { 'post.author.id': { $nin: body['blacklistedAuthors'] } }),
+                ...(body['blacklistedAuthors'].length && { 'post.author.id': { $nin: body['blacklistedAuthors'].map(author => author.id) } }),
                 ...(body['daysOld'] && { 'post.createdAt': { $gte: new Date(new Date().setDate(new Date().getDate() - body['daysOld'])) } }),
                 ...((body['text'] || body['dealTypes']) && {
                     $and: [

@@ -10,8 +10,8 @@ class FilterOptionsSidebar extends HTMLElement {
             :host(*) {
                 position: fixed;
                 height: 100vh;
-                width: 25vw;
-                max-width: 400px;
+                width: 30vw;
+                max-width: 450px;
                 display: flex;
                 flex-direction: column;
                 /*background-color: var(--dark-color-9);*/
@@ -105,7 +105,7 @@ class FilterOptionsSidebar extends HTMLElement {
                 background-color: var(--dark-color-9);
             }
 
-            .toggle, .number {
+            .toggle, .number, .active {
                 height: 50px;
                 justify-content: space-between;
                 padding: 0px 20px;
@@ -161,6 +161,14 @@ class FilterOptionsSidebar extends HTMLElement {
             .sub-options-group {
                 width: 100%;
             }
+
+            .remove {
+                height: 55%;
+                background-color: red;
+                border-radius: 6px;
+                padding: 6px;
+                box-sizing: border-box;
+            }
         `;
 
         this.$shadowRoot.append(/*html*/`
@@ -173,7 +181,7 @@ class FilterOptionsSidebar extends HTMLElement {
 
         this.$shadowRoot.append(/*html*/`
             <div id="title">
-                <h1>REventure</h1>
+                <h1>REventures</h1>
             </div> 
         `)
 
@@ -226,7 +234,7 @@ class FilterOptionsSidebar extends HTMLElement {
                 <div class="options-group" group="neededInfo">
                     <div class="options-title"><h4>Needed Info</h4></div> 
                     <div class="sub-options-group" group="neededSFHInfo">
-                        <div class="sub-options-title"><h4>SFH</h4></div>
+                        <div class="sub-options-title"><h4>SFH Deals</h4></div>
                         <div class="option-item toggle hover" key="street">
                             <h4>Street</h4>
                             <input type="checkbox" ${savedQuery?.neededSFHInfo?.includes('street') ? 'checked' : ''}>
@@ -259,7 +267,7 @@ class FilterOptionsSidebar extends HTMLElement {
                     </div>
 
                     <div class="sub-options-group" group="neededLandInfo">
-                        <div class="sub-options-title"><h4>Land</h4></div>
+                        <div class="sub-options-title"><h4>Land Deals</h4></div>
                         <div class="option-item toggle hover" key="street">
                             <h4>Street</h4>
                             <input type="checkbox" ${savedQuery?.neededLandInfo?.includes('street') ? 'checked' : ''}>
@@ -327,16 +335,14 @@ class FilterOptionsSidebar extends HTMLElement {
                     </div>
                 </div>
 
-                <div class="options-group" group="authors">
-                    <div class="options-title"><h4>Blacklisted Authors</h4></div>
-                    <div class="search-content-container">
-                        ${!savedQuery ? '' : savedQuery.blacklistedAuthors.map(blacklistedAuthor => /*html*/`
-                            <div class="option-item toggle hover" key="${blacklistedAuthor.id}">
-                                <h4>${blacklistedAuthor.name}</h4>
-                                <input type="checkbox">
-                            </div>
-                        `).join('')}
-                    </div>
+                <div class="options-group" group="blacklisted-authors">
+                    <div class="options-title"><h4>Blocked Authors</h4></div>
+                    ${!savedQuery ? '' : savedQuery.blacklistedAuthors.map(blacklistedAuthor => /*html*/`
+                        <div class="option-item active" key="${blacklistedAuthor.id}">
+                            <h4>${blacklistedAuthor.name}</h4>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="remove hover" viewBox="4.47 4.47 7.05 7.05"><path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/></svg>
+                        </div>
+                    `).join('')}
                 </div>
             </div>
         `)
@@ -356,6 +362,16 @@ class FilterOptionsSidebar extends HTMLElement {
 
             this.dispatchEvent(new CustomEvent('valueChange', {
                 detail: { group: $(event.target).closest('[group]')[0].getAttribute('group'), key: null, value: null }
+            }))
+        })
+
+        this.$shadowRoot.find('.active > svg').on('click', event => {
+            const group = $(event.target).closest('[group]')[0].getAttribute('group')
+
+            $(event.currentTarget).closest('.option-item').remove()
+
+            this.dispatchEvent(new CustomEvent('valueChange', {
+                detail: { group, key: null, value: null }
             }))
         })
 
@@ -400,6 +416,14 @@ class FilterOptionsSidebar extends HTMLElement {
                     this.setOptionItemEventListeners(citiesGroupElement)
                 })
             }
+
+            if (event.detail.group === 'blacklisted-authors') {
+                const query = new URLSearchParams(window.location.search)
+
+                const dealID = query.get('id')
+
+                if (dealID) $('deal-view')[0].renderDeal(dealID)
+            }
         })
 
         if (!savedQuery) DealsList.fetchAndInsertDeals(DealsList.getQueryParameters())
@@ -440,10 +464,28 @@ class FilterOptionsSidebar extends HTMLElement {
     }
 
     getGroupItems(group) {
-        return this.$shadowRoot.find(`[group="${group}"]`).find('.option-item').map((_, element) => ({
-            key: element.getAttribute('key'),
-            value: $(element).find('input')[0].type === 'checkbox' ? $(element).find('input')[0].checked : $(element).find('input')[0].value
-        })).get()
+        return this.$shadowRoot.find(`[group="${group}"]`).find('.option-item').map((_, element) => {
+            if ($(element).hasClass('toggle')) {
+                return {
+                    key: element.getAttribute('key'),
+                    value: $(element).find('input')[0].checked
+                }
+            }
+
+            if ($(element).hasClass('number')) {
+                return {
+                    key: element.getAttribute('key'),
+                    value: $(element).find('input')[0].value
+                }
+            }
+
+            if ($(element).hasClass('active')) {
+                return {
+                    key: element.getAttribute('key'),
+                    value: $(element).find('h4').text()
+                }
+            }
+        }).get()
     }
 
 

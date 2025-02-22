@@ -12,6 +12,7 @@ const userSchema = new mongoose.Schema({
     password: String,
     role: String,
     dealsQuery: Object,
+    blacklistedAuthors: Array,
     lastTokenAccess: Date
 })
 

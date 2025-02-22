@@ -27,6 +27,10 @@ class FilterOptionsSidebar extends HTMLElement {
             	outline: none;
             }
 
+            h5 {
+                margin: 0px;
+            }
+
             .background {
                 position: absolute;
                 top: 0px;
@@ -151,7 +155,15 @@ class FilterOptionsSidebar extends HTMLElement {
                 color: var(--dark-color-2);
             }
 
-            .accordion-title:hover:active, .accordion-item:not(.search):active, .toggle-all:hover:active {
+            .remove {
+                height: 55%;
+                background-color: red;
+                border-radius: 6px;
+                padding: 6px;
+                box-sizing: border-box;
+            }
+
+            .hover:hover:active {
                 filter: brightness(90%);
                 cursor: pointer;
             }
@@ -162,76 +174,217 @@ class FilterOptionsSidebar extends HTMLElement {
         `)
     }
 
-    createLayout(config) {
+    async connectedCallback() {
+        if (this.hasRendered) return this.reinsertedCallback()
+
+        window.savedQueryPromise = api.get('/user').then(response => response.data.dealsQuery)
+        .catch(error => {
+            console.error('Request Error:', error)
+
+            $('<notification-banner></notification-banner>')[0].apiError(error, 'Get User Query')
+        })
+
+        const savedQuery = await window.savedQueryPromise
+
+        const DealsList = $('deals-list')[0]
+
+        if (savedQuery) DealsList.fetchAndInsertDeals(savedQuery) 
+
+        window.optionsPromise = api.get(`/queryOptions${savedQuery?.blacklistedStates ? `?blacklistedStates=${savedQuery.blacklistedStates}` : ''}`).then(response => response.data)
+        .catch(error => {
+            console.error('Request Error:', error)
+
+            $('<notification-banner></notification-banner>')[0].apiError(error, 'Get Options')
+        })
+
+        const options = await window.optionsPromise
+
         this.$shadowRoot.append(/*html*/`
             <div class="background"></div>
-
+            
             <div class="sidebar-container">
-                ${config.map(accordion => /*html*/`
-                    <div class="accordion-title" group="${accordion.group}">
-                        <h4>${accordion.title}</h4>
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="6.4 8.98 11.2 6.62"><path d="m8.12 9.29 3.88 3.88 3.88-3.88c.39-.39 1.02-.39 1.41 0s.39 1.02 0 1.41l-4.59 4.59c-.39.39-1.02.39-1.41 0l-4.59-4.59c-.39-.39-.39-1.02 0-1.41.39-.38 1.03-.39 1.42 0z"></path></svg>
-                    </div>
+                <div class="accordion-title" group="dealTypes">
+                    <h4>Deal Types</h4>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="6.4 8.98 11.2 6.62"><path d="m8.12 9.29 3.88 3.88 3.88-3.88c.39-.39 1.02-.39 1.41 0s.39 1.02 0 1.41l-4.59 4.59c-.39.39-1.02.39-1.41 0l-4.59-4.59c-.39-.39-.39-1.02 0-1.41.39-.38 1.03-.39 1.42 0z"></path></svg>
+                </div>
+                <div class="accordion-content">
+                    <div>
+                        <div class="accordion-item toggle hover" key="SFH Deal">
+                            <h5>SFH Deal</h5>
+                            <input type="checkbox" ${savedQuery?.dealTypes?.includes('SFH Deal') || !savedQuery ? 'checked' : ''}>
+                        </div>
 
-                    <div class="accordion-content">
-                        <div>
-                            ${accordion.searchbar ? /*html*/`
-                                <div class="accordion-item search">
-                                    <input type="text" placeholder="Search">
-                                    <div class="toggle-all">Toggle All</div>
-                                </div>
-
-                                <div class="content-search-container">
-                            ` : ''}
-
-                            ${accordion.items.map(item => {
-                                if (item.type === 'checkbox') return /*html*/`
-                                    <div class="accordion-item" key="${item.key}">
-                                        <h5>${item.label}</h5>
-                                        <input type="checkbox" ${item.value ? 'checked': ''}>
-                                    </div>
-                                `
-
-                                if (item.type === 'number') return /*html*/`
-                                    <div class="accordion-item" key="${item.key}">
-                                        <h5>${item.label}</h5>
-                                        <input type="number" class="number-input">
-                                    </div>
-                                `
-
-                                if (item.type === 'sub-accordion') return /*html*/`
-                                    <div class="accordion-item sub-accordion-title" group="${item.group}">
-                                        <h5>${item.label}</h5>
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="6.4 8.98 11.2 6.62"><path d="m8.12 9.29 3.88 3.88 3.88-3.88c.39-.39 1.02-.39 1.41 0s.39 1.02 0 1.41l-4.59 4.59c-.39.39-1.02.39-1.41 0l-4.59-4.59c-.39-.39-.39-1.02 0-1.41.39-.38 1.03-.39 1.42 0z"></path></svg>
-                                    </div>
-
-                                    <div class="accordion-content">
-                                        <div>
-                                            ${item.items.map(subItem => {
-                                                if (subItem.type === 'checkbox') return /*html*/`
-                                                    <div class="accordion-item" key="${subItem.key}">
-                                                        <h5>${subItem.label}</h5>
-                                                        <input type="checkbox" ${subItem.value ? 'checked': ''}>
-                                                    </div>
-                                                `
-                                                if (subItem.type === 'number') return /*html*/`
-                                                    <div class="accordion-item" key="${subItem.key}">
-                                                        <h5>${subItem.label}</h5>
-                                                        <input type="number" class="number-input">
-                                                    </div>
-                                                `
-                                            }).join('')}
-                                        </div>
-                                    </div>
-                                `
-                            }).join('')}
-
-                            ${accordion.searchbar ? /*html*/`
-                                </div>
-                            ` : ''}
+                        <div class="accordion-item toggle hover" key="Land Deal">
+                            <h5>Land Deal</h5>
+                            <input type="checkbox" ${savedQuery?.dealTypes?.includes('Land Deal') || !savedQuery ? 'checked' : ''}>
                         </div>
                     </div>
-                `).join('')}
+                </div>
+
+                <div class="accordion-title" group="labels">
+                    <h4>Labels</h4>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="6.4 8.98 11.2 6.62"><path d="m8.12 9.29 3.88 3.88 3.88-3.88c.39-.39 1.02-.39 1.41 0s.39 1.02 0 1.41l-4.59 4.59c-.39.39-1.02.39-1.41 0l-4.59-4.59c-.39-.39-.39-1.02 0-1.41.39-.38 1.03-.39 1.42 0z"></path></svg>
+                </div>
+                <div class="accordion-content">
+                    <div>
+                        ${options.labels.map(label => /*html*/`
+                            <div class="accordion-item toggle hover" key="${label}">
+                                <h5>${label}</h5>
+                                <input type="checkbox" ${savedQuery?.dealTypes?.includes('SFH Deal') || !savedQuery ? 'checked' : ''}>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <div class="accordion-title" group="neededInfo">
+                    <h4>Needed Info</h4>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="6.4 8.98 11.2 6.62"><path d="m8.12 9.29 3.88 3.88 3.88-3.88c.39-.39 1.02-.39 1.41 0s.39 1.02 0 1.41l-4.59 4.59c-.39.39-1.02.39-1.41 0l-4.59-4.59c-.39-.39-.39-1.02 0-1.41.39-.38 1.03-.39 1.42 0z"></path></svg>
+                </div>
+                <div class="accordion-content">
+                    <div>
+                        <div class="accordion-item sub-accordion-title" key="neededSFHInfo">
+                            <h5>SFH Deals</h5>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="6.4 8.98 11.2 6.62"><path d="m8.12 9.29 3.88 3.88 3.88-3.88c.39-.39 1.02-.39 1.41 0s.39 1.02 0 1.41l-4.59 4.59c-.39.39-1.02.39-1.41 0l-4.59-4.59c-.39-.39-.39-1.02 0-1.41.39-.38 1.03-.39 1.42 0z"></path></svg>
+                        </div>
+                        <div class="accordion-content">
+                            <div>
+                                <div class="accordion-item toggle hover" key="street">
+                                    <h5>Street</h5> <input type="checkbox" ${savedQuery?.neededSFHInfo?.includes('street') ? 'checked' : ''}>
+                                </div>
+
+                                <div class="accordion-item toggle hover" key="city">
+                                    <h5>City</h5>
+                                    <input type="checkbox" ${savedQuery?.neededSFHInfo?.includes('city') ? 'checked' : ''}>
+                                </div>
+
+                                <div class="accordion-item toggle hover" key="state">
+                                    <h5>State</h5>
+                                    <input type="checkbox" ${savedQuery?.neededSFHInfo?.includes('state') ? 'checked' : ''}>
+                                </div>
+
+                                <div class="accordion-item toggle hover" key="zip">
+                                    <h5>Zip</h5>
+                                    <input type="checkbox" ${savedQuery?.neededSFHInfo?.includes('zip') ? 'checked' : ''}>
+                                </div>
+
+                                <div class="accordion-item toggle hover" key="price">
+                                    <h5>Price</h5>
+                                    <input type="checkbox" ${savedQuery?.neededSFHInfo?.includes('price') ? 'checked' : ''}>
+                                </div>
+
+                                <div class="accordion-item toggle hover" key="arv">
+                                    <h5>ARV</h5>
+                                    <input type="checkbox" ${savedQuery?.neededSFHInfo?.includes('arv') ? 'checked' : ''}>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item sub-accordion-title" key="neededLandInfo">
+                            <h5>Land Deals</h5>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="6.4 8.98 11.2 6.62"><path d="m8.12 9.29 3.88 3.88 3.88-3.88c.39-.39 1.02-.39 1.41 0s.39 1.02 0 1.41l-4.59 4.59c-.39.39-1.02.39-1.41 0l-4.59-4.59c-.39-.39-.39-1.02 0-1.41.39-.38 1.03-.39 1.42 0z"></path></svg>
+                        </div>
+                        <div class="accordion-content">
+                            <div>
+                                <div class="accordion-item toggle hover" key="street">
+                                    <h5>Street</h5>
+                                    <input type="checkbox" ${savedQuery?.neededLandInfo?.includes('street') ? 'checked' : ''}>
+                                </div>
+
+                                <div class="accordion-item toggle hover" key="city">
+                                    <h5>City</h5>
+                                    <input type="checkbox" ${savedQuery?.neededLandInfo?.includes('city') ? 'checked' : ''}>
+                                </div>
+
+                                <div class="accordion-item toggle hover" key="state">
+                                    <h5>State</h5>
+                                    <input type="checkbox" ${savedQuery?.neededLandInfo?.includes('state') ? 'checked' : ''}>
+                                </div>
+
+                                <div class="accordion-item toggle hover" key="zip">
+                                    <h5>Zip</h5>
+                                    <input type="checkbox" ${savedQuery?.neededLandInfo?.includes('zip') ? 'checked' : ''}>
+                                </div>
+
+                                <div class="accordion-item toggle hover" key="price">
+                                    <h5>Price</h5>
+                                    <input type="checkbox" ${savedQuery?.neededLandInfo?.includes('price') ? 'checked' : ''}>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-title" group="states">
+                    <h4>States</h4>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="6.4 8.98 11.2 6.62"><path d="m8.12 9.29 3.88 3.88 3.88-3.88c.39-.39 1.02-.39 1.41 0s.39 1.02 0 1.41l-4.59 4.59c-.39.39-1.02.39-1.41 0l-4.59-4.59c-.39-.39-.39-1.02 0-1.41.39-.38 1.03-.39 1.42 0z"></path></svg>
+                </div>
+                <div class="accordion-content">
+                    <div>
+                        <div class="accordion-item search">
+                            <input type="text" placeholder="Search">
+                            <div class="toggle-all">Toggle All</div>
+                        </div>
+                        <div class="content-search-container">
+                            ${options.states.map(state => /*html*/`
+                                <div class="accordion-item toggle hover" key="${state}">
+                                    <h5>${state}</h5>
+                                    <input type="checkbox" ${!savedQuery?.blacklistedStates?.includes(state) ? 'checked' : ''}>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-title" group="cities">
+                    <h4>Cities</h4>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="6.4 8.98 11.2 6.62"><path d="m8.12 9.29 3.88 3.88 3.88-3.88c.39-.39 1.02-.39 1.41 0s.39 1.02 0 1.41l-4.59 4.59c-.39.39-1.02.39-1.41 0l-4.59-4.59c-.39-.39-.39-1.02 0-1.41.39-.38 1.03-.39 1.42 0z"></path></svg>
+                </div>
+                <div class="accordion-content">
+                    <div>
+                        <div class="accordion-item search">
+                            <input type="text" placeholder="Search">
+                            <div class="toggle-all">Toggle All</div>
+                        </div>
+                        <div class="content-search-container">
+                            ${options.cities.map(city => /*html*/`
+                                <div class="accordion-item toggle hover" key="${city}">
+                                    <h5>${city}</h5>
+                                    <input type="checkbox" ${!savedQuery?.blacklistedStates?.includes(city) ? 'checked' : ''}>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-title" group="postedAge">
+                    <h4>Posted Age</h4>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="6.4 8.98 11.2 6.62"><path d="m8.12 9.29 3.88 3.88 3.88-3.88c.39-.39 1.02-.39 1.41 0s.39 1.02 0 1.41l-4.59 4.59c-.39.39-1.02.39-1.41 0l-4.59-4.59c-.39-.39-.39-1.02 0-1.41.39-.38 1.03-.39 1.42 0z"></path></svg>
+                </div>
+                <div class="accordion-content">
+                    <div>
+                        <div class="accordion-item number" key="daysOld">
+                            <h5>Newer Than Days</h5>
+                            <input type="number" class="number-input">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-title" group="blacklisted-authors">
+                    <h4>Blocked Authors</h4>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="6.4 8.98 11.2 6.62"><path d="m8.12 9.29 3.88 3.88 3.88-3.88c.39-.39 1.02-.39 1.41 0s.39 1.02 0 1.41l-4.59 4.59c-.39.39-1.02.39-1.41 0l-4.59-4.59c-.39-.39-.39-1.02 0-1.41.39-.38 1.03-.39 1.42 0z"></path></svg>
+                </div>
+                <div class="accordion-content">
+                    <div>
+                        ${savedQuery.blacklistedAuthors.map(author => /*html*/`
+                            <div class="accordion-item active" key="${author.id}">
+                                <h5>${author.name}</h5>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="remove hover" viewBox="4.47 4.47 7.05 7.05"><path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/></svg>
+                            </div>
+                        `).join('')}
+
+                        ${!savedQuery.blacklistedAuthors.length ? /*html*/`<div class="accordion-item no-blocked-authors">No Blocked Authors</div>` : ''}
+                    </div>
+                </div>
             </div>
         `)
 
@@ -300,6 +453,47 @@ class FilterOptionsSidebar extends HTMLElement {
                 detail: { group: $(event.target).closest('.search').parent().parent().prev()[0].getAttribute('group'), key: null, value: null }
             }))
         })
+
+        this.$shadowRoot.find('.active > svg').on('click', event => {
+            const group = $(event.target).closest('.accordion-content').prev()[0].getAttribute('group')
+
+            $(event.currentTarget).closest('.accordion-item').remove()
+
+            this.dispatchEvent(new CustomEvent('valueChange', {
+                detail: { group, key: null, value: null }
+            }))
+        })
+
+        $(this).on('valueChange', event => {
+            //If state options is changed then update the city options list for available cities of selected states
+            if (event.detail.group === 'states') {
+                const selectedStates = this.getGroupItems('states')
+                .filter(item => item.value === true)
+                .map(item => item.key)
+                .join(',')
+
+                api.get(`/cityOptions?states=${selectedStates}`).then(response => {
+                    const cities = response.data
+
+                    const citiesGroupElement = this.$shadowRoot.find(`[group=${group}]`).next('content-search-container')
+
+                    citiesGroupElement.html(cities.map(city => /*html*/`
+                        <div class="option-item toggle hover" key="${city}">
+                            <h4>${city}</h4>
+                            <input type="checkbox" ${!savedQuery?.blacklistedCities?.includes(city) ? 'checked' : ''}>
+                        </div>
+                    `).join(''))
+
+                    this.setOptionItemEventListeners(citiesGroupElement)
+                })
+            }
+        })
+
+        if (!savedQuery) DealsList.fetchAndInsertDeals(DealsList.getQueryParameters())
+
+        DealsList.insertDealCounts(DealsList.getQueryParameters())
+
+        this.hasRendered = true
     }
 
     setAccordionItemEventListeners(element) {
@@ -345,60 +539,30 @@ class FilterOptionsSidebar extends HTMLElement {
         sidebarContainer.css({ left: '0px' })
     }
 
-    options() {
-        const result = {}
-
-        this.$shadowRoot.find('.accordion-title').each((_, element) => {
-            const obj = {}
-
-            $(element).next().find('> div > [key]').each((_, element) => {
-                obj[element.getAttribute('key')] = getValue(element)
-            })
-
-            result[element.getAttribute('key')] = obj
-        })
-
-        return result
-
-
-
-        function getValue(element) {
-            if ($(element).is('.sub-accordion-title')) {
-                return extractSubAccordion(element)
-            }
-
-            const input = $(element).find('input')[0]
-
-            switch (input.type) {
-                case 'number':
-                    return input.value
-
-                case 'checkbox':
-                    return input.checked
-            }
-        }
-
-        function extractSubAccordion(element) {
-            const obj = {}
-
-            $(element).next().find('> div > [key]').each((_, element) => {
-                obj[element.getAttribute('key')] = getValue(element)
-            })
-
-            return obj
-        }
-    }
-
-
-
     getGroupItems(group) {
-        return this.$shadowRoot.find(`[group="${group}"]`).next().find('.accordion-item[key]').map((_, element) => ({
-            key: element.getAttribute('key'),
-            value: $(element).find('input')[0].type === 'checkbox' ? $(element).find('input')[0].checked : $(element).find('input')[0].value
-        })).get()
+        return this.$shadowRoot.find(`[group="${group}"]`).next().find('.accordion-item').map((_, element) => {
+            if ($(element).hasClass('toggle')) {
+                return {
+                    key: element.getAttribute('key'),
+                    value: $(element).find('input')[0].checked
+                }
+            }
+
+            if ($(element).hasClass('number')) {
+                return {
+                    key: element.getAttribute('key'),
+                    value: $(element).find('input')[0].value
+                }
+            }
+
+            if ($(element).hasClass('active')) {
+                return {
+                    key: element.getAttribute('key'),
+                    value: $(element).find('h5').text()
+                }
+            }
+        }).get()
     }
-
-
 
     getItemValue(group, key) {
         const input = this.$shadowRoot.find(`[group="${group}"]`).next().find(`[key="${key}"]`).find('input')[0]
@@ -406,67 +570,8 @@ class FilterOptionsSidebar extends HTMLElement {
         return input.type === 'checkbox' ? input.checked : input.value
     }
 
+    reinsertedCallback() {
 
-
-    buildGroupItems(group, items, { searchbar = false }) {
-        const accoridonContentDiv = this.$shadowRoot.find(`[group=${group}]`).next()
-
-        accoridonContentDiv.html(/*html*/`
-            <div>
-                ${searchbar ? /*html*/`
-                    <div class="accordion-item search">
-                        <input type="text" placeholder="Search">
-                        <div class="toggle-all">Toggle All</div>
-                    </div>
-                    <div class="content-search-container">
-                ` : ''}
-
-                ${items.map(item => {
-                    if (item.type === 'checkbox') return /*html*/`
-                        <div class="accordion-item" key="${item.key}">
-                            <h5>${item.label}</h5>
-                            <input type="checkbox" ${item.value ? 'checked': ''}>
-                        </div>
-                    `
-                    if (item.type === 'number') return /*html*/`
-                        <div class="accordion-item" key="${item.key}">
-                            <h5>${item.label}</h5>
-                            <input type="number" class="number-input">
-                        </div>
-                    `
-                    if (item.type === 'sub-accordion') return /*html*/`
-                        <div class="accordion-item sub-accordion-title" group="${item.group}">
-                            <h5>${item.label}</h5>
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="6.4 8.98 11.2 6.62"><path d="m8.12 9.29 3.88 3.88 3.88-3.88c.39-.39 1.02-.39 1.41 0s.39 1.02 0 1.41l-4.59 4.59c-.39.39-1.02.39-1.41 0l-4.59-4.59c-.39-.39-.39-1.02 0-1.41.39-.38 1.03-.39 1.42 0z"></path></svg>
-                        </div>
-                        <div class="accordion-content">
-                            <div>
-                                ${item.items.map(subItem => {
-                                    if (subItem.type === 'checkbox') return /*html*/`
-                                        <div class="accordion-item" key="${subItem.key}">
-                                            <h5>${subItem.label}</h5>
-                                            <input type="checkbox" ${subItem.value ? 'checked': ''}>
-                                        </div>
-                                    `
-                                    if (subItem.type === 'number') return /*html*/`
-                                        <div class="accordion-item" key="${subItem.key}">
-                                            <h5>${subItem.label}</h5>
-                                            <input type="number" class="number-input">
-                                        </div>
-                                    `
-                                }).join('')}
-                            </div>
-                        </div>
-                    `
-                }).join('')}
-
-                ${searchbar ? /*html*/`
-                    </div>
-                ` : ''}
-            </div>
-        `)
-
-        this.setAccordionItemEventListeners(accoridonContentDiv)
     }
 }
 

@@ -1,5 +1,4 @@
 import './sorting-dropdown.js'
-import './filter-options-sidebar.js'
 import './deal-view.js'
 import './notification-banner.js'
 
@@ -22,6 +21,7 @@ class DealsList extends HTMLElement {
                 align-items: center;
                 max-height: calc(100vh - ${$('title-bar').outerHeight()}px);
                 z-index: 1;
+                background-color: var(--dark-color-1);
             }
 
             #top-bar {
@@ -303,14 +303,7 @@ class DealsList extends HTMLElement {
 
         if (this.hasRendered) return this.reinsertedCallback() //Add function to only call when this is true. This should only occur when its reinstated from a cache.
 
-        //Get User query params and then set them in sorting-dropdown and filter-options-sidebar.
-
-        const savedQuery = await api.get('/user').then(response => response.data.dealsQuery)
-        .catch(error => {
-            console.error('Request Error:', error)
-
-            $('<notification-banner></notification-banner>')[0].apiError(error, 'Get User Query')
-        })
+        const savedQuery = await window.savedQueryPromise
 
         console.log(savedQuery)
 
@@ -340,222 +333,19 @@ class DealsList extends HTMLElement {
             <div id="list-container"></div>
         `)
 
-        if (savedQuery) this.fetchAndInsertDeals(savedQuery)
-
-        this.$shadowRoot.append(/*html*/`
-            <filter-options-sidebar></filter-options-sidebar>
-        `)
-
-        const options = await api.get(`/queryOptions${savedQuery?.blacklistedStates ? `?blacklistedStates=${savedQuery.blacklistedStates}` : ''}`).then(response => response.data)
-        .catch(error => {
-            console.error('Request Error:', error)
-
-            $('<notification-banner></notification-banner>')[0].apiError(error, 'Get Options')
-        })
-
-        this.$shadowRoot.find('filter-options-sidebar')[0].createLayout([
-            {
-                title: 'Deal Types',
-                group: 'dealTypes',
-                items: [
-                    {
-                        label: 'SFH Deal',
-                        key: 'SFH Deal',
-                        type: 'checkbox',
-                        value: savedQuery?.dealTypes ? savedQuery.dealTypes.includes('SFH Deal') : true
-                    },
-                    {
-                        label: 'Land Deal',
-                        key: 'Land Deal',
-                        type: 'checkbox',
-                        value: savedQuery?.dealTypes ? savedQuery.dealTypes.includes('Land Deal') : true
-                    },
-                ]
-            },
-            {
-                title: 'Labels',
-                group: 'labels',
-                items: options.labels.map(label => ({
-                    label: label,
-                    key: label,
-                    type: 'checkbox',
-                    value: savedQuery?.blacklistedLabels ? !savedQuery.blacklistedLabels.includes(label) : true
-                }))
-            },
-            {
-                title: 'Needed Info',
-                group: 'neededInfo',
-                items: [
-                    {
-                        label: 'SFH Deals',
-                        group: 'neededSFHInfo',
-                        type: 'sub-accordion',
-                        items: [
-                            {
-                                label: 'Street',
-                                key: 'street',
-                                type: 'checkbox',
-                                value: savedQuery?.neededSFHInfo ? savedQuery.neededSFHInfo.includes('street') : false
-                            },
-                            {
-                                label: 'City',
-                                key: 'city',
-                                type: 'checkbox',
-                                value: savedQuery?.neededSFHInfo ? savedQuery.neededSFHInfo.includes('city') : false
-                            },
-                            {
-                                label: 'State',
-                                key: 'state',
-                                type: 'checkbox',
-                                value: savedQuery?.neededSFHInfo ? savedQuery.neededSFHInfo.includes('state') : false
-                            },
-                            {
-                                label: 'Zip',
-                                key: 'zip',
-                                type: 'checkbox',
-                                value: savedQuery?.neededSFHInfo ? savedQuery.neededSFHInfo.includes('zip') : false
-                            },
-                            {
-                                label: 'Price',
-                                key: 'price',
-                                type: 'checkbox',
-                                value: savedQuery?.neededSFHInfo ? savedQuery.neededSFHInfo.includes('price') : false
-                            },
-                            {
-                                label: 'ARV',
-                                key: 'arv',
-                                type: 'checkbox',
-                                value: savedQuery?.neededSFHInfo ? savedQuery.neededSFHInfo.includes('arv') : false
-                            }
-                        ]
-                    },
-                    {
-                        label: 'Land Deals',
-                        group: 'neededLandInfo',
-                        type: 'sub-accordion',
-                        items: [
-                            {
-                                label: 'Street',
-                                key: 'street',
-                                type: 'checkbox',
-                                value: savedQuery?.neededLandInfo ? savedQuery.neededLandInfo.includes('street') : false
-                            },
-                            {
-                                label: 'City',
-                                key: 'city',
-                                type: 'checkbox',
-                                value: savedQuery?.neededLandInfo ? savedQuery.neededLandInfo.includes('city') : false
-                            },
-                            {
-                                label: 'State',
-                                key: 'state',
-                                type: 'checkbox',
-                                value: savedQuery?.neededLandInfo ? savedQuery.neededLandInfo.includes('state') : false
-                            },
-                            {
-                                label: 'Zip',
-                                key: 'zip',
-                                type: 'checkbox',
-                                value: savedQuery?.neededLandInfo ? savedQuery.neededLandInfo.includes('zip') : false
-                            },
-                            {
-                                label: 'Price',
-                                key: 'price',
-                                type: 'checkbox',
-                                value: savedQuery?.neededLandInfo ? savedQuery.neededLandInfo.includes('price') : false
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                title: 'States',
-                group: 'states',
-                searchbar: true,
-                items: options.states.map(state => ({
-                    label: state,
-                    key: state,
-                    type: 'checkbox',
-                    value: savedQuery?.blacklistedStates ? !savedQuery.blacklistedStates.includes(state) : true
-                }))
-            },
-            {
-                title: 'Cities',
-                group: 'cities',
-                searchbar: true,
-                items: options.cities.map(city => ({
-                    label: city,
-                    key: city,
-                    type: 'checkbox',
-                    value: savedQuery?.blacklistedCities ? !savedQuery.blacklistedCities.includes(city) : true
-                }))
-            },
-            {
-                title: 'Posted Age',
-                group: 'postedAge',
-                items: [
-                    {
-                        label: 'Newer Than Days',
-                        key: 'daysOld',
-                        type: 'number',
-                        value: savedQuery?.daysOld || ''
-                    }
-                ]
-            },
-            {
-                title: 'Authors',
-                group: 'authors',
-                searchbar: true,
-                items: options.authors
-                    .sort((a, b) => a.name
-                    .localeCompare(b.name))
-                    .map(author => ({
-                        label: author.name,
-                        key: author.id,
-                        type: 'checkbox',
-                        value: savedQuery?.blacklistedAuthors ? !savedQuery.blacklistedAuthors.includes(author.id) : true
-                }))
-            }
-        ])
-
-        if (!savedQuery) this.fetchAndInsertDeals(this.getQueryParameters())
-
-        this.insertDealCounts(this.getQueryParameters())
-
         this.$shadowRoot.find('#filter-button').on('click', () => {
-            this.$shadowRoot.find('filter-options-sidebar')[0].openSidebar()
+            $('filter-options-sidebar')[0].openSidebar()
         })
 
         let sidebarOptionChanged = false
 
-        this.$shadowRoot.find('filter-options-sidebar').on('sidebarClose', () => {
-            if (sidebarOptionChanged) {
-                this.refreshDealsList()
-            }
-            sidebarOptionChanged = false
+        $('filter-options-sidebar').on('valueChange', () => {
+            sidebarOptionChanged = true
         })
 
-        this.$shadowRoot.find('filter-options-sidebar').on('valueChange', async event => {
-            sidebarOptionChanged = true
-
-            //If state options is changed then update the city options list for available cities of selected states
-            if (event.detail.group === 'states') {
-                const FilterOptionsSidebar = this.$shadowRoot.find('filter-options-sidebar')[0]
-
-                const selectedStates = FilterOptionsSidebar.getGroupItems('states')
-                .filter(item => item.value === true)
-                .map(item => item.key)
-                .join(',')
-
-                api.get(`/cityOptions?states=${selectedStates}`).then(response => response.data.map(city => ({
-                    label: city,
-                    key: city,
-                    type: 'checkbox',
-                    value: true
-                }))).then(cityItems => {
-                    FilterOptionsSidebar.buildGroupItems('cities', cityItems, { searchbar: true })
-                })
-            }
+        $('filter-options-sidebar').on('sidebarClose', () => {
+            if (sidebarOptionChanged) this.refreshDealsList()
+            sidebarOptionChanged = false
         })
 
         this.$shadowRoot.find('sorting-dropdown').on('orderToggle', () => {
@@ -593,7 +383,7 @@ class DealsList extends HTMLElement {
     }
 
     getQueryParameters() {
-        const FilterOptionsSidebar = this.$shadowRoot.find('filter-options-sidebar')[0]
+        const FilterOptionsSidebar = $('filter-options-sidebar')[0]
         const SortingDropdown = this.$shadowRoot.find('sorting-dropdown')[0]
 
         const body = {
@@ -615,9 +405,11 @@ class DealsList extends HTMLElement {
         .filter(item => item.value === false)
         .map(item => item.key)
 
-        body['blacklistedAuthors'] = FilterOptionsSidebar.getGroupItems('authors')
-        .filter(item => item.value === false)
-        .map(item => item.key)
+        body['blacklistedAuthors'] = FilterOptionsSidebar.getGroupItems('blacklisted-authors')
+        .map(item => ({
+            id: item.key,
+            name: item.value
+        }))
 
         for (const parameter of ['dealTypes', 'neededSFHInfo', 'neededLandInfo']) {
             body[parameter] = FilterOptionsSidebar.getGroupItems(parameter)
@@ -778,12 +570,17 @@ function dealDiv(deal) {
             </div>
         </div>
     `).on('click', event => {
-        pushHistoryState(`/deals-list/deal?id=${event.currentTarget.id}`)
+        const url = new URL(window.location.href)
+        url.searchParams.set('id', event.currentTarget.id)
+        
+        window.history.replaceState({}, '', url.toString())
 
-        $('deals-list').replaceWith(/*html*/`
-            <deal-view></deal-view>
-        `)
+        $('deal-view').css('z-index', '2')
 
-        history.customCache[window.location.href] = $('body').contents()
+        $('deal-view')[0].populateDeal()
+
+        //pushHistoryState(`/deals-list/deal?id=${event.currentTarget.id}`)
+        // Add deal-view
+        //history.customCache[window.location.href] = $('body').contents()
     })
 }
