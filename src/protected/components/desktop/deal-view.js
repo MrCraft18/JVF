@@ -123,6 +123,7 @@ class DealView extends HTMLElement {
                 border: 2px solid var(--dark-color-5);
                 fill: var(--dark-color-5);
                 margin-left: 5%;
+                flex-shrink: 0;
             }
 
             .deal-type {

@@ -1,20 +1,16 @@
 [X] Make Desktop Page
 
-[ ] Make login desktop page
+[X] Make login desktop page
 
 [X] Remove Redundant web components in the mobile page
 
 [X] Remove meme when no deals found
 
-[ ] Make it so every user has its own database for labeled deals
-
 [X] Remove the email scraping part
 
 [X] For the moment remove scraping in Florida groups
 
-[ ] Create account registration system
-
-[ ] Replace verify info with flagging deals for specific reasons
+[X] Replace verify info with flagging deals for specific reasons
     - This is not an off market deal
     - This is a SFH/Land deal
     - Incorrect Info
@@ -31,11 +27,18 @@
 
 [X] Add block author button to deal-view and change authors sider bar option to a list of blocked authors only with an X to unblock them. 
 
-[ ] Make it so when chat gpt parses a dumb city name it will map to the closest city with fuzzy find
+[X] Make it so every user has its own database for labeled deals
+
+[X] Make it so when chat gpt parses a dumb city name it will map to the closest city with fuzzy find
+
+[X] Change accounts to use emails instead of names
 
 
 
 LATER
+
+[ ] Create account registration system
+
 [ ] Make images be shown in deal-view
 
 

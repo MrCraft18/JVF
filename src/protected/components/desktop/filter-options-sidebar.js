@@ -224,7 +224,7 @@ class FilterOptionsSidebar extends HTMLElement {
                 <div class="options-group" group="labels">
                     <div class="options-title"><h4>Labels</h4></div> 
                     ${options.labels.map(label => /*html*/`
-                        <div class="option-item toggle hover" key="checked">
+                        <div class="option-item toggle hover" key=${label}>
                             <h4>${label}</h4>
                             <input type="checkbox" ${!savedQuery?.blacklistedLabels?.includes(label) || !savedQuery ? 'checked' : ''}>
                         </div>

@@ -13,21 +13,20 @@ router.post('/login', async (req, res) => {
     try {
         console.log(req.body)
 
-        if (!req.body.name.first || !req.body.name.first) return res.status(400).send("Missing Name")
+        if (!req.body.email) return res.status(400).send("Missing Email")
 
         if (!req.body.password) return res.status(400).send("Missing Password")
 
         const foundUser = await User.findOne(
             {
-              'name.first': { $regex: new RegExp(`^${req.body.name.first.trim()}$`, 'i') },
-              'name.last': { $regex: new RegExp(`^${req.body.name.last.trim()}$`, 'i') }
+              'email': { $regex: new RegExp(`^${req.body.email.trim()}$`, 'i') },
             },
             { password: 1, _id: 1 }
         )
 
         if (!foundUser) return res.status(404).send("User Does Not Exist")
 
-        if (await bcrypt.compare(req.body.password.trim(), foundUser.password)) {
+        if (bcrypt.compare(req.body.password.trim(), foundUser.password)) {
             const refreshToken = jwt.sign({ id: foundUser._id.toString(), ip: req.ip }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '3d' })
 
             await new RefreshToken({ token: refreshToken }).save()

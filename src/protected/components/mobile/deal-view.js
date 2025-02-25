@@ -1,5 +1,6 @@
 import './label-dropdown.js'
 import './notification-banner.js'
+import './info-issue.js'
 
 class DealView extends HTMLElement {
     constructor() {
@@ -138,6 +139,7 @@ class DealView extends HTMLElement {
                 border: 2px solid var(--dark-color-5);
                 fill: var(--dark-color-5);
                 margin-left: 5%;
+                flex-shrink: 0;
             }
 
             .deal-type {
@@ -323,6 +325,8 @@ class DealView extends HTMLElement {
         api.get(`/deal?id=${new URLSearchParams(window.location.search).get('id')}`).then(response => {
             const deal = response.data
 
+            this.deal = deal
+
             console.log(deal)
 
             this.$shadowRoot.find('#content').html(/*html*/`
@@ -391,6 +395,10 @@ class DealView extends HTMLElement {
                     </div>
                 </div>
             `)
+
+            this.$shadowRoot.find('.issue-icon').on('click', () => {
+                $('body').append('<info-issue></info-issue>')
+            })
 
             window.savedQueryPromise.then(savedQuery => {
                 if (savedQuery.blacklistedAuthors.find(blacklistedAuthor => blacklistedAuthor.id === deal.post.author.id)) {

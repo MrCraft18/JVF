@@ -26,6 +26,10 @@ const facebookAccountSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    enabled: {
+        type: Boolean,
+        default: true
+    },
     fingerprint: Object,
     storageState: Object
 })

@@ -2,6 +2,7 @@ import express from 'express'
 import bcrypt from 'bcryptjs'
 import User from '../schemas/User.js'
 import Deal from '../schemas/Deal.js'
+import Label from '../schemas/Label.js'
 import Post from '../schemas/Post.js'
 import { configDotenv } from 'dotenv'; configDotenv()
 
@@ -75,8 +76,8 @@ router.get('/cityOptions', async (req, res) => {
 
 router.get('/queryOptions', async (req, res) => {
     try {
-        const [labels, states, cities, authors] = await Promise.all([
-            Deal.distinct('label').then(results => results.filter(result => result != null)),
+        const [labels, states, cities] = await Promise.all([
+            Label.distinct('label').then(results => ['Unchecked', ...results]),
             Deal.distinct('address.state').then(results => results.filter(result => result != null)),
             Deal.distinct('address.city', req.query.blacklistedStates ? { 'address.state': { $nin: req.query.blacklistedStates.split(',') } } : {}).then(results => results.filter(result => result != null)),
             Deal.aggregate([
@@ -108,8 +109,7 @@ router.get('/queryOptions', async (req, res) => {
         const options = {
             labels,
             states,
-            cities,
-            authors,
+            cities
         }
 
         res.status(200).json(options)
@@ -127,7 +127,7 @@ router.post('/deals', async (req, res) => {
 
         if (!req.body['sort']) return res.status(400).json({ error: "Missing 'sort' parameter." })
 
-        const pipe = createAggregationPipeFromQuery(req.body)
+        const pipe = createAggregationPipeFromQuery(req)
 
         // console.dir(pipe, { depth: 10 })
 
@@ -187,7 +187,32 @@ router.get('/deal', async (req, res) => {
                 $unwind: '$post'
             },
             {
+                $lookup: {
+                    from: "labels", // Name of the UserDealLabel collection
+                    let: { dealId: "$_id" },
+                    pipeline: [
+                        { 
+                            $match: {
+                                $expr: { 
+                                    $and: [
+                                        { $eq: ["$deal", "$$dealId"] },
+                                        { $eq: ["$user", new Types.ObjectId(req.user._id)] } // Filter by user
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    as: "userLabel"
+                }
+            },
+            {
+                $addFields: {
+                    label: { $ifNull: [{ $arrayElemAt: ["$userLabel.label", 0] }, "Unchecked"] } // Default to "Unchecked"
+                }
+            },
+            {
                 $project: {
+                    userLabel: 0,
                     associatedPost: 0,
                     __v: 0,
                     'post.__v': 0,
@@ -207,17 +232,18 @@ router.get('/deal', async (req, res) => {
 
 router.post('/changeLabel', async (req, res) => {
     try {
-        if (req.user.role != 'checker' && req.user.role != 'editor' && req.user.role != 'admin') return res.status(401).send('You do not have permission to edit this.')
-
-        const deal = await Deal.findById(req.body.id)
-
-        deal.label = req.body.label
-
-        if (req.body.label === 'Checked') deal.checkedBy = req.user._id
-
-        if (req.body.label === 'Unchecked') deal.checkedBy = undefined
-
-        await deal.save()
+        if (req.body.label === "Unchecked") {
+            await Label.findOneAndDelete({ user: req.user._id, deal: req.body.id })
+        } else {
+            await Label.findOneAndUpdate(
+                { user: req.user._id, deal: req.body.id },
+                {
+                    $set: { label: req.body.label }, // Always update the label
+                    $setOnInsert: { user: req.user._id, deal: req.id } // Only set these on insert
+                },
+                { upsert: true, new: true } // Creates if not exists
+            )
+        }
 
         res.sendStatus(200)
     } catch (error) {
@@ -228,13 +254,7 @@ router.post('/changeLabel', async (req, res) => {
 
 router.post('/dealCounts', async (req, res) => {
     try {
-        const pipe = []
-
-        createAggregationPipeFromQuery(req.body).forEach(step => {
-            const stepFields = ['$lookup', '$unwind', '$addFields', '$match']
-
-            if (stepFields.includes(Object.keys(step)[0])) pipe.push(step)
-        })
+        const pipe = createAggregationPipeFromQuery(req).slice(0, 4)
 
         pipe.push({ $count: 'totalCount' })
 
@@ -271,7 +291,7 @@ export default router
 
 
 
-function createAggregationPipeFromQuery(body) {
+function createAggregationPipeFromQuery(req) {
     return [
         {
             $lookup: {
@@ -296,22 +316,46 @@ function createAggregationPipeFromQuery(body) {
             }
         },
         {
+            $lookup: {
+                from: "labels", // Name of the UserDealLabel collection
+                let: { dealId: "$_id" },
+                pipeline: [
+                    { 
+                        $match: {
+                            $expr: { 
+                                $and: [
+                                    { $eq: ["$deal", "$$dealId"] },
+                                    { $eq: ["$user", new Types.ObjectId(req.user._id)] } // Filter by user
+                                ]
+                            }
+                        }
+                    }
+                ],
+                as: "userLabel"
+            }
+        },
+        {
+            $addFields: {
+                label: { $ifNull: [{ $arrayElemAt: ["$userLabel.label", 0] }, "Unchecked"] } // Default to "Unchecked"
+            }
+        },
+        {
             $match: {
-                ...(body['sort'] !== 'Date' && { [body['sort'] === 'Asking' ? 'price' : body['sort'] === 'ARV' ? 'arv' : 'priceToARV']: { $ne: null } }),
-                ...(body['blacklistedLabels'].length && { 'label': { $nin: body['blacklistedLabels'] } }),
-                ...(body['blacklistedStates'].length && { 'address.state': { $nin: body['blacklistedStates'] } }),
-                ...(body['blacklistedCities'].length && { 'address.city': { $nin: body['blacklistedCities'] } }),
-                ...(body['blacklistedAuthors'].length && { 'post.author.id': { $nin: body['blacklistedAuthors'].map(author => author.id) } }),
-                ...(body['daysOld'] && { 'post.createdAt': { $gte: new Date(new Date().setDate(new Date().getDate() - body['daysOld'])) } }),
-                ...((body['text'] || body['dealTypes']) && {
+                ...(req.body['sort'] !== 'Date' && { [req.body['sort'] === 'Asking' ? 'price' : req.body['sort'] === 'ARV' ? 'arv' : 'priceToARV']: { $ne: null } }),
+                ...(req.body['blacklistedLabels'].length && { 'label': { $nin: req.body['blacklistedLabels'] } }),
+                ...(req.body['blacklistedStates'].length && { 'address.state': { $nin: req.body['blacklistedStates'] } }),
+                ...(req.body['blacklistedCities'].length && { 'address.city': { $nin: req.body['blacklistedCities'] } }),
+                ...(req.body['blacklistedAuthors'].length && { 'post.author.id': { $nin: req.body['blacklistedAuthors'].map(author => author.id) } }),
+                ...(req.body['daysOld'] && { 'post.createdAt': { $gte: new Date(new Date().setDate(new Date().getDate() - req.body['daysOld'])) } }),
+                ...((req.body['text'] || req.body['dealTypes']) && {
                     $and: [
-                        ...(body['dealTypes'] ? [{
-                            $or: body['dealTypes'].length ? body['dealTypes'].map(dealType => ({
+                        ...(req.body['dealTypes'] ? [{
+                            $or: req.body['dealTypes'].length ? req.body['dealTypes'].map(dealType => ({
                                 category: dealType,
-                                ...(body[dealType === 'SFH Deal' ? 'neededSFHInfo' : 'neededLandInfo'].length && {
+                                ...(req.body[dealType === 'SFH Deal' ? 'neededSFHInfo' : 'neededLandInfo'].length && {
                                     $and: (() => {
                                         if (dealType === 'SFH Deal') {
-                                            return body['neededSFHInfo'].map(info => {
+                                            return req.body['neededSFHInfo'].map(info => {
                                                 switch (info) {
                                                     case 'street': return { 'address.streetName': { $ne: null } }
                                                     case 'city': return { 'address.city': { $ne: null } }
@@ -322,7 +366,7 @@ function createAggregationPipeFromQuery(body) {
                                                 }
                                             })
                                         } else if (dealType === 'Land Deal') {
-                                            return body['neededLandInfo'].map(info => {
+                                            return req.body['neededLandInfo'].map(info => {
                                                 switch (info) {
                                                     case 'street': return { 'address.streetName': { $ne: null } }
                                                     case 'city': return { 'address.city': { $ne: null } }
@@ -334,27 +378,27 @@ function createAggregationPipeFromQuery(body) {
                                         }
                                     })()
                                 })
-                            })) : [ { category: { $in: body['dealTypes'] } } ]
+                            })) : [ { category: { $in: req.body['dealTypes'] } } ]
                         }] : []),
 
-                        ...(body['text'] ? [{
+                        ...(req.body['text'] ? [{
                             $or: [
-                                { 'post.author.name': { $regex: body['text'], $options: "i" } },
-                                { 'address.streetName': { $regex: body['text'], $options: "i" } },
-                                { 'address.streetNumber': { $regex: body['text'], $options: "i" } },
-                                { 'address.city': { $regex: body['text'], $options: "i" } },
-                                { 'address.state': { $regex: body['text'], $options: "i" } },
-                                { 'address.zip': { $regex: body['text'], $options: "i" } },
+                                { 'post.author.name': { $regex: req.body['text'], $options: "i" } },
+                                { 'address.streetName': { $regex: req.body['text'], $options: "i" } },
+                                { 'address.streetNumber': { $regex: req.body['text'], $options: "i" } },
+                                { 'address.city': { $regex: req.body['text'], $options: "i" } },
+                                { 'address.state': { $regex: req.body['text'], $options: "i" } },
+                                { 'address.zip': { $regex: req.body['text'], $options: "i" } },
                             ]
                         }] : [])
                     ]
                 }),
 
-                ...(body['next'] && { $or: (() => {
-                    const sortingDirection = body.order?.toLocaleLowerCase() === 'descending' ? '$lt' : '$gt'
+                ...(req.body['next'] && { $or: (() => {
+                    const sortingDirection = req.body.order?.toLocaleLowerCase() === 'descending' ? '$lt' : '$gt'
 
                     const sortingField = (() => {
-                        switch (body['sort'].toLowerCase()) {
+                        switch (req.body['sort'].toLowerCase()) {
                             case 'date': return 'post.createdAt'
                             case 'asking': return 'price'
                             case 'arv': return 'arv'
@@ -362,12 +406,12 @@ function createAggregationPipeFromQuery(body) {
                         }
                     })()
 
-                    let [nextSortedValue, nextID] = body['next'].split('_')
+                    let [nextSortedValue, nextID] = req.body['next'].split('_')
 
-                    if (body['sort'].toLowerCase() === 'date') nextSortedValue = new Date(nextSortedValue)
-                    if (body['sort'].toLowerCase() === 'asking') nextSortedValue = parseInt(nextSortedValue)
-                    if (body['sort'].toLowerCase() === 'arv') nextSortedValue = parseInt(nextSortedValue)
-                    if (body['sort'].toLowerCase() === 'price/arv') nextSortedValue = parseFloat(nextSortedValue)
+                    if (req.body['sort'].toLowerCase() === 'date') nextSortedValue = new Date(nextSortedValue)
+                    if (req.body['sort'].toLowerCase() === 'asking') nextSortedValue = parseInt(nextSortedValue)
+                    if (req.body['sort'].toLowerCase() === 'arv') nextSortedValue = parseInt(nextSortedValue)
+                    if (req.body['sort'].toLowerCase() === 'price/arv') nextSortedValue = parseFloat(nextSortedValue)
 
                     return [
                         { [sortingField]: { [sortingDirection]: nextSortedValue } },
@@ -381,9 +425,9 @@ function createAggregationPipeFromQuery(body) {
         },
         {
             $sort: (() => {
-                const sortOrder = body.order?.toLocaleLowerCase() === 'descending' ? -1 : 1
+                const sortOrder = req.body.order?.toLocaleLowerCase() === 'descending' ? -1 : 1
 
-                switch (body['sort'].toLowerCase()) {
+                switch (req.body['sort'].toLowerCase()) {
                     case 'date': return { 'post.createdAt': sortOrder, _id: sortOrder }
                     case 'asking': return { 'price': sortOrder, _id: sortOrder }
                     case 'arv': return { 'arv': sortOrder, _id: sortOrder }
@@ -392,10 +436,11 @@ function createAggregationPipeFromQuery(body) {
             })()
         },
         {
-            $limit: parseInt(body['limit']) + 1
+            $limit: parseInt(req.body['limit']) + 1
         },
         {
             $project: {
+                userLabel: 0,
                 __v: 0,
                 'post.__v': 0,
                 'post._id': 0,

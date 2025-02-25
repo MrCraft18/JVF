@@ -50,7 +50,7 @@ class DealsList extends HTMLElement {
                 height: 80%;
                 border-radius: 8px;
                 font-size: 100%;
-                padding: 0vw 1vw;
+                padding: 0px 1rem;
                 color: white;
                 background-color: var(--dark-color-8);
             }
@@ -67,7 +67,7 @@ class DealsList extends HTMLElement {
             #sort-by {
                 height: 80%;
                 --dropdown-button-background-color: var(--color-4);
-                --dropdown-button-padding: 1vw;
+                --dropdown-button-padding: 1rem;
                 --dropdown-button-border-radius: 100px;
                 --dropdown-options-border-radius: 10px;
                 --dropdown-options-margin-top: 0.8vh;
@@ -84,6 +84,7 @@ class DealsList extends HTMLElement {
             #list-container {
                 overflow-y: scroll;
                 height: 100%;
+                width: 100%;
             }
 
             .deal-list-item {
@@ -111,7 +112,7 @@ class DealsList extends HTMLElement {
 
             .deal-list-item > div:not(.icons-container) {
                 margin: auto 4px;
-                padding: 0.1vh 1.5vw;
+                padding: 0.1vh 0.6rem;
                 border-radius: 4px;
             }
 
@@ -124,7 +125,7 @@ class DealsList extends HTMLElement {
                 grid-area: 2 / 1 / 5 / 2;
             }
 
-            .icons-container > svg, {
+            .icons-container > svg {
                 height: 50%;
                 aspect-ratio: 1 / 1;
                 border-radius: 6px;
@@ -335,6 +336,8 @@ class DealsList extends HTMLElement {
         }
 
         if (FilterOptionsSidebar.getItemValue('postedAge', 'daysOld')) body.daysOld = parseInt(FilterOptionsSidebar.getItemValue('postedAge', 'daysOld'))
+
+        console.log(body)
 
         return body
     }

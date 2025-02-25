@@ -5,11 +5,6 @@ await mongoose.connect(process.env.MONGODB_URI)
 
 const dealSchema = mongoose.Schema({
     category: String,
-    //Change this
-    label: {
-        type: String,
-        default: 'Unchecked'
-    },
     raisedIssues: {
         type: Map,
         of: {

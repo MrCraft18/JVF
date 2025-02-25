@@ -116,6 +116,10 @@ class LabelDropdown extends HTMLElement {
                     this.selectedOption = 'Checked'
 
                     this.$shadowRoot.find('.dropdown-button').attr('class', `dropdown-button checked`)
+
+                    $($('deals-list')[0].shadowRoot).find(`#${$('deal-view')[0].deal._id} .deal-label`).attr('class', 'deal-label checked')
+
+                    $($('deals-list')[0].shadowRoot).find(`#${$('deal-view')[0].deal._id} .deal-label > span`).text('Checked')
                 })
                 .catch(error => {
                     console.error('Request Error:', error)
@@ -153,6 +157,10 @@ class LabelDropdown extends HTMLElement {
                 if (this.selectedOption != dropdownItemDiv.text()) this.selectedOption = dropdownItemDiv.text()
 
                 this.$shadowRoot.find('.dropdown-button').attr('class', `dropdown-button ${dropdownItemDiv.text().toLowerCase()}`)
+
+                $($('deals-list')[0].shadowRoot).find(`#${$('deal-view')[0].deal._id} .deal-label`).attr('class', `deal-label ${dropdownItemDiv.text().toLowerCase()}`)
+
+                $($('deals-list')[0].shadowRoot).find(`#${$('deal-view')[0].deal._id} .deal-label > span`).text(dropdownItemDiv.text())
             })
             .catch(error => {
                 console.error('Request Error:', error)

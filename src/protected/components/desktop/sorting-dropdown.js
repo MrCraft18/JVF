@@ -24,7 +24,7 @@ class SortingDropdown extends HTMLElement {
             .dropdown-button {
                 background-color: inherit;
                 padding-left: var(--dropdown-button-padding, 0px);
-                padding-right: 1vw;
+                padding-right: 1rem;
                 height: 100%;
                 display: flex;
                 flex-direction: row;
@@ -36,7 +36,7 @@ class SortingDropdown extends HTMLElement {
                 white-space: nowrap;
                 width: auto;
                 margin: 0px;
-                margin-left: 1vw;
+                margin-left: 1rem;
                 text-align: center;
                 color: white;
             }
@@ -51,8 +51,8 @@ class SortingDropdown extends HTMLElement {
                 background-color: inherit;
                 border-left: 2px solid var(--color-4-darker);
                 height: 100%;
-                padding-left: 0.5vw;
-                padding-right: 0.75vw;
+                padding-left: 0.5rem;
+                padding-right: 0.75rem;
                 display: flex;
                 justify-content: center;
                 align-items: center;

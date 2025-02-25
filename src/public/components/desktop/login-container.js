@@ -13,7 +13,7 @@ class LoginContainer extends HTMLElement {
                 position: fixed;
                 top: 10vh;
                 height: 45vh;
-                width: 40%;
+                width: 30%;
                 display: flex;
                 flex-direction: column;
                 justify-content: space-between;
@@ -85,8 +85,7 @@ class LoginContainer extends HTMLElement {
                     <h1>REventures</h1>
 
                     <div>
-                        <input id="first-name" type="text" placeholder="First Name" name="firstName" required>
-                        <input id="last-name" type="text" placeholder="Last Name" name="lastName" required>
+                        <input id="email" type="text" placeholder="Email" name="email" required>
                         <input id="password" type="password" placeholder="Password" name="password" required>
                         <button id="login-button" type="submit">Login</button>
                     </div>
@@ -100,10 +99,7 @@ class LoginContainer extends HTMLElement {
             const formData = new FormData(event.target)
 
             axios.post('/auth/login', {
-                name: {
-                    first: formData.get('firstName'),
-                    last: formData.get('lastName')
-                },
+                email: formData.get('email'),
                 password: formData.get('password')
             })
             .then(() => {
