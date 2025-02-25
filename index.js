@@ -111,9 +111,14 @@ async function main() {
                         continue
                     }
 
+                    console.log('ayo')
+
                     if (!await post.checkIfDupilcate()) {
+                        console.log('ayo2')
                         await post.getDeal()
                     }
+
+                    console.log('ayo3')
 
                     console.log('POST: ', post.metadata.associatedDeal ? 'DEAL' : '', post.metadata.duplicateOf ? 'DUPLICATE' : '', { name: post.author.name, id: post.id }, post.group.name, new Date(post.createdAt).toLocaleString())
 
