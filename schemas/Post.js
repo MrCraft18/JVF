@@ -149,7 +149,7 @@ postSchema.methods.getDeal = async function () {
     //     this.metadata.extractedInfo.arv = null
     // }
     
-    if (extractedInfo.state === "TX") extractedInfo.city = fuzz.extract(extractedInfo.city, fs.readFileSync('../cities/TX', 'utf-8').split('\n'))[0][0]
+    if (extractedInfo.state === "TX") extractedInfo.city = fuzz.extract(extractedInfo.city, fs.readFileSync('./cities/TX.txt', 'utf-8').split('\n'))[0][0]
 
     if (extractedInfo.zip && !extractedInfo.state) {
         try {
