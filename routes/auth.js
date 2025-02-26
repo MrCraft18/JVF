@@ -26,7 +26,7 @@ router.post('/login', async (req, res) => {
 
         if (!foundUser) return res.status(404).send("User Does Not Exist")
 
-        if (bcrypt.compare(req.body.password.trim(), foundUser.password)) {
+        if (bcrypt.compareSync(req.body.password.trim(), foundUser.password)) {
             const refreshToken = jwt.sign({ id: foundUser._id.toString(), ip: req.ip }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '3d' })
 
             await new RefreshToken({ token: refreshToken }).save()
