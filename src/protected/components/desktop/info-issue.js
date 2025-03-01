@@ -194,6 +194,8 @@ class InfoIssue extends HTMLElement {
             if (selectedIssues.length) {
                 api.post('/dealIssue', { id: $('deal-view')[0].deal._id, selectedIssues }).then(() => {
                     this.$shadowRoot.find('.modal').html('<h3 class="title">Issue Submitted</h3>')
+
+                    $($('deal-view')[0].shadowRoot).find('.issue-icon').attr('class', 'has-issue-raised')
                 }).catch(error => {
                     console.error('Request Error:', error)
 

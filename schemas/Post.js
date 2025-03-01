@@ -119,7 +119,10 @@ postSchema.methods.getDeal = async function () {
     const includesMultipleDeals = await promptGPT(fs.readFileSync('./gpt-prompts/includesMultipleDeals.txt', 'utf-8'), this.allText()).then(response => response.result)
 
     //If it does include multiple Deals then mark it as such and return.
-    if (includesMultipleDeals) return this.metadata.includesMultipleDeals = true
+    if (includesMultipleDeals) {
+        this.metadata.includesMultipleDeals = true
+        return
+    }
 
     //Extract info with GPT
     const extractedInfo = await promptGPT(fs.readFileSync('./gpt-prompts/extractData.txt', 'utf-8'), this.allText())
@@ -183,7 +186,7 @@ postSchema.methods.getDeal = async function () {
 
     this.metadata.associatedDeal = deal._id
 
-    await deal.save()
+    return deal
 }
 
 postSchema.methods.extractEmails = async function () {

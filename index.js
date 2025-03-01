@@ -115,7 +115,10 @@ async function main() {
 
                     if (!await post.checkIfDupilcate()) {
                         console.log('ayo2')
-                        await post.getDeal()
+
+                        const deal = await post.getDeal()
+                        
+                        if (deal) await deal.save()
                     }
 
                     console.log('ayo3')

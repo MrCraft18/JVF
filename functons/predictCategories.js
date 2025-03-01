@@ -3,7 +3,7 @@ import { configDotenv } from 'dotenv'; configDotenv()
 
 export default function predictCategories(textsArray) {
     return new Promise(resolve => {
-        const pythonProcess = spawn(process.env.PYTHON_INTERPRETER_PATH, ['./py/predict_categories.py'])
+        const pythonProcess = spawn('python', ['./py/predict_categories.py'])
 
         pythonProcess.stdin.write(JSON.stringify(textsArray))
         pythonProcess.stdin.end()

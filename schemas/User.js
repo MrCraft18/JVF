@@ -5,10 +5,7 @@ await mongoose.connect(process.env.MONGODB_URI)
 
 
 const userSchema = new mongoose.Schema({
-    name: {
-        first: String,
-        last: String
-    },
+    email: String,
     password: String,
     role: String,
     dealsQuery: Object,

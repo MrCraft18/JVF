@@ -211,7 +211,21 @@ router.get('/deal', async (req, res) => {
                 }
             },
             {
+                $addFields: {
+                    hasIssueRaised: {
+                        $in: [req.user._id, { 
+                            $map: {
+                                input: { $ifNull: [{ $objectToArray: "$raisedIssues" }, []] },
+                                as: "issue",
+                                in: "$$issue.k" 
+                            } 
+                        }]
+                    }
+                }
+            },
+            {
                 $project: {
+                    raisedIssues: 0,
                     userLabel: 0,
                     associatedPost: 0,
                     __v: 0,
