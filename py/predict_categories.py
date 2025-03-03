@@ -7,11 +7,11 @@ import os
 from datetime import datetime
 
 #Grab latest model
-model_dir = max([datetime.strptime(date_string, "%m-%d-%y") for date_string in os.listdir('./py/models')]).strftime("%m-%d-%y")
+model_dir = max([datetime.strptime(date_string, "%m-%d-%y") for date_string in os.listdir('./models')]).strftime("%m-%d-%y")
 
-model = joblib.load(f'./py/models/{model_dir}/model.joblib')
-vectorizer = joblib.load(f'./py/models/{model_dir}/tf-idf_vectorizer.joblib')
-label_encoder = joblib.load(f'./py/models/{model_dir}/label_encoder.joblib')
+model = joblib.load(f'./models/{model_dir}/model.joblib')
+vectorizer = joblib.load(f'./models/{model_dir}/tf-idf_vectorizer.joblib')
+label_encoder = joblib.load(f'./models/{model_dir}/label_encoder.joblib')
 
 def predict_post_categories(texts_list):
     texts_list = [unidecode(text) for text in texts_list]

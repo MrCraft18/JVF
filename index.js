@@ -4,6 +4,8 @@ import Group from './schemas/Group.js'
 import FacebookAccount from './schemas/FacebookAccount.js'
 import io from 'socket.io-client'
 import { configDotenv } from 'dotenv'; configDotenv()
+import predictCategories from './functons/predictCategories.js'
+import * as fuzz from 'fuzzball'
 
 // const socket = io(`http://localhost:${process.env.PORT}`, {
 //     auth: {
@@ -92,7 +94,7 @@ async function main() {
 
                 console.log('\n', 'GROUP: ', JSON.stringify(group), new Date().toLocaleString())
 
-                const posts = await fbContext.group(group.id).findPosts({
+                const rawPosts = await fbContext.group(group.id).findPosts({
                     dateRange: {
                         min: lastScrapedPost && Math.abs(lastScrapedPost.createdAt - new Date()) / (1000 * 60 * 60) < 24 ? lastScrapedPost.createdAt : new Date(Date.now() - (1000 * 60 * 60 * 24))
                     },
@@ -100,7 +102,15 @@ async function main() {
                 })
 
                 console.log(facebook.taskQueue.length, `Checked with ${account.username}`)
-                console.log(facebook.scrapingContexts.length)
+                //console.log(facebook.scrapingContexts.length)
+
+                const posts = await rawPosts.map(post => {
+                    return new Post(post)
+                })
+
+                const postsToCompare = await Post.find({ 'metadata.duplicateOf': { $exists: false } }, { 'metadata.preprocessedText': 1, text: 1, 'attachedPost.text': 1, 'metadata.duplicatePosts': 1 }).sort({ _id: -1 }).limit(5000)
+
+                const predictionResults = predictCategories(posts.map(post => post.allText()))
 
                 for (let i = 0; i < posts.length; i++) {
                     const post = new Post(posts[i])
@@ -111,21 +121,42 @@ async function main() {
                         continue
                     }
 
-                    console.log('ayo')
+                    post.metadata.preprocessedText = fuzz.full_process(post.allText())
 
-                    if (!await post.checkIfDupilcate()) {
-                        console.log('ayo2')
+                    for (const comparePost of [...posts, ...postsToCompare]) {
+                        if (comparePost._id === post._id) continue
 
-                        const deal = await post.getDeal()
-                        
+                        if (!comparePost.metadata.preprocessedText && comparePost.metadata.preprocessedText !== '') {
+                            comparePost.metadata.preprocessedText = fuzz.full_process(comparePost.allText())
+                            await comparePost.save()
+                        }
+
+                        const similarity = fuzz.ratio(post.metadata.preprocessedText, comparePost.metadata.preprocessedText, { full_process: false })
+
+                        if (similarity > 90) {
+                            if (comparePost.metadata.duplicatePosts) {
+                                comparePost.metadata.duplicatePosts.push(post._id)
+                            } else {
+                                comparePost.metadata.duplicatePosts = [post._id]
+                            }
+
+                            await comparePost.save()
+
+                            post.metadata.duplicateOf = comparePost._id
+
+                            break
+                        }
+                    }
+
+                    if (!post.metadata.duplicateOf) {
+                        const deal = await post.getDeal((await predictionResults)[i])
+
                         if (deal) await deal.save()
                     }
 
-                    console.log('ayo3')
+                    await post.save()
 
                     console.log('POST: ', post.metadata.associatedDeal ? 'DEAL' : '', post.metadata.duplicateOf ? 'DUPLICATE' : '', { name: post.author.name, id: post.id }, post.group.name, new Date(post.createdAt).toLocaleString())
-
-                    await post.save()
 
                     if (i + 1 === posts.length) {
                         group.lastScrapedPost = post._id
@@ -273,7 +304,7 @@ function getDelay() {
     targetTime.setHours(9, 0, 0, 0) //CHANGE BACK TO 9
 
     const endOfWorkDay = new Date(now)
-    endOfWorkDay.setHours(19, 0, 0, 0) //CHANGE BACK TO 16
+    endOfWorkDay.setHours(24, 0, 0, 0) //CHANGE BACK TO 16
 
     if (now >= targetTime && now <= endOfWorkDay) {
         return 0

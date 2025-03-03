@@ -62,6 +62,10 @@ const postSchema = new mongoose.Schema({
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Post'
         },
+        duplicatePosts: {
+            type: [mongoose.Schema.Types.ObjectId],
+            ref: 'Post'
+        },
         foundAt: {
             type: Date,
             default: new Date()
@@ -73,7 +77,8 @@ const postSchema = new mongoose.Schema({
         eligibleForTraining: {
             type: Boolean,
             default: false
-        }
+        },
+        preprocessedText: String
     }
 })
 
@@ -84,11 +89,19 @@ postSchema.methods.allText = function () {
 postSchema.methods.checkIfDupilcate = async function () {
     const Post = this.model('Post')
 
-    const postsCursor = await Post.find({ 'metadata.duplicateOf': { $exists: false } }, { text: 1, 'attachedPost.text': 1, 'metadata.duplicatePosts': 1 }).sort({ _id: -1 })
+    this.metadata.preprocessedText = fuzz.full_process(this.allText())
 
-    for (const postDoc of postsCursor) {
+    const postsCursor = Post.find({ 'metadata.duplicateOf': { $exists: false } }, { 'metadata.preprocessedText': 1, text: 1, 'attachedPost.text': 1, 'metadata.duplicatePosts': 1 }).sort({ _id: -1 })
+
+    for await (const postDoc of postsCursor) {
         const post = new Post(postDoc)
-        const similarity = fuzz.ratio(this.allText(), post.allText())
+        
+        if (!post.metadata.preprocessedText && post.metadata.preprocessedText !== '') {
+            post.metadata.preprocessedText = fuzz.full_process(post.allText())
+            await post.save()
+        }
+
+        const similarity = fuzz.ratio(this.metadata.preprocessedText, post.metadata.preprocessedText, { full_process: false })
 
         if (similarity > 90) {
             if (post.metadata.duplicatePosts) {
@@ -107,9 +120,10 @@ postSchema.methods.checkIfDupilcate = async function () {
     return false
 }
 
-postSchema.methods.getDeal = async function () {
+postSchema.methods.getDeal = async function (providedPredictionResult) {
+    console.log('start this')
     //Get Predicted Category
-    const predictionResult = await predictCategories([this.allText()]).then(results => results[0])
+    const predictionResult = providedPredictionResult || await predictCategories([this.allText()]).then(results => results[0])
 
     // this.metadata.predictedCategoryProbabilities = predictionResult.probabilities
 
@@ -152,7 +166,7 @@ postSchema.methods.getDeal = async function () {
     //     this.metadata.extractedInfo.arv = null
     // }
     
-    if (extractedInfo.state === "TX" && extractedInfo.city) extractedInfo.city = fuzz.extract(extractedInfo.city, fs.readFileSync('./cities/TX.txt', 'utf-8').split('\n'))[0][0]
+    if (extractedInfo.state === "TX" && extractedInfo.city) extractedInfo.city = fuzz.extract(extractedInfo.city, fs.readFileSync('./cities/TX.txt', 'utf-8').trim().split('\n'))[0][0]
 
     if (extractedInfo.zip && !extractedInfo.state) {
         try {
