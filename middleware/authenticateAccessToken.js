@@ -18,6 +18,7 @@ export default (req, res, next) => {
             console.log(storedParentToken)
 
             if (data.ip !== req.ip || !storedParentToken) {
+                console.log('its in atuthenticateAccessToken')
                 return res.sendStatus(403)
             }
 
