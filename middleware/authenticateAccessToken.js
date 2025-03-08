@@ -14,6 +14,9 @@ export default (req, res, next) => {
 
             const storedParentToken = await RefreshToken.findOne({ token: data.parentToken })
 
+            console.log(data)
+            console.log(storedParentToken)
+
             if (data.ip !== req.ip || !storedParentToken) {
                 return res.sendStatus(403)
             }
