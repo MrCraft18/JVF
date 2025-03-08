@@ -100,20 +100,16 @@ async function main() {
                     },
                     sorting: 'new'
                 })
-
-                console.log(facebook.taskQueue.length, `Checked with ${account.username}`)
+                
+                console.log(facebook.taskQueue.length, `${group.toObject().name} - ${group.id}`, `Checked with ${account.username}`, `${rawPosts.length} Posts`)
                 //console.log(facebook.scrapingContexts.length)
-
-                const posts = await rawPosts.map(post => {
-                    return new Post(post)
-                })
 
                 const postsToCompare = await Post.find({ 'metadata.duplicateOf': { $exists: false } }, { 'metadata.preprocessedText': 1, text: 1, 'attachedPost.text': 1, 'metadata.duplicatePosts': 1 }).sort({ _id: -1 }).limit(5000)
 
-                const predictionResults = predictCategories(posts.map(post => post.allText()))
+                const predictionResults = predictCategories(await rawPosts.map(post => `${post.text || ''}${post.attachedPost?.text ? `\n${post.attachedPost.text}` : ''}`))
 
-                for (let i = 0; i < posts.length; i++) {
-                    const post = new Post(posts[i])
+                for (let i = 0; i < rawPosts.length; i++) {
+                    const post = new Post(rawPosts[i])
 
                     const existingPostDocument = await Post.findOne({ id: post.id, 'group.id': post.group.id })
 
@@ -123,7 +119,7 @@ async function main() {
 
                     post.metadata.preprocessedText = fuzz.full_process(post.allText())
 
-                    for (const comparePost of [...posts, ...postsToCompare]) {
+                    for (const comparePost of [...rawPosts, ...postsToCompare]) {
                         if (comparePost._id === post._id) continue
 
                         if (!comparePost.metadata.preprocessedText && comparePost.metadata.preprocessedText !== '') {
@@ -158,11 +154,13 @@ async function main() {
 
                     console.log('POST: ', post.metadata.associatedDeal ? 'DEAL' : '', post.metadata.duplicateOf ? 'DUPLICATE' : '', { name: post.author.name, id: post.id }, post.group.name, new Date(post.createdAt).toLocaleString())
 
-                    if (i + 1 === posts.length) {
+                    if (i + 1 === rawPosts.length) {
                         group.lastScrapedPost = post._id
                         await group.save()
                     }
                 }
+
+                console.log('done')
             } catch (error) {
                 const expectedMessages = [
                     "Browser Server got disconnected.",
@@ -304,7 +302,7 @@ function getDelay() {
     targetTime.setHours(9, 0, 0, 0) //CHANGE BACK TO 9
 
     const endOfWorkDay = new Date(now)
-    endOfWorkDay.setHours(16, 0, 0, 0) //CHANGE BACK TO 16
+    endOfWorkDay.setHours(20, 0, 0, 0) //CHANGE BACK TO 16
 
     if (now >= targetTime && now <= endOfWorkDay) {
         return 0

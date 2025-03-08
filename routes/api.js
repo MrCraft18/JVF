@@ -268,7 +268,7 @@ router.post('/changeLabel', async (req, res) => {
 
 router.post('/dealCounts', async (req, res) => {
     try {
-        const pipe = createAggregationPipeFromQuery(req).slice(0, 4)
+        const pipe = createAggregationPipeFromQuery(req).slice(0, 6)
 
         pipe.push({ $count: 'totalCount' })
 

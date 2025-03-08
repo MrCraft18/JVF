@@ -121,7 +121,7 @@ postSchema.methods.checkIfDupilcate = async function () {
 }
 
 postSchema.methods.getDeal = async function (providedPredictionResult) {
-    console.log('start this')
+    //console.log('start this')
     //Get Predicted Category
     const predictionResult = providedPredictionResult || await predictCategories([this.allText()]).then(results => results[0])
 
