@@ -15,6 +15,7 @@ export default (req, res, next) => {
             const storedParentToken = await RefreshToken.findOne({ token: data.parentToken })
 
             if (!storedParentToken) {
+                console.log(data.parentToken)
                 console.log('its in atuthenticateAccessToken')
                 return res.sendStatus(403)
             }
