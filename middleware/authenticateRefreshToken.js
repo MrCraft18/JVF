@@ -20,6 +20,7 @@ export default async (req, res, next) => {
             }
 
             if (data.ip !== req.ip) {
+                console.log(data.ip, 'is not', req.ip)
                 console.log('its in authenticateRefreshToken')
                 return res.sendStatus(403)
             }
