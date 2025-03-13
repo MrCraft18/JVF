@@ -9,7 +9,7 @@ const refreshTokensSchema = new mongoose.Schema({
     createdAt: {
         type: Date,
         default: new Date,
-        expires: 1000 * 60 * 60 * 24 * 3
+        expires: 60 * 60 * 24 * 3
     }
 })
 
