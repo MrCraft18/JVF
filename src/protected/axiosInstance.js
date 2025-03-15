@@ -6,7 +6,7 @@ const api = axios.create({
 api.interceptors.request.use(async config => {
     await api.tokenPromise
 
-    if (!api.token || new Date() >= new Date(JSON.parse(atob(api.token.split('.')[1])).exp * 1000)) {
+    if (!api.token || new Date() >= new Date(JSON.parse(atob(api.token.split('.')[1])).exp * 1000) - 5000) {
         console.log('Grabbing new Key')
         api.tokenPromise = axios.post('/auth/accessToken').then(response => response.data.accessToken)
         api.token = await api.tokenPromise
