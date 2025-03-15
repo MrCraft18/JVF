@@ -11,6 +11,8 @@ api.interceptors.request.use(async config => {
 
     config.headers.Authorization = `Bearer ${api.token}`
 
+    console.log('Intercepted request to:', config.url)
+
     return config
 })
 
