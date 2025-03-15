@@ -10,6 +10,11 @@ const __dirname = path.dirname(__filename)
 
 const app = express()
 
+app.use((req, res, next) => {
+    console.log(req.url)
+    next()
+})
+
 //Import and use Middleware
 import cookieParser from 'cookie-parser'
 app.use(express.json())
