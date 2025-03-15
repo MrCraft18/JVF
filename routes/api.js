@@ -268,6 +268,7 @@ router.post('/changeLabel', async (req, res) => {
 
 router.post('/dealCounts', async (req, res) => {
     try {
+        console.log('ayo')
         const pipe = createAggregationPipeFromQuery(req).slice(0, 6)
 
         pipe.push({ $count: 'totalCount' })
@@ -276,6 +277,7 @@ router.post('/dealCounts', async (req, res) => {
             Deal.aggregate(pipe).then(docs => docs.length ? docs[0].totalCount : 0),
             Deal.countDocuments({})
         ])
+        console.log('ayo2')
 
         res.json({ queryCount, totalCount })
     } catch (error) {
