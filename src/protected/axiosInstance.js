@@ -4,21 +4,23 @@ const api = axios.create({
 })
 
 api.interceptors.request.use(async config => {
+    await api.tokenPromise
+
     if (!api.token || new Date() >= new Date(JSON.parse(atob(api.token.split('.')[1])).exp * 1000)) {
         console.log('Grabbing new Key')
-        api.token = await axios.post('/auth/accessToken').then(response => response.data.accessToken)
+        api.tokenPromise = axios.post('/auth/accessToken').then(response => response.data.accessToken)
+        api.token = await api.tokenPromise
     }
 
     config.headers.Authorization = `Bearer ${api.token}`
-
-    console.log('Intercepted request to:', config.url)
 
     return config
 })
 
 api.accessToken = async () => {
     if (!api.token) {
-        api.token = await axios.post('/auth/accessToken').then(response => response.data.accessToken)
+        api.tokenPromise = axios.post('/auth/accessToken').then(response => response.data.accessToken)
+        api.token = await api.tokenPromise
     }
 
     return api.token
