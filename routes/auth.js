@@ -48,7 +48,7 @@ router.post('/accessToken', authenticateRefreshToken, async (req, res) => {
         const user = await User.findById(req.userID, { email: 1, role: 1 })
 
         const newRefreshToken = jwt.sign({ id: req.userID }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '3d' })
-        const accessToken = jwt.sign({ user, parentToken: newRefreshToken }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '20s' })
+        const accessToken = jwt.sign({ user, parentToken: newRefreshToken }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '5s' })
 
         await RefreshToken.deleteOne({ token: req.cookies.refreshToken })
         await new RefreshToken({ token: newRefreshToken }).save()
