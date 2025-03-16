@@ -10,6 +10,7 @@ api.interceptors.request.use(async config => {
         console.log('Grabbing new Key')
         api.tokenPromise = axios.post('/auth/accessToken').then(response => response.data.accessToken)
         api.token = await api.tokenPromise
+        console.log('Grabbing new Key')
     }
 
     config.headers.Authorization = `Bearer ${api.token}`
@@ -25,3 +26,17 @@ api.accessToken = async () => {
 
     return api.token
 }
+
+api.interceptors.response.use(response => response, error => {
+    if (error.response) {
+        if (error.response.status === 502) {
+
+        }
+    } else if (error.request) {
+        console.log('No response received:', error.request)
+    } else {
+        console.log('Error setting up request:', error.message)
+    }
+
+    return Promise.reject(error)
+})

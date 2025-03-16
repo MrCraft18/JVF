@@ -7,8 +7,6 @@ export default (req, res, next) => {
         const authHeader = req.headers['authorization']
         const authToken = authHeader && authHeader.split(' ')[1]
 
-        console.log('ayo')
-
         if (!authToken) return res.sendStatus(401)
 
         jwt.verify(authToken, process.env.ACCESS_TOKEN_SECRET, async (error, data) => {
@@ -27,8 +25,6 @@ export default (req, res, next) => {
             req.user = data.user
             next()
         })
-
-        console.log('ayo2')
     } catch (error) {
         console.error(error)
         res.sendStatus(500)

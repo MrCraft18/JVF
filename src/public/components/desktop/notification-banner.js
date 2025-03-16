@@ -70,9 +70,10 @@ class NotificationBanner extends HTMLElement {
     // }
 
     apiError(error, errorName) {
+        console.log(error)
         const errorText = (() => {
             if (error.response) {
-                if (error.response.data) return JSON.stringify(error.response.data)
+                if (error.response.data) return error.response.data
 
                 if (error.response.status) return `${errorName} Error: HTTP Code ${error.response.status}`
             }

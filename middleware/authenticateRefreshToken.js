@@ -4,7 +4,6 @@ import { configDotenv } from 'dotenv'; configDotenv()
 
 export default async (req, res, next) => {
     try {
-        console.log('ayo')
         if (!req.cookies.refreshToken) return res.sendStatus(401)
 
         const storedRefreshToken = await RefreshToken.findOne({ token: req.cookies.refreshToken })
@@ -24,7 +23,6 @@ export default async (req, res, next) => {
 
             next()
         })
-        console.log('ayo2')
     } catch (error) {
         console.error(error)
         res.sendStatus(500)
