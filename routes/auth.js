@@ -11,6 +11,7 @@ const router = express.Router()
 
 router.post('/login', async (req, res) => {
     try {
+        console.log(new Date())
         console.log(req.body)
 
         if (!req.body.email) return res.status(400).send("Missing Email")
