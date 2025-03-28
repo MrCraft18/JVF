@@ -12,7 +12,7 @@ const emailSchema = new mongoose.Schema({
     },
     foundAt: {
         type: Date,
-        default: new Date
+        default: Date.now
     },
     contextAddress: {
         streetName: String,

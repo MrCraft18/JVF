@@ -20,7 +20,7 @@ const facebookAccountSchema = new mongoose.Schema({
     unavailableContentGroups: [String],
     createdAt: {
         type: Date,
-        default: new Date
+        default: Date.now
     },
     suspended: {
         type: Boolean,
