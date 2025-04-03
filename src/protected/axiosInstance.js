@@ -4,9 +4,13 @@ const api = axios.create({
 })
 
 api.interceptors.request.use(async config => {
-    if (!api.token || new Date() >= new Date(JSON.parse(atob(api.token.split('.')[1])).exp * 1000)) {
+    await api.tokenPromise
+
+    if (!api.token || new Date() >= new Date(JSON.parse(atob(api.token.split('.')[1])).exp * 1000) - 5000) {
         console.log('Grabbing new Key')
-        api.token = await axios.post('/auth/accessToken').then(response => response.data.accessToken)
+        api.tokenPromise = axios.post('/auth/accessToken').then(response => response.data.accessToken)
+        api.token = await api.tokenPromise
+        console.log('Grabbing new Key')
     }
 
     config.headers.Authorization = `Bearer ${api.token}`
@@ -16,8 +20,23 @@ api.interceptors.request.use(async config => {
 
 api.accessToken = async () => {
     if (!api.token) {
-        api.token = await axios.post('/auth/accessToken').then(response => response.data.accessToken)
+        api.tokenPromise = axios.post('/auth/accessToken').then(response => response.data.accessToken)
+        api.token = await api.tokenPromise
     }
 
     return api.token
 }
+
+api.interceptors.response.use(response => response, error => {
+    if (error.response) {
+        if (error.response.status === 502) {
+
+        }
+    } else if (error.request) {
+        console.log('No response received:', error.request)
+    } else {
+        console.log('Error setting up request:', error.message)
+    }
+
+    return Promise.reject(error)
+})

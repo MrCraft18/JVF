@@ -68,7 +68,7 @@ const postSchema = new mongoose.Schema({
         },
         foundAt: {
             type: Date,
-            default: new Date()
+            default: Date.now
         },
         checkedForEmails: {
             type: Boolean,

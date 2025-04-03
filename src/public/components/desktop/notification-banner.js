@@ -70,8 +70,13 @@ class NotificationBanner extends HTMLElement {
     // }
 
     apiError(error, errorName) {
+        console.log(error)
         const errorText = (() => {
+            if (error.response.data.code === 502) return 'Network Error: Try Reloading Page'
+
             if (error.response) {
+                if (error.response.data === 401 || error.response.data === 403) return 'Authentication Error: Try Reloading Page'
+
                 if (error.response.data) return error.response.data
 
                 if (error.response.status) return `${errorName} Error: HTTP Code ${error.response.status}`

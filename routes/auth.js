@@ -11,6 +11,7 @@ const router = express.Router()
 
 router.post('/login', async (req, res) => {
     try {
+        console.log(new Date())
         console.log(req.body)
 
         if (!req.body.email) return res.status(400).send("Missing Email")
@@ -27,7 +28,7 @@ router.post('/login', async (req, res) => {
         if (!foundUser) return res.status(404).send("User Does Not Exist")
 
         if (bcrypt.compareSync(req.body.password.trim(), foundUser.password)) {
-            const refreshToken = jwt.sign({ id: foundUser._id.toString(), ip: req.ip }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '3d' })
+            const refreshToken = jwt.sign({ id: foundUser._id.toString() }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '3d' })
 
             await new RefreshToken({ token: refreshToken }).save()
 
@@ -47,8 +48,8 @@ router.post('/accessToken', authenticateRefreshToken, async (req, res) => {
     try {
         const user = await User.findById(req.userID, { email: 1, role: 1 })
 
-        const newRefreshToken = jwt.sign({ id: req.userID, ip: req.ip }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '3d' })
-        const accessToken = jwt.sign({ user, ip: req.ip, parentToken: newRefreshToken }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '5m' })
+        const newRefreshToken = jwt.sign({ id: req.userID }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '3d' })
+        const accessToken = jwt.sign({ user, parentToken: newRefreshToken }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '5m' })
 
         await RefreshToken.deleteOne({ token: req.cookies.refreshToken })
         await new RefreshToken({ token: newRefreshToken }).save()

@@ -10,14 +10,14 @@ export default (req, res, next) => {
         if (!authToken) return res.sendStatus(401)
 
         jwt.verify(authToken, process.env.ACCESS_TOKEN_SECRET, async (error, data) => {
+            if (error) console.log("error verifying access token")
+            if (error) console.log(error)
             if (error) return res.sendStatus(401)
 
             const storedParentToken = await RefreshToken.findOne({ token: data.parentToken })
 
-            console.log(data)
-            console.log(storedParentToken)
-
-            if (data.ip !== req.ip || !storedParentToken) {
+            if (!storedParentToken) {
+                console.log(data.parentToken)
                 console.log('its in atuthenticateAccessToken')
                 return res.sendStatus(403)
             }
