@@ -302,7 +302,7 @@ function getDelay() {
     targetTime.setHours(9, 0, 0, 0) //CHANGE BACK TO 9
 
     const endOfWorkDay = new Date(now)
-    endOfWorkDay.setHours(20, 0, 0, 0) //CHANGE BACK TO 16
+    endOfWorkDay.setHours(16, 0, 0, 0) //CHANGE BACK TO 16
 
     if (now >= targetTime && now <= endOfWorkDay) {
         return 0
