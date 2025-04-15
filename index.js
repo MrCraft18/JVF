@@ -108,8 +108,12 @@ async function main() {
 
                 const predictionResults = predictCategories(await rawPosts.map(post => `${post.text || ''}${post.attachedPost?.text ? `\n${post.attachedPost.text}` : ''}`))
 
+                let firstPost
+
                 for (let i = 0; i < rawPosts.length; i++) {
                     const post = new Post(rawPosts[i])
+
+                    if (i === 0) firstPost = post
 
                     const existingPostDocument = await Post.findOne({ id: post.id, 'group.id': post.group.id })
 
@@ -153,11 +157,11 @@ async function main() {
                     await post.save()
 
                     console.log('POST: ', post.metadata.associatedDeal ? 'DEAL' : '', post.metadata.duplicateOf ? 'DUPLICATE' : '', { name: post.author.name, id: post.id }, post.group.name, new Date(post.createdAt).toLocaleString())
+                }
 
-                    if (i + 1 === rawPosts.length) {
-                        group.lastScrapedPost = post._id
-                        await group.save()
-                    }
+                if (firstPost) {
+                    group.lastScrapedPost = firstPost._id
+                    await group.save()
                 }
 
                 console.log('done')
@@ -299,7 +303,7 @@ main()
 function getDelay() {
     const now = new Date()
     const targetTime = new Date(now)
-    targetTime.setHours(9, 0, 0, 0) //CHANGE BACK TO 9
+    targetTime.setHours(8, 0, 0, 0) //CHANGE BACK TO 8
 
     const endOfWorkDay = new Date(now)
     endOfWorkDay.setHours(16, 0, 0, 0) //CHANGE BACK TO 16
