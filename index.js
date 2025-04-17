@@ -96,7 +96,7 @@ async function main() {
 
                 const rawPosts = await fbContext.group(group.id).findPosts({
                     dateRange: {
-                        min: lastScrapedPost && Math.abs(lastScrapedPost.createdAt - new Date()) / (1000 * 60 * 60) < 24 ? lastScrapedPost.createdAt : new Date(Date.now() - (1000 * 60 * 60 * 24))
+                        min: lastScrapedPost ? lastScrapedPost.createdAt : new Date(Date.now() - (1000 * 60 * 60 * 24))
                     },
                     sorting: 'new'
                 })
