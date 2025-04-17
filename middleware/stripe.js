@@ -13,7 +13,24 @@ export default async (req, res) => {
 
         switch (event.type) {
             case "checkout.session.completed":
-                //Check if existing user has customer ID or email
+                console.log("Checkout Completed")
+
+                if (event.data.object.payment_link !== "plink_1REhjkFExMqRmpqtBltKm65y") {
+                    console.log("Subscription made from non deafault payment link")
+                    break
+                }
+
+                const existingUser = await User.find({
+                    or: [
+                        { email: event.data.object.customer_details.email },
+                        { stripeCustomerID: event.data.object.customer }
+                    ]
+                })
+
+                if (existingUser) {
+                    console.log(`User with ${existingUser.email} OR ${existingUser.stripeCustomerID}`)
+                    break
+                }
 
                 const password = event.data.object.custom_fields.find(field => field.key === "setreventurespassword").text.value
 
@@ -25,15 +42,12 @@ export default async (req, res) => {
                     password: hashedPassword,
                 }).save()
 
-                res.sendStatus(201) 
-
                 console.log(`New Subscribed User: ${event.data.object.customer_details.email}`)
 
                 break
-            default:
-                res.sendStatus(200)
-                break
         }
+
+        res.sendStatus(200)
     } catch (error) {
         console.error(error)
         res.sendStatus(500)
