@@ -6,7 +6,10 @@ await mongoose.connect(process.env.MONGODB_URI)
 
 const userSchema = new mongoose.Schema({
     email: String,
-    stripeCustomerID: String,
+    stripeCustomerID: {
+        type: String,
+        required: false
+    },
     password: String,
     admin: { 
         type: String,

@@ -15,12 +15,13 @@ export default async (req, res) => {
             case "checkout.session.completed":
                 console.log("Checkout Completed")
 
-                if (event.data.object.payment_link !== "plink_1REhjkFExMqRmpqtBltKm65y") {
+                //prod link and test link
+                if (event.data.object.payment_link !== "plink_1REhjkFExMqRmpqtBltKm65y" & event.data.object.payment_link !== "plink_1REFXjFExMqRmpqtjQQkexIK") {
                     console.log("Subscription made from non deafault payment link")
                     break
                 }
 
-                const existingUser = await User.find({
+                const existingUser = await User.findOne({
                     or: [
                         { email: event.data.object.customer_details.email },
                         { stripeCustomerID: event.data.object.customer }
