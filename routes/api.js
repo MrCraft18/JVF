@@ -12,7 +12,7 @@ const router = express.Router()
 
 router.post('/createUser', async (req, res) => {
     try {
-        if (req.user.role != 'admin') return res.sendStatus(401)
+        if (!req.user.admin) return res.sendStatus(401)
 
         if (!req.body.name.first && !req.body.name.last) return res.status(400).send("Missing First and Last Name")
 
@@ -39,18 +39,18 @@ router.post('/createUser', async (req, res) => {
     }
 })
 
-router.get('/allUsers', async (req, res) => {
-    try {
-        if (req.user.role != 'admin') return res.sendStatus(401)
-
-        const users = await User.find({}, { projection: { password: 0 } }).toArray()
-
-        res.status(200).json(users)
-    } catch (error) {
-        console.error(error)
-        res.sendStatus(500)
-    }
-})
+//router.get('/allUsers', async (req, res) => {
+//    try {
+//        if (req.user.role != 'admin') return res.sendStatus(401)
+//
+//        const users = await User.find({}, { projection: { password: 0 } }).toArray()
+//
+//        res.status(200).json(users)
+//    } catch (error) {
+//        console.error(error)
+//        res.sendStatus(500)
+//    }
+//})
 
 router.get('/user', async (req, res) => {
     try {

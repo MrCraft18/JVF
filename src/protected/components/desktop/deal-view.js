@@ -402,7 +402,7 @@ class DealView extends HTMLElement {
             })
 
             window.savedQueryPromise.then(savedQuery => {
-                if (savedQuery.blacklistedAuthors.find(blacklistedAuthor => blacklistedAuthor.id === deal.post.author.id)) {
+                if (savedQuery && savedQuery.blacklistedAuthors.find(blacklistedAuthor => blacklistedAuthor.id === deal.post.author.id)) {
                     this.$shadowRoot.find('.icons-container').prepend('<div class="blocked">Blocked</div>')
                 } else {
                     this.$shadowRoot.find('.icons-container').prepend('<div class="block-author hover">Block Author</div>')

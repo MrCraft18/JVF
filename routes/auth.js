@@ -1,9 +1,12 @@
 import express from 'express'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
+import Stripe from 'stripe'
 import User from '../schemas/User.js'
 import RefreshToken from '../schemas/RefreshToken.js'
 import { configDotenv } from 'dotenv'; configDotenv()
+
+const stripe = Stripe(process.env.STRIPE_SECRET_KEY)
 
 import authenticateRefreshToken from '../middleware/authenticateRefreshToken.js'
 
@@ -22,13 +25,25 @@ router.post('/login', async (req, res) => {
             {
               'email': { $regex: new RegExp(`^${req.body.email.trim()}$`, 'i') },
             },
-            { password: 1, _id: 1 }
+            { password: 1, _id: 1, admin: 1, stripeCustomerID: 1 }
         )
 
         if (!foundUser) return res.status(404).send("User Does Not Exist")
 
+        if (!foundUser.admin) {
+            const subscriptions = await stripe.subscriptions.list({
+                customer: foundUser.stripeCustomerID,
+                status: "all",
+                limit: 1
+            })
+
+            const subscriptionStatus = subscriptions.data.some(subscription => (subscription.status === "active" || subscription.status === "trialing") && subscription.plan.product === "prod_S8WY6ZjEB0eVcw")
+
+            if (!subscriptionStatus) return res.status(403).send("No Active Subscription")
+        }
+
         if (bcrypt.compareSync(req.body.password.trim(), foundUser.password)) {
-            const refreshToken = jwt.sign({ id: foundUser._id.toString() }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '3d' })
+            const refreshToken = jwt.sign({ id: foundUser._id.toString(), stripeCustomerID: foundUser.stripeCustomerID, admin: foundUser.admin }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '3d' })
 
             await new RefreshToken({ token: refreshToken }).save()
 
@@ -46,9 +61,11 @@ router.post('/login', async (req, res) => {
 
 router.post('/accessToken', authenticateRefreshToken, async (req, res) => {
     try {
-        const user = await User.findById(req.userID, { email: 1, role: 1 })
+        const user = await User.findById(req.userID, { email: 1, admin: 1 })
 
-        const newRefreshToken = jwt.sign({ id: req.userID }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '3d' })
+        if (!user) return res.sendStatus(401)
+
+        const newRefreshToken = jwt.sign({ id: req.userID, stripeCustomerID: user.stripeCustomerID, admin: user.admin }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '3d' })
         const accessToken = jwt.sign({ user, parentToken: newRefreshToken }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '5m' })
 
         await RefreshToken.deleteOne({ token: req.cookies.refreshToken })

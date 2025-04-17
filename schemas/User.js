@@ -6,8 +6,12 @@ await mongoose.connect(process.env.MONGODB_URI)
 
 const userSchema = new mongoose.Schema({
     email: String,
+    stripeCustomerID: String,
     password: String,
-    role: String,
+    admin: { 
+        type: String,
+        required: false,
+    },
     dealsQuery: Object,
     blacklistedAuthors: Array,
     lastTokenAccess: Date

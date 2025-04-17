@@ -10,7 +10,6 @@ api.interceptors.request.use(async config => {
         console.log('Grabbing new Key')
         api.tokenPromise = axios.post('/auth/accessToken').then(response => response.data.accessToken)
         api.token = await api.tokenPromise
-        console.log('Grabbing new Key')
     }
 
     config.headers.Authorization = `Bearer ${api.token}`
@@ -28,6 +27,8 @@ api.accessToken = async () => {
 }
 
 api.interceptors.response.use(response => response, error => {
+    if (error.response.status === 401 || error.response.status === 403) window.location.pathname = '/login'
+
     if (error.response) {
         if (error.response.status === 502) {
 
