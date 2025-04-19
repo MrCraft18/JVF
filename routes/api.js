@@ -3,7 +3,6 @@ import bcrypt from 'bcryptjs'
 import User from '../schemas/User.js'
 import Deal from '../schemas/Deal.js'
 import Label from '../schemas/Label.js'
-import Post from '../schemas/Post.js'
 import { configDotenv } from 'dotenv'; configDotenv()
 
 import { isValidObjectId, Types } from 'mongoose'
